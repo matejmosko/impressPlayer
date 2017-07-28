@@ -1,0 +1,340 @@
+@font-face {
+  font-family: 'DosisNormal';
+  src: url('fonts/Exo/Exo-Light.ttf');
+  /*URL to font*/
+}
+
+@font-face {
+  font-family: 'DosisBold';
+  src: url('fonts/Exo/Exo-Medium.ttf');
+  /*URL to font*/
+}
+
+@font-face {
+  font-family: 'Nasalization';
+  src: url('fonts/nasalization-rg.ttf');
+  /*URL to font*/
+}
+
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@media all and (min-height: 600px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+@media all and (min-height: 700px) {
+  body {
+    font-size: 18px;
+  }
+}
+
+@media all and (min-height: 800px) {
+  body {
+    font-size: 20px;
+  }
+}
+
+@media all and (min-height: 900px) {
+  body {
+    font-size: 22px;
+  }
+}
+
+@media all and (min-height: 1000px) {
+  body {
+    font-size: 24px;
+  }
+}
+
+@media all and (min-height: 1100px) {
+  body {
+    font-size: 26px;
+  }
+}
+
+@media all and (min-height: 1200px) {
+  body {
+    font-size: 28px;
+  }
+}
+
+@media all and (min-height: 1300px) {
+  body {
+    font-size: 30px;
+  }
+}
+
+@media all and (min-height: 1400px) {
+  body {
+    font-size: 32px;
+  }
+}
+
+@media all and (min-height: 1500px) {
+  body {
+    font-size: 34px;
+  }
+}
+
+@media all and (min-height: 1500px) {
+  body {
+    font-size: 36px;
+  }
+}
+
+@media all and (min-height: 1600px) {
+  body {
+    font-size: 38px;
+  }
+}
+
+@media all and (min-height: 1700px) {
+  body {
+    font-size: 40px;
+  }
+}
+
+body {
+  padding: 30px;
+  background-color: #13132A;
+  background-image: url('../img/gow-bg-blue.png');
+  background-size: 100% auto;
+  background-repeat: no-repeat;
+  color: #fff;
+  font-family: DosisNormal, Arial, Helvetica, sans-serif;
+  overflow: hidden;
+}
+
+#infobox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+#infobox div{
+  padding: 0 10px;
+}
+
+#main {
+  width: 100%;
+  display: flex;
+}
+
+#currYear {
+  flex: 1 1 auto;
+}
+
+#currPhase {
+  flex: 2 1 auto;
+}
+
+#currPhaseText {
+  flex: 4 1 auto;
+}
+
+#gametablediv {
+  flex: 4 0 70%;
+  padding-right: 30px;
+}
+
+#sidebar {
+  flex: 1 1 25%;
+}
+
+#game-table {
+  width: 100%;
+}
+
+body.timeisup {
+  background-color: maroon;
+  background-image: url('../img/gow-bg-red.png');
+}
+
+h1 {
+  font-size: 2.0em;
+}
+
+h2 {
+  font-size: 1.5em;
+}
+
+h3 {
+  font-size: 1.3em;
+}
+
+h4 {
+  font-size: 1.3em;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: Nasalization, Arial, Helvetica, sans-serif;
+}
+
+a, a:visited, a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.newsArticle {
+  margin: 10px 0;
+}
+
+.newsArticle strong {
+}
+
+.newsArticle p {
+  font-size: 1.3em;
+}
+
+table, #infobox , #timerdiv, .newsArticle p{
+  padding: 5px;
+  margin-bottom: 10px;
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+h2.phase{
+  text-align: center;
+}
+
+#timerdiv {
+  text-align: center;
+  font-size: 4.0em;
+  font-family: DosisBold, Arial, Helvetica, sans-serif;
+}
+
+.nazovkrajiny, .body {
+  font-size: 1.5em;
+  text-transform: capitalize;
+  font-family: DosisBold, Arial, Helvetica, sans-serif;
+}
+
+table, table td, table th {
+  font-size: 1.0em;
+  text-align: center;
+}
+
+.phase {
+  font-size: xx-large;
+}
+
+.phasetext {
+  font-size: large;
+}
+
+.overlay, .rules {
+  z-index: 10;
+  background-color: black;
+  font-family: Nasalization, Arial, Helvetica, sans-serif;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 30px;
+  text-align: center;
+}
+
+.rules {
+  display: none;
+}
+
+.rules ul li {
+  text-align: left;
+  padding-bottom: 15px;
+  font-family: "Exo", sans-serif;
+  font-size: 24px;
+}
+
+.overlay h2 {
+  font-size: 4.0em;
+}
+
+.overlay p {
+  font-size: 1.5em;
+}
+
+.table>tbody>tr>td, .table>tbody>tr>th, .table>tfoot>tr>td, .table>tfoot>tr>th, .table>thead>tr>td, .table>thead>tr>th {
+  border-top: 0px;
+  height:40px;
+}
+
+
+/* KRAJINY - GOMBÍKY */
+
+tr td:first-child {
+  background-size: 40px 40px;
+  background-repeat: no-repeat;
+}
+
+#GBR td:first-child {
+  background-image: url('../img/krajiny/GBR.png');
+}
+
+#SVK td:first-child {
+  background-image: url('../img/krajiny/SVK.png');
+}
+
+#USA td:first-child {
+  background-image: url('../img/krajiny/USA.png');
+}
+
+#JAR td:first-child {
+  background-image: url('../img/krajiny/JAR.png');
+}
+
+#AUS td:first-child {
+  background-image: url('../img/krajiny/AUS.png');
+}
+
+#CHN td:first-child {
+  background-image: url('../img/krajiny/CHN.png');
+}
+
+#JPN td:first-child {
+  background-image: url('../img/krajiny/JPN.png');
+}
+
+#RUS td:first-child {
+  background-image: url('../img/krajiny/RUS.png');
+}
+
+#CAN td:first-child {
+  background-image: url('../img/krajiny/CAN.png');
+}
+
+#BRA td:first-child {
+  background-image: url('../img/krajiny/BRA.png');
+}
+
+#MEX td:first-child {
+  background-image: url('../img/krajiny/MEX.png');
+}
+
+#IND td:first-child {
+  background-image: url('../img/krajiny/IND.png');
+}
+
+#IRN td:first-child {
+  background-image: url('../img/krajiny/IRN.png');
+}
+
+#VEN td:first-child {
+  background-image: url('../img/krajiny/VEN.png');
+}
+
+#FRA td:first-child {
+  background-image: url('../img/krajiny/FRA.png');
+}

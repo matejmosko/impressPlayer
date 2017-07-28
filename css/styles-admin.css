@@ -1,0 +1,109 @@
+#topbox {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+#infobox{
+	flex: 4 0 70%;
+  padding-right: 30px;
+	display:flex;
+}
+#infobox div, #projectorControls{
+	flex: 1 1 auto;
+}
+#top-buttons {
+  flex: 1 1 25%;
+}
+
+#main {
+  width: 100%;
+  display: flex;
+}
+
+#content{
+	flex: 4 0 70%;
+  padding-right: 30px;
+}
+
+#sidebar {
+  flex: 1 1 25%;
+}
+
+#currYear {
+  flex: 1 0 auto;
+}
+
+#currPhase {
+  flex: 2 0 auto;
+}
+
+#currPhaseText {
+  flex: 4 0 auto;
+}
+table.content-table{
+  min-width: 100%;
+}
+#novaHra, #oldGame{
+	padding:10px;
+}
+#gameTables{
+	padding: 20px;
+}
+#phasesOpt .optHorizontalBox .title{
+  min-width: 25%;
+}
+.optHorizontalBox{
+  width:100%;
+}
+.optHorizontalBox .title{
+  font-weight: bold;
+}
+x-label{
+  padding-right:5px;
+}
+.tableHeader x-label{
+  min-width: 33%;
+  text-align: right;
+}
+.content-table{
+  padding: 15px;
+}
+.sortinput{
+	width: 30px;
+}
+.danger{
+	background-color: #ff8a65;
+}
+th.quest-box, th.points-box{
+	display:none;
+}
+.started .tools{
+	display:none;
+}
+#admin-table td{
+	vertical-align: middle;
+}
+.year-variable{
+	display:inline-block;
+	min-width: 25px;
+	font-weight: bold;
+	text-align:center;
+
+}
+.news{
+  padding: 15px;
+}
+.news h4{
+  margin: 0 0 5px 0;
+}
+x-dialog h4, x-dialog p{
+  text-align: center;
+}
+x-dialog x-buttons{
+    margin: 0 auto;
+}
+x-dialog{
+  padding:20px;
+}

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>GOW</title>
+  <!--<link href="./node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">-->
+  <link rel="stylesheet" href="./css/styles.css">
+  <script>
+  </script>
+</head>
+
+<body>
+  <div class="overlay" style="display:none">
+    <h2>Čas vypršal</h2>
+    <p>Generáli, presuňte sa naspäť k strategickej mape. Teraz budete rozhodovať o budúcnosti sveta.</p>
+  </div>
+  <div class="rules">
+    <h2>Toto sú pravidlá</h2>
+    <ul>
+      <li>Hráči v tíme majú rôzne funkcie (prezident, diplomati, generál).</li>
+      <li>K bojovej mape chodia iba generáli.</li>
+      <li>Hra má 5 kôl. Každé kolo má 4 fázy (1. rozkladanie armád, 2. diplomacia, 3. vyhodnocovanie bojov, 4. pauza).</li>
+      <li>Cieľom hry je nazbierať veľa bodov.</li>
+      <li>Za Erkenom (tým vyšším týpkom) chodíš nakupovať. Moško (ten viac bradatý) zapisuje tvoje body. Buď na nich milý.</li>
+      <li>Keď niečomu nerozmuieš, opýtaj sa, alebo rob to, čo robia ostatní.</li>
+    </ul>
+  </div>
+  <div id="container">
+    <div id="infobox" style="display:none">
+      <div id="currYear">
+
+      </div>
+      <div id="currPhase">
+
+      </div>
+      <div id="currPhaseText">
+
+      </div>
+    </div>
+    <div id="main">
+
+      <div id="gametablediv">
+        <div id="hrajuceTimy">
+          <h3></h3>
+          <table class="table" id="game-table">
+            <thead>
+              <tr>
+                <th>Krajina</th>
+                <th>Vládna strana</th>
+                <th>Výsledky</th>
+              </tr>
+            </thead>
+            <tbody id="tabulkatimov"></tbody>
+          </table>
+        </div>
+      </div>
+      <div id="sidebar">
+        <div id="spravy">
+          <div class="currNews"></div>
+          <div class="endNews" style="display:none"></div>
+        </div>
+        <div id="timerdiv" style="display:none"></div>
+      </div>
+    </div>
+  </div>
+
+</body>
+<script>
+  // You can also require other files to run in this process
+  require('./renderer.js');
+  window.$ = window.jQuery = require('jquery');
+  //require('bootstrap');
+</script>
+<script src="./js/projektor-script.js"></script>
+
+</html>

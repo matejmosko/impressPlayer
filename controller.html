@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>GOW Admin</title>
+  <link rel="import" href="./node_modules/xel/xel.min.html">
+  <link rel="stylesheet" href="./node_modules/xel/stylesheets/material.theme.css">
+  <link rel="stylesheet" href="./css/styles-admin.css">
+</head>
+
+<body>
+  <div id="container">
+    <div id="topbox">
+      <div id="infobox">
+        <x-buttons tracking="2" id="projectorControls">
+          <x-button id="projectorBtn">
+            <x-icon name="airplay"></x-icon>
+          </x-button>
+
+          <x-button id="fullscreenBtn">
+            <x-icon name="fullscreen"></x-icon>
+          </x-button>
+
+          <x-button id="rulesBtn">
+            <x-icon name="assignment"></x-icon>
+          </x-button>
+        </x-buttons>
+      </div>
+
+      <div id="top-buttons">
+
+        <x-buttons tracking="-1" id="gameControls" style="display:none">
+          <x-button id="startGame">
+            <x-box>
+              <x-icon name="skip-next"></x-icon>
+              <x-label>Spusti hru</x-label>
+            </x-box>
+          </x-button>
+          <x-button id="nextPhase" style="display:none;">
+            <x-box>
+              <x-icon name="skip-next"></x-icon>
+              <x-label>Ďalšia fáza</x-label>
+            </x-box>
+          </x-button>
+          <x-button id="stepBack" class="danger">
+            <x-icon name="backspace"></x-icon>
+          </x-button>
+        </x-buttons>
+      </div>
+    </div>
+    <div id="main">
+      <div id="content">
+        <div id="newGameBox">
+          <x-box id="novaHra">
+            <x-input id="newgame" required>
+              <x-icon name="receipt"></x-icon>
+              <x-label>Názov novej hry</x-label>
+            </x-input>
+            <x-button id="submitGame">
+              <x-box>
+                <x-icon name="add"></x-icon>
+                <x-label>Nová hra</x-label>
+              </x-box>
+            </x-button>
+          </x-box>
+          <x-box id="oldGame">
+          </x-box>
+        </div>
+        <div id="pridajTim" style="display:none;" class="form-group">
+          <h3>Pridaj tím</h3>
+          <x-box>
+            <x-input id="tim" required>
+              <x-icon name="receipt"></x-icon>
+              <x-label>Názov tímu</x-label>
+            </x-input>
+            <x-select id="krajiny" required>
+            </x-select>
+            <x-button id="submitTim">
+              <x-box>
+                <x-icon name="add"></x-icon>
+                <x-label>Pridaj krajinu</x-label>
+              </x-box>
+            </x-button>
+          </x-box>
+        </div>
+        <div id="gameTables" style="display:none;">
+          <x-card id="contentCard">
+            <x-tabs centered>
+              <x-tab selected id="gameTab">
+                <x-box>
+                  <x-icon name="list"></x-icon>
+                  <x-label>Aktuálny stav</x-label>
+                </x-box>
+              </x-tab>
+
+              <x-tab id="statsTab">
+                <x-box>
+                  <x-icon name="sort"></x-icon>
+                  <x-label>Štatistika</x-label>
+                </x-box>
+              </x-tab>
+
+              <x-tab id="optionsTab">
+                <x-box>
+                  <x-icon name="settings"></x-icon>
+                  <x-label>Nastavenia</x-label>
+                </x-box>
+              </x-tab>
+            </x-tabs>
+
+            <table id="admin-table" class="content-table">
+              <thead>
+                <tr>
+                  <th>Krajina</th>
+                  <th>Tím</th>
+                  <th>Body</th>
+                  <th>Misie</th>
+                  <th class='delete tools'>Nástroje</th>
+                  <th class='sort tools'>Poradie</th>
+                  <th class='points-box'>Nové body</th>
+                  <th class='quest-box'>Nové misie</th>
+                </tr>
+              </thead>
+              <tbody id="tabulkatimov"></tbody>
+            </table>
+            <table id="stats-table" class="content-table" style="display:none">
+              <thead>
+                <tr>
+                  <th>Krajina</th>
+                  <th>Tím</th>
+                  <th>1</th>
+                  <th>2</th>
+                  <th>3</th>
+                  <th>4</th>
+                  <th>5</th>
+                  <th>Body</th>
+                  <th>Misie</th>
+                </tr>
+              </thead>
+              <tbody id="statistikatimov"></tbody>
+            </table>
+            <div id="gow-options" class="content-table" style="display:none">
+              <div id="tableOpt">
+              </div>
+              <x-box>
+                <x-button id='saveOpts'>
+                  <x-label>Ulož nastavenia</x-label>
+                </x-button>
+                <x-button id='reloadOpts'>
+                  <x-label>Reset</x-label>
+                </x-button>
+                <x-button id='setDefaultOpts'>
+                  <x-label>Načítaj predvolené</x-label>
+                </x-button>
+              </x-box>
+              <x-box>
+                <input type="checkbox" id="saveDefaultCheck">
+                <!--<x-checkbox id="saveDefaultCheck"></x-checkbox>-->
+                <x-label for="saveDefaultCheck" id="save-label">Uložiť ako predvolené</x-label>
+              </x-box>
+          </x-card>
+          </div>
+        </div>
+      </div>
+      <div id="sidebar">
+        <div id="newsBox" style="display:none;">
+          <h3>Aktuálne udalosti</h3>
+          <x-card class="currNews news"></x-card>
+          <h3>Udalosti z budúcnosti</h3>
+          <x-card class="futNews news"></x-card>
+          <h3>Minulé udalosti</h3>
+          <x-card class="pastNews news"></x-card>
+
+        </div>
+
+
+      </div>
+    </div>
+  </div>
+  <x-dialog>
+    <h4>Naozaj chceš ukončiť Game of Worlds?</h4>
+    <p>Priebeh hry by mal byť uložený, ale pre istotu sa aj tak pýtam. Čo ak si sa iba preklikol?</p>
+    <x-buttons tracking="-1" id="windowControls">
+      <x-button id="reallyQuit" class="danger">
+        <x-box>
+          <x-icon name="exit-to-app"></x-icon>
+          <x-label>Áno, ukončime to!</x-label>
+        </x-box>
+      </x-button>
+      <x-button id="doNotQuit">
+        <x-box>
+          <x-icon name="replay"></x-icon>
+          <x-label>Nie, ešte sa chcem hrať</x-label>
+        </x-box>
+      </x-button>
+    </x-buttons>
+  </x-dialog>
+
+</body>
+<script>
+  // You can also require other files to run in this process
+  require('./renderer.js');
+  window.$ = window.jQuery = require('jquery');
+</script>
+
+<script src="./js/toolbox-script.js"></script>
+
+</html>
