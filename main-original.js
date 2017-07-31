@@ -34,11 +34,8 @@ ipcMain.on('toggleProjector', (event) => {
   }
 })
 
-ipcMain.on('projectionGoToSlide', (event, arg) => {
+ipcMain.on('gotoSlide', (event, arg) => {
   projektorWindow.webContents.send('gotoSlide', arg);
-})
-ipcMain.on('consoleGoToSlide', (event, arg) => {
-  mainWindow.webContents.send('gotoSlide', arg);
 })
 
 ipcMain.on('loadProjection', (event, arg) => {

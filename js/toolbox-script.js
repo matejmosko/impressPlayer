@@ -147,19 +147,6 @@ $(function() {
     $('#teamsTableDiv').hide();
     $('#optionsDiv').show();
   });
-  $("#prevSlideBtn").click(function() {
-    ipc.send('prevSlide');
-    mainPresentation.prev();
-  });
-  $("#nextSlideBtn").click(function() {
-    //impress().next();
-    number = 7;
-    //console.log(mainPresentation.getStep());
-    mainPresentation.next();
-    next = getCurrentSlide();
-    console.log(next);
-    ipc.send('gotoSlide', next);
-  });
 
   $("#fullscreenBtn").click(function() {
     ipc.send('toggleFullscreen');
@@ -169,6 +156,10 @@ $(function() {
   });
   $("#projectorBtn").click(function() {
     ipc.send('toggleProjector');
+  });
+  ipc.on('projectorSwitch', (event, x) => {
+    //if (x) { $("#projectorBtn").text('Vypni projekciu') } else $("#projectorBtn").text('Spusti projekciu')
+    // Opraviť Toggle pri manuálnom vypnutí projekcie
   });
   ipc.on('quitModal', (event) => {
     //renderTable(arg);
@@ -200,9 +191,20 @@ $(function() {
     });
   });
 
+  ipc.on('projectionStepLeft', (event) => {
+    //renderTable(arg);
+    onStepLeave();
+  });
+
   function getCurrentSlide() {
     var currentSlide = $('.active').attr('id');
     return currentSlide;
+  }
+
+  function renderNextSlide(next){
+    console.log("Pecka");
+    console.log(next);
+    ipc.send('projectionGoToSlide', next);
   }
 
   function loadProjection(data) {
@@ -211,7 +213,13 @@ $(function() {
       $('#impressOverview').html(data);
       $('#impress').html(data);
       mainPresentation = impress();
-      //overviewPresentation = impress("impressOverview");                      // Toto sa bohužiaľ nedá urobiť. Najjednoduchšia cesta teda naozaj bude rozbehať a upraviť impressConsole. Posledná možná cesta je už len cez iFrame, ale to by bol hack, ktorému by som sa rád vyhol.
+      var root = document.getElementById( "impress" );
+      root.addEventListener('impress:stepleave', function(){
+        next = getCurrentSlide();
+        renderNextSlide(next);
+      });
+      //root.addEventListener('impress:stepenter', onStepEnter);
+      //overviewPresentation = impress("impressOverview");                      // Toto sa bohužiaľ nedá urobiť. Najjednoduchšia cesta teda naozaj bude rozbehať a upraviť impressConsole. Posledná možná cesta je už len cez iFrame, ale to by bol hack, ktorému by som sa rád vyhol. Aj impressConsole používa ifrejmy, takže možno bude predsa len jednoduchšie vykuchať kód impressConsole a aplikovať ho sem.
       mainPresentation.init();
       //overviewPresentation.init();
       running = true;
@@ -219,10 +227,20 @@ $(function() {
 
   }
 
-  ipc.on('projectorSwitch', (event, x) => {
-    //if (x) { $("#projectorBtn").text('Vypni projekciu') } else $("#projectorBtn").text('Spusti projekciu')
-    // Opraviť Toggle pri manuálnom vypnutí projekcie
+  $("#prevSlideBtn").click(function() {
+    ipc.send('prevSlide');
+    mainPresentation.prev();
   });
+  $("#nextSlideBtn").click(function() {
+    mainPresentation.next();
+    var next = getCurrentSlide();
+    renderNextSlide(next);
+  });
+  ipc.on('gotoSlide', (event, next) => {
+    mainPresentation.goto(next);
+  });
+
+
 
 
 });
