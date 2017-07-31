@@ -3,66 +3,31 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>GOW</title>
+  <meta name="viewport" content="width=1024" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <title>Turban Quiz Projector</title>
   <!--<link href="./node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">-->
-  <link rel="stylesheet" href="./css/styles.css">
+  <link rel="stylesheet" href="./css/styles-projector.css">
+  <link href="css/impress-demo.css" rel="stylesheet" />
   <script>
   </script>
 </head>
 
-<body>
-  <div class="overlay" style="display:none">
-    <h2>Čas vypršal</h2>
-    <p>Generáli, presuňte sa naspäť k strategickej mape. Teraz budete rozhodovať o budúcnosti sveta.</p>
+<body class="impress-not-supported">
+  <div class="fallback-message">
+    <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
+    <p>For the best experience please use the latest <b>Chrome</b>, <b>Safari</b> or <b>Firefox</b> browser.</p>
   </div>
-  <div class="rules">
+  <div class="rules" style="display:none">
     <h2>Toto sú pravidlá</h2>
     <ul>
-      <li>Hráči v tíme majú rôzne funkcie (prezident, diplomati, generál).</li>
-      <li>K bojovej mape chodia iba generáli.</li>
-      <li>Hra má 5 kôl. Každé kolo má 4 fázy (1. rozkladanie armád, 2. diplomacia, 3. vyhodnocovanie bojov, 4. pauza).</li>
-      <li>Cieľom hry je nazbierať veľa bodov.</li>
-      <li>Za Erkenom (tým vyšším týpkom) chodíš nakupovať. Moško (ten viac bradatý) zapisuje tvoje body. Buď na nich milý.</li>
-      <li>Keď niečomu nerozmuieš, opýtaj sa, alebo rob to, čo robia ostatní.</li>
+      <li>Toto sú pravidlá</li>
     </ul>
   </div>
   <div id="container">
-    <div id="infobox" style="display:none">
-      <div id="currYear">
-
-      </div>
-      <div id="currPhase">
-
-      </div>
-      <div id="currPhaseText">
-
-      </div>
-    </div>
-    <div id="main">
-
-      <div id="gametablediv">
-        <div id="hrajuceTimy">
-          <h3></h3>
-          <table class="table" id="game-table">
-            <thead>
-              <tr>
-                <th>Krajina</th>
-                <th>Vládna strana</th>
-                <th>Výsledky</th>
-              </tr>
-            </thead>
-            <tbody id="tabulkatimov"></tbody>
-          </table>
-        </div>
-      </div>
-      <div id="sidebar">
-        <div id="spravy">
-          <div class="currNews"></div>
-          <div class="endNews" style="display:none"></div>
-        </div>
-        <div id="timerdiv" style="display:none"></div>
-      </div>
-    </div>
+    <div id="impress">
+    This is the place for your future presentation.
+  </div>
   </div>
 
 </body>
@@ -73,5 +38,12 @@
   //require('bootstrap');
 </script>
 <script src="./js/projektor-script.js"></script>
+<script src="./js/impress.js"></script>
+<script src="./js/impressConsole.js"></script>
+<script>
+  //impress().init();
+  //impressConsole().init();
+  //impressConsole().open();
+</script>
 
 </html>
