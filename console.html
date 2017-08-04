@@ -81,7 +81,7 @@
             </x-tabs>
 
             <div id="currentSlideDiv" class="content-table slidesPreview">
-              <div id="impress">Placeholder for current Slide</div>
+              <webview id="impressCurrent" src="./viewer.html" autosize style="display:inline-flex;" nodeintegration></webview>
             </div>
             <div id="allSlidesDiv" class="content-table slidesPreview" style="display:none">
               <div id="impressOverview">Placeholder for slides Grid</div>
@@ -91,15 +91,19 @@
             </div>
             <div id="optionsDiv" class="content-table" style="display:none">
               Placeholder for options
-              </div>
+            </div>
           </x-card>
         </div>
       </div>
 
       <div id="sidebar">
         <div id="nextSlides">
-          <x-card class="nextSlide nextSlide-1 slidesPreview"><div id="nextImpress-1"></div></x-card>
-          <x-card class="nextSlide nextSlide-2 slidesPreview"><div id="nextImpress-2"></div></x-card>
+          <x-card class="nextSlide nextSlide-1">
+            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:inline-flex;" nodeintegration></webview>
+          </x-card>
+          <x-card class="nextSlide nextSlide-2">
+            <webview id="nextImpress-2" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:inline-flex;" nodeintegration></webview>
+          </x-card>
         </div>
       </div>
     </div>
@@ -126,14 +130,10 @@
 </body>
 <script>
   // You can also require other files to run in this process
-  require('./renderer.js');
   window.$ = window.jQuery = require('jquery');
+  require('./renderer.js');
+  require('./js/console-script.js');
+  require('./js/impress.js');
 </script>
 
-<script src="./js/toolbox-script.js"></script>
-<script src="./js/impress.js"></script>
-<!--<script src="./js/impressConsole.js"></script>-->
-<script>
-
-</script>
 </html>

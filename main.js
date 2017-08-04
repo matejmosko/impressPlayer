@@ -58,7 +58,7 @@ function createWindow() {
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'toolbox.html'),
+    pathname: path.join(__dirname, 'console.html'),
     protocol: 'file:',
     slashes: true
   }))

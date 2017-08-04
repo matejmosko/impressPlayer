@@ -5,9 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=1024" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <title>Turban Quiz Projector</title>
-  <!--<link href="./node_modules/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">-->
-  <link rel="stylesheet" href="./css/styles-projector.css">
+  <title>impress.js viewer</title>
   <link href="css/impress-demo.css" rel="stylesheet" />
   <script>
   </script>
@@ -18,24 +16,21 @@
     <p>Your browser <b>doesn't support the features required</b> by impress.js, so you are presented with a simplified version of this presentation.</p>
     <p>For the best experience please use the latest <b>Chrome</b>, <b>Safari</b> or <b>Firefox</b> browser.</p>
   </div>
-  <div class="rules" style="display:none">
-    <h2>Toto sú pravidlá</h2>
-    <ul>
-      <li>Toto sú pravidlá</li>
-    </ul>
-  </div>
   <div id="container">
     <div id="impress">
     </div>
   </div>
 
 </body>
+<script src="js/impress.js"></script>
 <script>
   // You can also require other files to run in this process
+  //require('./js/impress.js');
   window.$ = window.jQuery = require('jquery');
-  require('./renderer.js');
-  require('./js/projektor-script.js');
-  require('./js/impress.js');
-</script>
+  require('./js/viewer-script.js');
+  //require('./js/impress.js');
+  </script>
+
+<script>//impress().init()</script>
 
 </html>

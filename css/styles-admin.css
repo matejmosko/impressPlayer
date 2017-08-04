@@ -5,14 +5,16 @@
   margin-bottom: 30px;
 }
 
-#infobox{
-	flex: 4 0 70%;
+#infobox {
+  flex: 4 0 70%;
   padding-right: 30px;
-	display:flex;
+  display: flex;
 }
-#infobox div, #projectorControls{
-	flex: 1 1 auto;
+
+#infobox div, #projectorControls {
+  flex: 1 1 auto;
 }
+
 #top-buttons {
   flex: 1 1 25%;
 }
@@ -22,37 +24,67 @@
   display: flex;
 }
 
-#content{
-	flex: 4 0 70%;
+#content {
+  flex: 4 0 70%;
   padding-right: 30px;
 }
 
 #sidebar {
   flex: 1 1 25%;
 }
-#currentSlideDiv, #allSlidesDiv{
-  min-height:800px;
+
+#currentSlideDiv, #allSlidesDiv {
+  min-height: 600px;
+  height: 100%;
+  position: relative;
 }
-.nextSlide{
-  width: 360px;
-  height: 200px;
+
+#impressCurrent {
+  width: 100%;
+  display: flex;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
-.slidesPreview{
-overflow: hidden;
-position: relative;
+
+.nextSlide {
+  min-height: 240px;
+  min-width: 320px;
+  overflow: hidden;
+  position: relative;
+  margin: 10px;
 }
-.content-table{
+
+.slidesPreview {
+  width: 100%;
+  display: flex;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.content-table {
   padding: 15px;
 }
-.danger{
-	background-color: #ff8a65;
+
+.danger {
+  background-color: #ff8a65;
 }
-x-dialog h4, x-dialog p{
+
+x-dialog h4, x-dialog p {
   text-align: center;
 }
-x-dialog x-buttons{
-    margin: 0 auto;
+
+x-dialog x-buttons {
+  margin: 0 auto;
 }
-x-dialog{
-  padding:20px;
+
+x-dialog {
+  padding: 20px;
 }

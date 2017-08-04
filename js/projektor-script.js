@@ -14,7 +14,7 @@ $(function() {
 
   ipc.on('loadProjection', (event, loadedFile) => {
     if (!running) {                                                             // TEMPORARY SOLUTION. Nefunguje dobre, keď už je raz inicializovaný impress.js. Treba zistiť, ako ho viem zabiť.
-      $('#impress').html(loadedFile);
+      $('#container').html(loadedFile);
       impress().init();
       running = true;
       var root = document.getElementById("impress");
@@ -28,6 +28,10 @@ $(function() {
 
   function getCurrentSlide() {
     var currentSlide = $('.active').attr('id');
+    return currentSlide;
+  }
+  function getFutureSlides() {
+    var currentSlide = $('.future').attr('id');
     return currentSlide;
   }
 
