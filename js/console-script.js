@@ -4,6 +4,7 @@ $(function() {
  const path = require('path');
  const url = require('url');
  const fs = require('fs');
+ const markpress = require('markpress');
  const webview1 = document.querySelector('#nextImpress-1'),
   webview2 = document.querySelector('#nextImpress-2'),
   webview0 = document.querySelector('#impressCurrent');
@@ -12,35 +13,13 @@ $(function() {
  } = require('electron').remote;
  const settings = require('electron').remote.require('electron-settings');
  var ipc = require('electron').ipcRenderer,
-  currentGame,
-  Datastore = require('nedb'),
-  db = {},
-  params = {},
   slidesList = [],
+  opts = {},
   running = false,
   exitDialog = document.querySelector("x-dialog");
-
- renderSelectGame();
  setupSettings();
- //saveSettings();
 
- // renderer process
-
- function renderSelectGame() {
-  dir = fs.readdirSync('./savegame');
-  var selectSavegame = "<x-select id='selectLoad'><x-menu>";
-  for (var i = 0, path; path = dir[i]; i++) {
-   if (path.match(".db")) {
-    selectSavegame += "<x-menuitem name='loadGameSelect' value='" + path + "' selected='true'><x-label>" + path + "</x-label></x-menuitem>";
-   }
-  }
-  selectSavegame += "</x-menu></x-select>";
-  selectSavegame += "<x-button id='loadGame'><x-box><x-icon name='file-upload'></x-icon><x-label>Načítaj hru</x-label></x-box></div>";
-  $('#oldGame').html(selectSavegame);
- }
-
-
- // Setup Database
+ // Setup Settings Database
  function setupSettings() {
   if (!settings.has("name")) {
    ipc.send('saveDefaultSettings');
@@ -48,94 +27,25 @@ $(function() {
   loadSettings(settings.getAll());
  }
 
- function saveGameSettings() {
-  db.games.insert(params, function(err, newDoc) {
-   loadGameSettings()
-  });
- }
-
- function loadGameSettings() {
-  db.games.findOne({
-   name: 'gow-settings'
-  }, function(err, docs) {
-
-   loadSettings(docs);
-  });
- }
-
  function loadSettings(p) {
-  params = p;
+  opts = p;
  }
 
+ /* Logs */
 
- // Nová hra
-
- $("#submitGame").click(function() {
-  $('.noGameName').hide();
-  $('#novaHra').removeClass("has-error");
-  if ($('#newgame').val() == "") {
-   $('#novaHra').addClass("has-error");
-   $('.noGameName').show();
-  }
-  else {
-   newgame = true; // TODO Dorobiť overovanie, či hra s takýmto názvom už neexstuje
-   currentGame = $("#newgame").val() + ".db";
-   addGame();
-  }
- });
-
- $("#loadGame").click(function() {
-  if ($("#selectLoad").val() != null) {
-   currentGame = $("#selectLoad").val();
-   addGame();
-  }
- });
-
- function addGame() {
-  db.games = new Datastore({
-   //filename: path.join(__dirname, "/savegame/" + currentGame),
-   filename: "./savegame/" + currentGame,
-   autoload: true
-  });
-  db.games.ensureIndex({
-   fieldName: 'krajina',
-   unique: true
-  }, function(err) {});
-  if (newgame) {
-   saveGameSettings();
-  }
-  else {
-   loadGameSettings();
-
-  };
+ function saveLogs(text) {
+  console.log(text);
+  ipc.send('saveLogs', text);
  }
 
- function endGame() {
-  savePoints();
-  $('#right-4').html("<h2>Koniec hry</h2>");
-  $('#nextPhase').hide();
-  $('.year').text("Koniec hry");
-  $('.phase').text("");
- }
-
- /* Logovanie udalostí */
-
- function createLog(text) {
-  var file = fs.openSync("savegame/" + currentGame.slice(0, -3) + ".log", 'a');
-  fs.writeFile(file, text, function(err) {
-   if (err) {
-    return console.log(err);
-   }
-   console.log("The log was saved!");
-  });
- }
-
- function loadFile(loadedFile) {
+ function loadFile(loadedFile) { // load file
   file = fs.openSync(loadedFile[0], 'a');
   fs.readFile(loadedFile[0])
  }
 
- $("#currentSlideTab").click(function() {
+ /* UI part - all buttons tabs, radios etc. */
+
+ $("#currentSlideTab").click(function() { // Toggle between main view Tabs
   $('#currentSlideDiv').show();
   $('#allSlidesDiv').hide();
   $('#teamsTableDiv').hide();
@@ -160,27 +70,33 @@ $(function() {
   $('#optionsDiv').show();
  });
 
- $("#fullscreenBtn").click(function() {
+ $("#fullscreenBtn").click(function() { // Toggle Projector Window fullscreen
   ipc.send('toggleFullscreen');
  });
- $("#rulesBtn").click(function() {
+ $("#rulesBtn").click(function() { // Toggle visibility of Rules div
   ipc.send('toggleRules');
  });
- $("#projectorBtn").click(function() {
+
+ $("#projectorBtn").click(function() { // Toggle visibility og Projector Window
   ipc.send('toggleProjector');
  });
- ipc.on('projectorSwitch', (event, x) => {
-  //if (x) { $("#projectorBtn").text('Vypni projekciu') } else $("#projectorBtn").text('Spusti projekciu')
-  // Opraviť Toggle pri manuálnom vypnutí projekcie
+
+ ipc.on('buttonSwitch', (event, btn, x) => { // Toggle "toggled" state of top buttons when non-click event change status
+  if (x) {
+   $(btn).prop("toggled", true)
+  }
+  else $(btn).prop("toggled", false);
  });
- ipc.on('quitModal', (event) => {
-  //renderTable(arg);
+
+ ipc.on('quitModal', (event) => { // Show "Really Quit" dialog
   exitDialog.opened = true;
  });
- $("#reallyQuit").click(function() {
+
+ $("#reallyQuit").click(function() { // "Really Quit"  confirmed. We are leaving the ship.
   ipc.send('reallyQuit');
  });
- $("#doNotQuit").click(function() {
+
+ $("#doNotQuit").click(function() { // "Really Quit" refused. The show must go on...
   exitDialog.opened = false;
  });
 
@@ -190,20 +106,61 @@ $(function() {
     console.log("No file selected");
     return;
    }
-   fs.readFile(fileNames[0], 'utf-8', (err, data) => {
-    if (err) {
-     alert("An error ocurred reading the file :" + err.message);
-     return;
-    }
+   parseProjection(fileNames[0]);
+  });
+ });
 
+ /* Main Software Part */
+
+ function parseProjection(file) {
+  fs.readFile(file, 'utf-8', (err, data) => {
+   if (err) {
+    alert("An error ocurred reading the file :" + err.message);
+    return;
+   }
+
+   if (path.extname(file) == ".md") {
+
+    const options = { // Better API (Markpress) but not working right now
+     layout: 'horizontal',
+     theme: 'light',
+     autoSplit: true,
+     allowHtml: false,
+     verbose: false,
+     embed: false,
+     title: 'Optional title for output HTML'
+    };
+
+    markpress(file, options).then(({
+     html,
+     md
+    }) => {
+     html = html.substr(15);
+     var parser = new DOMParser()
+     var el = parser.parseFromString(html, "text/html");
+     var x = el.getElementsByTagName("script");
+     for (var i = 0; i < x.length; i++) {
+      x[i].innerHTML = "";
+     }
+     console.log(el);
+     html = el.getElementsByTagName("html")[0].outerHTML;
+     console.log(html);
+     loadProjection(html);
+    });
+   }
+
+   if (path.extname(file) == ".html" || path.extname(file) == ".htm") {
     var parser = new DOMParser()
-    var el = parser.parseFromString(data, "text/xml");
+    var el = parser.parseFromString(data, "text/html");
     data = el.getElementById('impress');
 
     loadProjection(data.outerHTML);
-   });
+
+    //loadProjection(data);
+   }
   });
- });
+
+ }
 
  function getFutureSlides(current, offset) {
   let i = slideList.indexOf(current);
@@ -242,16 +199,6 @@ $(function() {
   }
  }
 
- $("#prevSlideBtn").click(function() {
-  webview0.send('prevSlide');
- });
- $("#nextSlideBtn").click(function() {
-  webview0.send('nextSlide');
- });
- ipc.on('gotoSlide', (event, next) => {
-
- });
-
  webview0.addEventListener('ipc-message', (event) => {
   switch (event.channel) {
    case 'gotoSlide':
@@ -265,11 +212,23 @@ $(function() {
     console.log("There is something new coming from impress.js.");
   }
  })
+
+ $("#prevSlideBtn").click(function() {
+  webview0.send('prevSlide');
+ });
+ $("#nextSlideBtn").click(function() {
+  webview0.send('nextSlide');
+ });
+ ipc.on('gotoSlide', (event, next) => {
+
+ });
+
+ /* Uncomment for debugging */
  /*
  webview1.addEventListener('console-message', (e) => {
   console.log('Guest page logged a message:', e.message)
  })
 */
-// webview0.openDevTools();
+ webview0.openDevTools();
 
 });
