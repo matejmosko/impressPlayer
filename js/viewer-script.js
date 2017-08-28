@@ -23,6 +23,16 @@ var running;
     });
     ipc.sendToHost('slideList', ids, getCurrentSlide());
 
+    var videos = document.getElementsByTagName("video");        // TODO Add if statement to make sure the video has autoplay attribute.
+    Array.prototype.forEach.call(videos, function(video) {
+      var videoStep = video.closest(".step");
+      videoStep.addEventListener("impress:stepenter", function() {
+          video.play();
+      }, false);
+      videoStep.addEventListener("impress:stepleave", function() {
+          video.pause();
+      }, false);
+    });
    }
   }
  });

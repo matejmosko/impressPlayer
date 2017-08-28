@@ -241,6 +241,6 @@ $(function() {
   console.log('Guest page logged a message:', e.message)
  })
 */
-//  webview0.openDevTools();
+  webview0.openDevTools();
 
 });
