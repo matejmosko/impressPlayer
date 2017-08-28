@@ -88,3 +88,15 @@ x-dialog x-buttons {
 x-dialog {
   padding: 20px;
 }
+
+#impress-control-buttons {
+  display: none;
+}
+
+.running #impress-control-buttons {
+  display: block;
+}
+
+.running #openFile {
+  display: none;
+}

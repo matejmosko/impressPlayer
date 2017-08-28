@@ -130,7 +130,7 @@ $(function() {
      embed: false,
      title: 'Optional title for output HTML'
     };
-
+    var css = "";
     markpress(file, options).then(({
      html,
      md
@@ -138,14 +138,16 @@ $(function() {
      html = html.substr(15);
      var parser = new DOMParser()
      var el = parser.parseFromString(html, "text/html");
-     var x = el.getElementsByTagName("script");
-     for (var i = 0; i < x.length; i++) {
-      x[i].innerHTML = "";
+     /*var scripts = el.getElementsByTagName("script");
+     for (var i = 0; i < scripts.length; i++) {
+      scripts[i].innerHTML = "";
+    }*/
+     var styles = el.getElementsByTagName("style");
+     for (var i = 0; i < styles.length; i++) {
+      css += styles[i].innerHTML;
      }
-     console.log(el);
-     html = el.getElementsByTagName("html")[0].outerHTML;
-     console.log(html);
-     loadProjection(html);
+     html = el.getElementById("impress").outerHTML;
+     loadProjection(html, css);
     });
    }
 
@@ -153,10 +155,7 @@ $(function() {
     var parser = new DOMParser()
     var el = parser.parseFromString(data, "text/html");
     data = el.getElementById('impress');
-
-    loadProjection(data.outerHTML);
-
-    //loadProjection(data);
+    loadProjection(data.outerHTML, css);
    }
   });
 
@@ -189,13 +188,20 @@ $(function() {
   webview2.send('gotoSlide', getFutureSlides(current, 2));
  }
 
- function loadProjection(data) {
+ function loadProjection(data, css) {
   if (!running) {
+   console.log(data);
    ipc.send('loadProjection', data, 'projektor');
    webview0.send('loadProjection', data, 'current');
    webview1.send('loadProjection', data, 'next1');
    webview2.send('loadProjection', data, 'next2');
+/*
+   webview0.insertCSS(css);
+   webview1.insertCSS(css);
+   webview2.insertCSS(css);
+   */
    running = true;
+   document.body.classList.add('running');
   }
  }
 
@@ -207,6 +213,7 @@ $(function() {
    case 'slideList':
     slideList = event.args[0];
     renderNextSlide(event.args[1]);
+    console.log(slideList);
     break;
    default:
     console.log("There is something new coming from impress.js.");
