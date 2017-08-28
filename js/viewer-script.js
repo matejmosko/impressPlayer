@@ -2,10 +2,12 @@ $(function() {
  const ipc = require('electron').ipcRenderer;
 var running;
 
- ipc.on('loadProjection', (event, loadedFile, projection) => {
+ ipc.on('loadProjection', (event, loadedFile, css, projection) => {
   if (!running) {
     var root = document.getElementById("container");
+    var style = document.getElementsByTagName("style")[0];
     root.innerHTML = loadedFile;
+    style.innerHTML = css;
    impress().init();
    running = true;
 

@@ -2,7 +2,7 @@ const electron = require('electron');
 // Module to control application life.
 const app = electron.app;
 const {
- dialog
+ dialog, webContents
 } = require('electron');
 //const fs = electron.remote.require('fs')
 // Module to create native browser window.
@@ -22,7 +22,7 @@ var fs = require('fs');
 
 ipcMain.on('toggleRules', (event) => {
  projektorWindow.webContents.send('transferRules');
-})
+});
 ipcMain.on('toggleFullscreen', (event) => {
  if (projektorWindow.isFullScreen()) {
   projektorWindow.setFullScreen(false);
@@ -30,7 +30,7 @@ ipcMain.on('toggleFullscreen', (event) => {
  else {
   projektorWindow.setFullScreen(true);
  }
-})
+});
 ipcMain.on('toggleProjector', (event) => {
  if (projektorWindow.isVisible()) {
   projektorWindow.hide();
@@ -40,23 +40,23 @@ ipcMain.on('toggleProjector', (event) => {
   projektorWindow.show();
   mainWindow.webContents.send('buttonSwitch', "#projectorBtn", true);
  }
-})
+});
 
 ipcMain.on('projectionGoToSlide', (event, arg) => {
  projektorWindow.webContents.send('gotoSlide', arg);
-})
+});
 ipcMain.on('consoleGoToSlide', (event, arg) => {
  mainWindow.webContents.send('gotoSlide', arg);
-})
+});
 
-ipcMain.on('loadProjection', (event, arg) => {
- projektorWindow.webContents.send('loadProjection', arg); // Nefunguje dobre, keď už je raz inicializovaný impress.js. Treba zistiť, ako ho viem zabiť.
-})
+ipcMain.on('loadProjection', (event, arg1, arg2) => {
+ projektorWindow.webContents.send('loadProjection', arg1, arg2); // Nefunguje dobre, keď už je raz inicializovaný impress.js. Treba zistiť, ako ho viem zabiť.
+});
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
-let mainWindow
-let projektorWindow
+let mainWindow;
+let projektorWindow;
 
 // main process
 
@@ -68,14 +68,14 @@ function createWindow() {
   icon: path.join(__dirname, 'img/icon.png'),
   title: 'GOW Admin',
   backgroundColor: '#13132A'
- })
+});
 
  // and load the index.html of the app.
  mainWindow.loadURL(url.format({
   pathname: path.join(__dirname, 'console.html'),
   protocol: 'file:',
   slashes: true
- }))
+}));
 
  // Open the DevTools.
  //  mainWindow.webContents.openDevTools()
@@ -92,7 +92,7 @@ function createWindow() {
   }))*/
   ipcMain.on('reallyQuit', (event) => {
    app.exit();
-  })
+ });
   /* DEPRECATED BY USING XEL MODALS
       ipcMain.on('doNotQuit', (event) => {
         child.hide();
@@ -105,14 +105,14 @@ function createWindow() {
 })
 */
   //app.exit();
- })
+});
  // Emitted when the window is closed.
  mainWindow.on('closed', function() {
   // Dereference the window object, usually you would store windows
   // in an array if your app supports multi windows, this is the time
   // when you should delete the corresponding element.
-  mainWindow = null
- })
+  mainWindow = null;
+});
 }
 
 
@@ -126,7 +126,7 @@ function createProjektor() {
   title: 'GOW',
   backgroundColor: '#13132A',
   show: false
- })
+});
 
  // and load the index.html of the app.
  projektorWindow.loadURL(url.format({
@@ -134,7 +134,7 @@ function createProjektor() {
   protocol: 'file:',
   slashes: true,
   fullscreenable: true
- }))
+}));
 
  // Open the DevTools.
  //    projektorWindow.webContents.openDevTools()
@@ -144,38 +144,53 @@ function createProjektor() {
   // Dereference the window object, usually you would store windows
   // in an array if your app supports multi windows, this is the time
   // when you should delete the corresponding element.
-  projektorWindow = null
- })
+  projektorWindow = null;
+});
  projektorWindow.on('close', event => {
   event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
   mainWindow.webContents.send('buttonSwitch', "#projectorBtn", false);
+  mainWindow.webContents.send('buttonSwitch', "#fullscreenBtn", false);
   projektorWindow.hide();
- })
+});
  projektorWindow.on('leave-full-screen', () => {
    mainWindow.webContents.send('buttonSwitch', "#fullscreenBtn", false);
- })
+ });
  projektorWindow.on('enter-full-screen', () => {
    mainWindow.webContents.send('buttonSwitch', "#fullscreenBtn", true);
- })
+ });
  projektorWindow.webContents.on('did-finish-load', () => {
 
- })
-
+ });
+ projektorWindow.on('resize', () => {
+   const [width, height] = projektorWindow.getContentSize();
+   for (let wc of webContents.getAllWebContents()) {
+     // Check if `wc` belongs to a webview in the `win` window.
+     if (wc.hostWebContents &&
+         wc.hostWebContents.id === projektorWindow.webContents.id) {
+       wc.setSize({
+         normal: {
+           width: width,
+           height: height
+         }
+       });
+     }
+   }
+ });
 }
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
-app.on('ready', createProjektor)
+app.on('ready', createWindow);
+app.on('ready', createProjektor);
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
  // On OS X it is common for applications and their menu bar
  // to stay active until the user quits explicitly with Cmd + Q
  if (process.platform !== 'darwin') {
-  app.quit()
+  app.quit();
  }
-})
+});
 
 
 
@@ -183,9 +198,9 @@ app.on('activate', function() {
  // On OS X it's common to re-create a window in the app when the
  // dock icon is clicked and there are no other windows open.
  if (mainWindow === null) {
-  createWindow()
+  createWindow();
  }
-})
+});
 
 var dir = './savegame';
 
@@ -202,11 +217,11 @@ function currentDate() {
  var yyyy = today.getFullYear();
 
  if (dd < 10) {
-  dd = '0' + dd
+  dd = '0' + dd;
  }
 
  if (mm < 10) {
-  mm = '0' + mm
+  mm = '0' + mm;
  }
 
  today = yyyy + '-' + mm + '-' + dd;
@@ -225,11 +240,11 @@ function createLog(text) {
 
 ipcMain.on('saveLogs', (event, text) => {
  createLog(text);
-})
+});
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 // Game Worlds scripts
 app.on('ready', function() {
  //dialog.showOpenDialog({properties: ['openFile', 'openDirectory', 'multiSelections']})
-})
+});

@@ -1,30 +1,40 @@
 @font-face {
   font-family: 'DosisNormal';
-  src: url('fonts/Exo/Exo-Light.ttf');
+  src: url('fonts/Exo/Exo-Light.ttf') format('truetype');
   /*URL to font*/
 }
 
 @font-face {
   font-family: 'DosisBold';
-  src: url('fonts/Exo/Exo-Medium.ttf');
+  src: url('fonts/Exo/Exo-Medium.ttf')  format('truetype');
   /*URL to font*/
 }
 
 @font-face {
   font-family: 'Nasalization';
-  src: url('fonts/nasalization-rg.ttf');
+  src: url('fonts/nasalization-rg.ttf')  format('truetype');
   /*URL to font*/
 }
-
+/*
 * {
   margin: 0;
   padding: 0;
-}
+}*/
 
 html {
+  height: 100%;
+  left: 0;
+  position: absolute;
+  top: 0;
+  width: 100%;
+}
+#impressCurrent {
+  width: 100%;
+  display: flex;
+  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  right: 0;
+  bottom: 0;
 }
