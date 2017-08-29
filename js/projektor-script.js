@@ -47,4 +47,5 @@ $(function() {
     ipc.send('consoleGoToSlide', next);
   }
 
+  webview.openDevTools();
 });

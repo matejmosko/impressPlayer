@@ -4,6 +4,7 @@ $(function() {
   const path = require('path');
   const url = require('url');
   const fs = require('fs');
+  const ms = require('mustache');
   const markpress = require('markpress');
   const webview1 = document.querySelector('#nextImpress-1'),
     webview2 = document.querySelector('#nextImpress-2'),
@@ -211,6 +212,15 @@ $(function() {
     }
   }
 
+  function displaySlideList(){
+    var template = "<ul id='slideList'>{{#slides}}<li id='{{.}}'>{{.}}</li>{{/slides}}</ul>";
+    var rendered = ms.render(template, {slides: slideList});
+    document.getElementById("impressOverview").innerHTML = rendered;
+    $('ul#slideList li').click( function() {
+        renderNextSlide($(this).attr("id"));
+    });
+  }
+
   webview0.addEventListener('ipc-message', (event) => {
     switch (event.channel) {
       case 'gotoSlide':
@@ -219,6 +229,7 @@ $(function() {
       case 'slideList':
         slideList = event.args[0];
         renderNextSlide(event.args[1]);
+        displaySlideList();
         break;
       default:
         console.log("There is something new coming from impress.js.");
@@ -241,6 +252,6 @@ $(function() {
   console.log('Guest page logged a message:', e.message)
  })
 */
-  webview0.openDevTools();
+  //webview0.openDevTools();
 
 });

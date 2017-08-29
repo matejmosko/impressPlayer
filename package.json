@@ -27,6 +27,7 @@
     "fs": "0.0.1-security",
     "jquery": "^3.2.1",
     "markpress": "^4.0.0",
+    "mustache": "^2.3.0",
     "npm": "^5.3.0",
     "xel": "0.0.48"
   },
