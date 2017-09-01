@@ -3,10 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>GOW Admin</title>
+  <title>impPlayer</title>
   <link rel="import" href="./node_modules/xel/xel.min.html">
   <link rel="stylesheet" href="./node_modules/xel/stylesheets/material.theme.css">
-  <link rel="stylesheet" href="./css/styles-admin.css">
+  <link rel="stylesheet" href="./css/styles-console.css">
   <link href="css/impress-admin.css" rel="stylesheet" />
 </head>
 
@@ -15,6 +15,9 @@
     <div id="topbox">
       <div id="infobox">
         <x-buttons tracking="2" id="projectorControls">
+          <x-button id="reloadBtn" class="danger">
+          <x-icon name="power-settings-new"></x-icon>
+        </x-button>
           <x-button id="projectorBtn">
             <x-icon name="airplay"></x-icon>
           </x-button>
@@ -81,13 +84,13 @@
             </x-tabs>
 
             <div id="currentSlideDiv" class="content-table slidesPreview">
-              <webview id="impressCurrent" src="./viewer.html" autosize style="display:inline-flex;" nodeintegration></webview>
+              <webview id="impressCurrent" src="./viewer.html" autosize style="display:flex;" nodeintegration ></webview>
             </div>
             <div id="allSlidesDiv" class="content-table slidesPreview" style="display:none">
               <div id="impressOverview"></div>
             </div>
             <div id="teamsTableDiv" class="content-table" style="display:none">
-              <webview id="drivePage" src="https://docs.google.com/spreadsheets/d/1jbzbHWI7JSi-hwx8cz1LE3TiI8RRRVj86UxyEc1iomo/edit?usp=drive_web" autosize style="display:inline-flex;" nodeintegration></webview>
+              <webview id="drivePage" src="https://docs.google.com/spreadsheets/d/1jbzbHWI7JSi-hwx8cz1LE3TiI8RRRVj86UxyEc1iomo/edit?usp=drive_web" autosize style="display:flex;" nodeintegration></webview>
             </div>
             <div id="optionsDiv" class="content-table" style="display:none">
               Placeholder for options
@@ -99,10 +102,10 @@
       <div id="sidebar">
         <div id="nextSlides">
           <x-card class="nextSlide nextSlide-1">
-            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:inline-flex;" nodeintegration></webview>
+            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:flex;" nodeintegration ></webview>
           </x-card>
           <x-card class="nextSlide nextSlide-2">
-            <webview id="nextImpress-2" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:inline-flex;" nodeintegration></webview>
+            <webview id="nextImpress-2" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:flex;" nodeintegration ></webview>
           </x-card>
         </div>
       </div>

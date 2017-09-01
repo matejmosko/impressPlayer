@@ -114,3 +114,6 @@ x-dialog {
 .running #openFile {
   display: none;
 }
+.imp-ui-text, x-label{
+      -webkit-user-select:none;
+  }
