@@ -29,8 +29,9 @@ $(function() {
               ipc.sendToHost('gotoSlide', current);
             });
             var stepList = document.querySelectorAll(".step");
+            let steps = {};
             var ids = [].map.call(stepList, function(elem) {
-              return elem.id;
+              return { "step": elem.id, "stepName": elem.getElementsByTagName("h1")[0].innerHTML };
             });
             ipc.sendToHost('slideList', ids, getCurrentSlide());
 

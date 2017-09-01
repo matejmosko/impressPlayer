@@ -1,18 +1,35 @@
+*, *:before, *:after {
+    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+}
 body{
-
+  width: auto;
+margin: 0px;
   background-color: #212121;
+}
+#container{
+/*  overflow-x: hidden;*/
+  box-sizing:border-box;
 }
 #topbox {
   width: 100%;
   display: flex;
   align-items: center;
-  margin-bottom: 30px;
+  padding: 10px;
+}
+
+#content {
+  flex: 4 1 70%;
+}
+
+#sidebar {
+  flex: 1 1 25%;
 }
 
 #infobox {
-  flex: 4 0 70%;
-  padding-right: 30px;
+  flex: 4 0 100%;
+  padding: 10px;
   display: flex;
+  margin: 0px;
 }
 
 #infobox div, #projectorControls {
@@ -28,18 +45,13 @@ body{
   display: flex;
 }
 
-#content {
-  flex: 4 0 70%;
-  padding-right: 30px;
-}
-
-#sidebar {
-  flex: 1 1 25%;
+#gameTables{
+  padding: 0px 10px;
 }
 
 #currentSlideDiv, #allSlidesDiv {
-  min-height: 600px;
-  height: 100%;
+  width:100%;
+  padding-bottom: 75%;   /* This maintains 4:3 aspect ratio */
   position: relative;
 }
 
@@ -65,17 +77,15 @@ body{
 }
 
 .nextSlide {
-  min-height: 240px;
-  min-width: 320px;
   overflow: hidden;
   position: relative;
-  margin: 10px;
+  width: 100%;
+  height: 0px;
+  padding-bottom: 75%;   /* This maintains 4:3 aspect ratio */
 }
 
 .slidesPreview {
-  width: 100%;
   display: flex;
-  height: 100%;
   position: absolute;
   top: 0;
   left: 0;
@@ -84,7 +94,7 @@ body{
 }
 
 .content-table {
-  padding: 15px;
+  padding: 0px;
 }
 
 .danger {
@@ -103,12 +113,12 @@ x-dialog {
   padding: 20px;
 }
 
-#impress-control-buttons {
+.impressControlBtns {
   display: none;
 }
 
-.running #impress-control-buttons {
-  display: block;
+.running .impressControlBtns {
+  display: flex;
 }
 
 .running #openFile {
@@ -117,3 +127,18 @@ x-dialog {
 .imp-ui-text, x-label{
       -webkit-user-select:none;
   }
+#bigTimer{
+  font-size: 4.0em;
+  font-weight: bold;
+  text-align: center;
+}
+
+#smallTimer{
+  font-size: 1.5em;
+  text-align: center;
+  font-weight: bold;
+}
+#currentSlideName{
+  text-align: center;
+  font-weight: bold;
+}

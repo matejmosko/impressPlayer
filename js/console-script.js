@@ -18,7 +18,8 @@ $(function() {
       slidesList = [],
       opts = {},
       running = false,
-      exitDialog = document.querySelector("x-dialog");
+      exitDialog = document.querySelector("x-dialog"),
+     totalSeconds = 0;
     setupSettings();
 
     // Setup Settings Database
@@ -141,18 +142,16 @@ $(function() {
             var parser = new DOMParser();
             var el = parser.parseFromString(html, "text/html");
 
-                        var styles = el.getElementsByTagName("style");
-            console.log(styles);
+            var styles = el.getElementsByTagName("style");
             /*for (var i = 0; i < styles.length; i++) { // TODO Find better way to get rid of print.css
               css += styles[i].innerHTML;
             }*/
             let extcss = "";
-            if (fs.existsSync(path.dirname(file)+"/style.css")){
-                extcss = path.dirname(file)+"/style.css";
+            if (fs.existsSync(path.dirname(file) + "/style.css")) {
+              extcss = path.dirname(file) + "/style.css";
             }
             css += styles[0].innerHTML;
             css += fs.readFileSync(extcss, 'utf8');
-            console.log(css);
             html = el.getElementById("impress").outerHTML;
             loadProjection(html, css);
           });
@@ -172,37 +171,39 @@ $(function() {
     }
 
     function getFutureSlides(current, offset) {
-      let i = slideList.indexOf(current);
+      //let i = slideList.indexOf(current);
+      let i = slideList.findIndex(x => x.step === current);
       let n = slideList.length;
       if (n - i > 2) {
-        return slideList[i + offset];
+        return slideList[i + offset].step;
       }
       if (n - i == 2 && offset == 1) {
-        return slideList[i + offset];
+        return slideList[i + offset].step;
       }
       if (n - i == 2 && offset == 2) {
-        return slideList[0];
+        return slideList[0].step;
       }
       if (n - i == 1 && offset == 1) {
-        return slideList[0];
+        return slideList[0].step;
       }
       if (n - i == 1 && offset == 2) {
-        return slideList[1];
+        return slideList[1].step;
       }
     }
 
+
     function renderNextSlide(current) {
       ipc.send('projectionGoToSlide', current);
-      webview0.send('projectionGoToSlide', current);
+      webview0.send('gotoSlide', current);
       webview1.send('gotoSlide', getFutureSlides(current, 1));
       webview2.send('gotoSlide', getFutureSlides(current, 2));
+      let x = slideList.find(x => x.step === current).stepName;
+      document.getElementById("currentSlideName").innerHTML = x;
     }
 
     function loadProjection(data, css) {
       if (!running) {
-        console.log(__dirname);
         let impressPath = path.join(__dirname, "impress.js");
-        console.log(impressPath);
         ipc.send('loadProjection', impressPath, data, css, 'projektor');
         webview0.send('loadProjection', impressPath, data, css, 'current');
         webview1.send('loadProjection', impressPath, data, css, 'next1');
@@ -211,19 +212,50 @@ $(function() {
         webview1.setAudioMuted(true);
         webview2.setAudioMuted(true);
 
+        //var timerVar = setInterval(countTimer, 1000);
+        showTimer('projection');
         running = true;
         document.body.classList.add('running');
       }
     }
 
     function displaySlideList() {
-      var tplSlideList = "<ul id='slideList'>{{#slides}}<li id='{{.}}'>{{.}}</li>{{/slides}}</ul>";
+      var tplSlideList = "<ul id='slideList'>{{#slides}}<li id='{{step}}'>{{stepName}}</li>{{/slides}}</ul>";
       var rendered = ms.render(tplSlideList, { slides: slideList });
       document.getElementById("impressOverview").innerHTML = rendered;
       $('ul#slideList li').click(function() {
         renderNextSlide($(this).attr("id"));
       });
     }
+
+    function checkTime(i) {
+      return (i < 10) ? "0" + i : i;
+    }
+
+    function showTimer(type) {
+      switch (type) {
+        case "current":
+          var today = new Date(),
+            h = checkTime(today.getHours()),
+            m = checkTime(today.getMinutes()),
+            s = checkTime(today.getSeconds());
+          document.getElementById('currentTime').innerHTML = h + ":" + m + ":" + s;
+          break;
+        case "projection":
+          ++totalSeconds;
+          var hour = checkTime(Math.floor(totalSeconds / 3600));
+          var minute = checkTime(Math.floor((totalSeconds - hour * 3600) / 60));
+          var seconds = checkTime(totalSeconds - (hour * 3600 + minute * 60));
+
+          document.getElementById("projectionTimer").innerHTML = hour + ":" + minute + ":" + seconds;
+
+          break;
+      }
+      t = setTimeout(function() {
+        showTimer(type);
+      }, 1000);
+    }
+    showTimer('current');
 
     webview0.addEventListener('ipc-message', (event) => {
       switch (event.channel) {
@@ -258,6 +290,6 @@ $(function() {
   console.log('Guest page logged a message:', e.message)
  })
 */
-//    webview0.openDevTools();
+        webview1.openDevTools();
   })();
 });

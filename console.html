@@ -13,11 +13,11 @@
 <body>
   <div id="container">
     <div id="topbox">
-      <div id="infobox">
+      <x-card id="infobox">
         <x-buttons tracking="2" id="projectorControls">
           <x-button id="reloadBtn" class="danger">
-          <x-icon name="power-settings-new"></x-icon>
-        </x-button>
+            <x-icon name="power-settings-new"></x-icon>
+          </x-button>
           <x-button id="projectorBtn">
             <x-icon name="airplay"></x-icon>
           </x-button>
@@ -31,11 +31,9 @@
           </x-button>
         </x-buttons>
         <!--<input type="file" />-->
-        <x-button id="openFile">Načítať prezentáciu</x-button>
-      </div>
 
-      <div id="impress-control-buttons">
-        <x-buttons tracking="-1" id="gameControls">
+        <x-button id="openFile">Načítať prezentáciu</x-button>
+        <x-buttons tracking="-1" id="gameControls" class="impressControlBtns">
           <x-button id="nextSlideBtn">
             <x-box>
               <x-icon name="skip-next"></x-icon>
@@ -46,7 +44,9 @@
             <x-icon name="backspace"></x-icon>
           </x-button>
         </x-buttons>
-      </div>
+      </x-card>
+
+
     </div>
 
     <div id="main">
@@ -84,7 +84,7 @@
             </x-tabs>
 
             <div id="currentSlideDiv" class="content-table slidesPreview">
-              <webview id="impressCurrent" src="./viewer.html" autosize style="display:flex;" nodeintegration ></webview>
+              <webview id="impressCurrent" src="./viewer.html" autosize style="display:flex;" nodeintegration></webview>
             </div>
             <div id="allSlidesDiv" class="content-table slidesPreview" style="display:none">
               <div id="impressOverview"></div>
@@ -100,12 +100,17 @@
       </div>
 
       <div id="sidebar">
-        <div id="nextSlides">
+        <div id="sideCards">
           <x-card class="nextSlide nextSlide-1">
-            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:flex;" nodeintegration ></webview>
+            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" autosize style="display:flex;" nodeintegration></webview>
           </x-card>
           <x-card class="nextSlide nextSlide-2">
-            <webview id="nextImpress-2" class="slidesPreview" src="./viewer.html" autosize minwidth="360" minheight="200" style="display:flex;" nodeintegration ></webview>
+            <webview id="nextImpress-2" class="slidesPreview" src="./viewer.html" autosize style="display:flex;" nodeintegration></webview>
+          </x-card>
+          <x-card class="nextSlide sideInfo">
+            <div id="bigTimer"><span id="projectionTimer">00:00:00</span></div>
+            <div id="smallTimer"><span id="currentTime">00:00:00</span></div>
+            <div id="currentSlideName"></div>
           </x-card>
         </div>
       </div>
