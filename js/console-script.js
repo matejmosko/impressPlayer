@@ -19,8 +19,36 @@ $(function() {
       opts = {},
       running = false,
       exitDialog = document.querySelector("x-dialog"),
-     totalSeconds = 0;
+      totalSeconds = 0;
     setupSettings();
+
+    let viewerHTML = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1.0">
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <base id="baseTag" href=".">
+        <title>impViewer</title>
+        <style id="defaultStyleBox"></style>
+        <link id="projectionStyleLink" rel="stylesheet" type="text/css" href="style.css">
+        <style id="printStyleBox" media="print"></style>
+      </head>
+      <body class="impress-not-supported">
+        <div id="container">
+          <div id="impress"></div>
+        </div>
+      </body>
+      <script id="impressScript" src="."></script>
+      <script id="bottomScript">
+      </script>
+    </html>
+    `,
+      parser = new DOMParser(),
+      viewerDOM = parser.parseFromString(viewerHTML, "text/html");
+
+
 
     // Setup Settings Database
 
@@ -138,7 +166,7 @@ $(function() {
             html,
             md
           }) => {
-            html = html.substr(15);
+            //html = html.substr(15);
             var parser = new DOMParser();
             var el = parser.parseFromString(html, "text/html");
 
@@ -151,9 +179,21 @@ $(function() {
               extcss = path.dirname(file) + "/style.css";
             }
             css += styles[0].innerHTML;
-            css += fs.readFileSync(extcss, 'utf8');
+            //css += fs.readFileSync(extcss, 'utf8');
             html = el.getElementById("impress").outerHTML;
-            loadProjection(html, css);
+
+            let dataPath = path.dirname(file) + "/";
+            let impressPath = path.join(__dirname, "impress.js");
+            let viewerPath = path.join(__dirname, "viewer-script.js");
+
+            viewerDOM.getElementById("baseTag").setAttribute("href", dataPath);
+            viewerDOM.getElementById("container").innerHTML = html;
+            viewerDOM.getElementById("defaultStyleBox").innerHTML = css;
+            viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
+            viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
+            viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); window.$ = window.jQuery = require('jquery'); require('" + viewerPath + "');";
+
+            loadProjection();
           });
         }
 
@@ -168,6 +208,36 @@ $(function() {
         }
       });
 
+    }
+
+    function saveViewer() {
+      let serializer = new XMLSerializer();
+      fs.writeFile('viewer.html', serializer.serializeToString(viewerDOM), (err) => {
+
+        if (err) throw err;
+        ipc.send('loadProjection');
+        webview0.reload();
+        webview1.reload();
+        webview2.reload();
+      });
+    }
+
+    function loadProjection() {
+      saveViewer();
+      showTimer('projection');
+      totalSeconds = 0;
+      document.getElementById("projectionTimer").addEventListener("click", function(){totalSeconds = 0;});
+      running = true;
+      document.body.classList.add('running');
+      webview0.setAudioMuted(true);
+      webview1.setAudioMuted(true);
+      webview2.setAudioMuted(true);
+      /*
+
+        ipc.send('loadProjection', impressPath, data, css, 'projektor');
+
+
+        */
     }
 
     function getFutureSlides(current, offset) {
@@ -199,29 +269,15 @@ $(function() {
       webview2.send('gotoSlide', getFutureSlides(current, 2));
       let x = slideList.find(x => x.step === current).stepName;
       document.getElementById("currentSlideName").innerHTML = x;
+      displaySlideList(current);
     }
 
-    function loadProjection(data, css) {
-      if (!running) {
-        let impressPath = path.join(__dirname, "impress.js");
-        ipc.send('loadProjection', impressPath, data, css, 'projektor');
-        webview0.send('loadProjection', impressPath, data, css, 'current');
-        webview1.send('loadProjection', impressPath, data, css, 'next1');
-        webview2.send('loadProjection', impressPath, data, css, 'next2');
-        webview0.setAudioMuted(true);
-        webview1.setAudioMuted(true);
-        webview2.setAudioMuted(true);
-
-        //var timerVar = setInterval(countTimer, 1000);
-        showTimer('projection');
-        running = true;
-        document.body.classList.add('running');
-      }
-    }
-
-    function displaySlideList() {
-      var tplSlideList = "<ul id='slideList'>{{#slides}}<li id='{{step}}'>{{stepName}}</li>{{/slides}}</ul>";
-      var rendered = ms.render(tplSlideList, { slides: slideList });
+    function displaySlideList(current) {
+      var tplSlideList = "<ul id='slideList'>{{#slides}}<li id='{{step}}' class='{{isCurrent}}'>{{stepName}}</li>{{/slides}}</ul>";
+      var rendered = ms.render(tplSlideList, {
+        "slides": slideList,
+        "isCurrent": function() { if (this.step == current) { return "current"; } else { return "future"; } }
+      });
       document.getElementById("impressOverview").innerHTML = rendered;
       $('ul#slideList li').click(function() {
         renderNextSlide($(this).attr("id"));
@@ -249,12 +305,14 @@ $(function() {
 
           document.getElementById("projectionTimer").innerHTML = hour + ":" + minute + ":" + seconds;
 
+
           break;
       }
       t = setTimeout(function() {
         showTimer(type);
       }, 1000);
     }
+
     showTimer('current');
 
     webview0.addEventListener('ipc-message', (event) => {
@@ -265,7 +323,7 @@ $(function() {
         case 'slideList':
           slideList = event.args[0];
           renderNextSlide(event.args[1]);
-          displaySlideList();
+          displaySlideList(event.args[1]);
           break;
         default:
           console.log("There is something new coming from impress.js.");
@@ -278,18 +336,18 @@ $(function() {
     $("#nextSlideBtn").click(function() {
       webview0.send('nextSlide');
     });
-    ipc.on('gotoSlide', (event, next) => {
-
-    });
     $("#reloadBtn").click(function() {
       ipc.send('reloadWindows');
     });
+
     /* Uncomment for debugging */
     /*
  webview1.addEventListener('console-message', (e) => {
   console.log('Guest page logged a message:', e.message)
  })
 */
-        webview1.openDevTools();
+
+
+
   })();
 });

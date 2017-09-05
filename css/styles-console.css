@@ -142,3 +142,19 @@ x-dialog {
   text-align: center;
   font-weight: bold;
 }
+
+.sideInfo{
+  background-color: #222;
+  color: #DDD;
+}
+li.current{
+  font-weight: bold;
+}
+li.future{
+  color: #009688;
+  cursor: pointer;
+}
+li.future:hover{
+  color: black;
+
+}

@@ -4,4 +4,4 @@ impress.js Viewer with console etc. It is built using electron and obiously impr
 
 ## Building process
 
-I use electron-builder and steps described (electron.rocks)[http://electron.rocks/electron-builder-explained/]
+I use electron-builder and steps described [electron.rocks](http://electron.rocks/electron-builder-explained/)

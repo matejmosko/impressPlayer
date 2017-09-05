@@ -306,8 +306,8 @@ ipcMain.on('consoleGoToSlide', (event, arg) => {
   impWindows.main.webContents.send('gotoSlide', arg);
 });
 
-ipcMain.on('loadProjection', (event, arg1, arg2, arg3, arg4) => {
-  impWindows.projector.webContents.send('loadProjection', arg1, arg2, arg3, arg4); // Nefunguje dobre, keď už je raz inicializovaný impress.js. Treba zistiť, ako ho viem zabiť.
+ipcMain.on('loadProjection', (event) => {
+  impWindows.projector.webContents.send('loadProjection');
 });
 ipcMain.on('reloadWindows', (event) => {
   impWindows.projector.webContents.reload();

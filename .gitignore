@@ -6,7 +6,8 @@ savegame
 *.Appimage
 Thumbs.db
 dist
-turban*
+audiovideo
+examples/*/*.jpg
 
 
 # OS generated files #
