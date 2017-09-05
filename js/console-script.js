@@ -2,11 +2,14 @@
 
 $(function() {
   var impConsole = (function() {
+    const remote = require('electron').remote;
+    const app = remote.app;
     const path = require('path');
     const url = require('url');
     const fs = require('fs');
     const ms = require('mustache');
     const markpress = require('markpress');
+    const DecompressZip = require('decompress-zip');
     const webview1 = document.querySelector('#nextImpress-1'),
       webview2 = document.querySelector('#nextImpress-2'),
       webview0 = document.querySelector('#impressCurrent');
@@ -132,81 +135,129 @@ $(function() {
     });
 
     $("#openFile").click(function() {
-      dialog.showOpenDialog((fileNames) => {
+      dialog.showOpenDialog({
+        filters: [
+          { name: 'impress.js presentations', extensions: ['md', 'mkd', 'markdown', 'html', 'htm', 'zip'] },
+          { name: 'All Files', extensions: ['*'] }
+      ]
+      }, function(fileNames) {
         if (fileNames === undefined) {
           console.log("No file selected");
           return;
         }
-        parseProjection(fileNames[0]);
+        loadProjectionFile(fileNames[0]);
       });
     });
-
     /* Main Software Part */
 
-    function parseProjection(file) {
+    function parseMarkdown(file){
+      const options = {
+        layout: 'horizontal',
+        theme: 'light',
+        autoSplit: true,
+        allowHtml: false,
+        verbose: false,
+        embed: false,
+        title: 'Optional title for output HTML'
+      };
+
+      markpress(file, options).then(({
+        html,
+        md
+      }) => {
+        var parser = new DOMParser();
+        var el = parser.parseFromString(html, "text/html");
+        parseProjection(el, file);
+      });
+    }
+
+    function loadProjectionFile(file) {
       fs.readFile(file, 'utf-8', (err, data) => {
         if (err) {
           alert("An error ocurred reading the file :" + err.message);
           return;
         }
-        let css = "";
-
-        if (path.extname(file) == ".md") {
-          const options = {
-            layout: 'horizontal',
-            theme: 'light',
-            autoSplit: true,
-            allowHtml: false,
-            verbose: false,
-            embed: false,
-            title: 'Optional title for output HTML'
-          };
-
-          markpress(file, options).then(({
-            html,
-            md
-          }) => {
-            //html = html.substr(15);
+        let el;
+        switch (path.extname(file)) {
+          case ".md":
+          case ".mkd":
+          case ".markdown":
+            parseMarkdown(file);
+            break;
+          case ".html":
+          case ".htm":
             var parser = new DOMParser();
-            var el = parser.parseFromString(html, "text/html");
+            el = parser.parseFromString(data, "text/html");
+            parseProjection(el, file);
+            break;
+          case ".zip":
+            let destinationPath = app.getPath('userData');
+            let unzipper = new DecompressZip(file);
 
-            var styles = el.getElementsByTagName("style");
-            /*for (var i = 0; i < styles.length; i++) { // TODO Find better way to get rid of print.css
-              css += styles[i].innerHTML;
-            }*/
-            let extcss = "";
-            if (fs.existsSync(path.dirname(file) + "/style.css")) {
-              extcss = path.dirname(file) + "/style.css";
-            }
-            css += styles[0].innerHTML;
-            //css += fs.readFileSync(extcss, 'utf8');
-            html = el.getElementById("impress").outerHTML;
+            // Add the error event listener
+            unzipper.on('error', function(err) {
+              console.log('Unzip with decompress-zip failed', err);
+            });
 
-            let dataPath = path.dirname(file) + "/";
-            let impressPath = path.join(__dirname, "impress.js");
-            let viewerPath = path.join(__dirname, "viewer-script.js");
+            // Notify when everything is extracted
+            unzipper.on('extract', function(log) {
+              subfile = path.join(destinationPath, log[0].folder,  'impress.md');
+              parseMarkdown(subfile);
+            });
 
-            viewerDOM.getElementById("baseTag").setAttribute("href", dataPath);
-            viewerDOM.getElementById("container").innerHTML = html;
-            viewerDOM.getElementById("defaultStyleBox").innerHTML = css;
-            viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
-            viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
-            viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); window.$ = window.jQuery = require('jquery'); require('" + viewerPath + "');";
-
-            loadProjection();
-          });
-        }
-
-        if (path.extname(file) == ".html" || path.extname(file) == ".htm") {
-          var parser = new DOMParser();
-          var el = parser.parseFromString(data, "text/html");
-          var styles = el.getElementsByTagName("style");
-
-          css += styles[0].innerHTML;
-          data = el.getElementById('impress');
-          loadProjection(data.outerHTML, css);
+            // Start extraction of the content
+            unzipper.extract({
+              path: destinationPath
+              // You can filter the files that you want to unpack using the filter option
+              //filter: function (file) {
+              //console.log(file);
+              //return file.type !== "SymbolicLink";
+              //}
+            });
+            break;
+          default:
+            console.log("Something went wrong. Wrong file is loaded.");
         }
       });
+
+    }
+
+    function parseProjection(el, file) {
+      /* We parse the impress presentation file into own template.
+      It is to make sure the stylesheets are loaded in proper order
+      and no additional javascript is loaded (such as custom impress.js).*/
+      let css = "",
+        printcss = "",
+        extcss = "",
+        styles;
+      styles = el.getElementsByTagName("style");
+      for (var i = 0; i < styles.length; i++) { // This loads inline stylesheets from html / css file
+        if (styles[i].media == "print") {
+          printcss += styles[i].innerHTML;
+        } else {
+          css += styles[i].innerHTML;
+        }
+      }
+
+      if (fs.existsSync(path.dirname(file) + "/style.css")) { // This is the external stylesheet. We look for style.css placed in the same folder as the presentation file is.
+        extcss = path.dirname(file) + "/style.css";
+      }
+
+      html = el.getElementById("impress").outerHTML; // Grab <div id="impress">...</div> and place it inside our template.
+
+      let dataPath = path.dirname(file) + "/"; // Baseurl for the presentation (for relative links to work inside presentation)
+      let impressPath = path.join(__dirname, "impress.js"); // We load impress.js separately (with absolute path)
+      let viewerPath = path.join(__dirname, "viewer-script.js"); // This is the script for impressPlayer console to work.
+
+      viewerDOM.getElementById("baseTag").setAttribute("href", dataPath);
+      viewerDOM.getElementById("container").innerHTML = html;
+      viewerDOM.getElementById("defaultStyleBox").innerHTML = css;
+      viewerDOM.getElementById("printStyleBox").innerHTML = printcss;
+      viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
+      viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
+      viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); window.$ = window.jQuery = require('jquery'); require('" + viewerPath + "');";
+
+      loadProjection(); // Finally put it all into the template and loadProjection.
 
     }
 
@@ -226,7 +277,7 @@ $(function() {
       saveViewer();
       showTimer('projection');
       totalSeconds = 0;
-      document.getElementById("projectionTimer").addEventListener("click", function(){totalSeconds = 0;});
+      document.getElementById("projectionTimer").addEventListener("click", function() { totalSeconds = 0; });
       running = true;
       document.body.classList.add('running');
       webview0.setAudioMuted(true);

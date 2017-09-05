@@ -8,6 +8,7 @@ Thumbs.db
 dist
 audiovideo
 examples/*/*.jpg
+*.zip
 
 
 # OS generated files #

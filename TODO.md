@@ -1,7 +1,8 @@
-- [ ] Load formatted zip file
+- [x] Load formatted zip file
 - [x] Dynamic baseurl
 - [ ] Translations
 - [ ] English comments
 - [x] Positioning
 - [ ] clean Files
-- [ ] Repair HTML loading as it works with MD loading
+- [x] Repair HTML loading as it works with MD loading
+- [x] Get proper way to handle print css
