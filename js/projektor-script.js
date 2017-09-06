@@ -2,7 +2,7 @@
 
 $(function() {
   var impProjector = (function() {
-    var ipc = require('electron').ipcRenderer;
+    const ipc = require('electron').ipcRenderer;
 /*
     const path = require('path');
     const fs = require('fs');

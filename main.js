@@ -5,7 +5,6 @@ const {
   dialog,
   webContents
 } = require('electron');
-//const fs = electron.remote.require('fs')
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
@@ -19,10 +18,17 @@ const settings = require('electron-settings');
 
 const fs = require('fs');
 
+const i18n = new (require('i18n-2'))({
+    locales: ['en', 'sk']
+});
+global.i18n = i18n;
+i18n.setLocaleFromEnvironmentVariable();
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let impWindows = {};
 let windowState = {};
+
 
 try {
   windowState = settings.get('windowstate', {

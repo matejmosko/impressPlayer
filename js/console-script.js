@@ -9,6 +9,7 @@ $(function() {
     const fs = require('fs');
     const ms = require('mustache');
     const markpress = require('markpress');
+    const mousetrap = require('mousetrap');
     const DecompressZip = require('decompress-zip');
     const webview1 = document.querySelector('#nextImpress-1'),
       webview2 = document.querySelector('#nextImpress-2'),
@@ -16,16 +17,19 @@ $(function() {
     const {
       dialog
     } = require('electron').remote;
-    const settings = require('electron').remote.require('electron-settings');
-    let ipc = require('electron').ipcRenderer,
-      slidesList = [],
+    const settings = remote.require('electron-settings');
+
+    const i18n = remote.getGlobal('i18n');
+
+    const ipc = require('electron').ipcRenderer;
+    let slidesList = [],
       opts = {},
       running = false,
-      exitDialog = document.querySelector("x-dialog"),
+      exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0;
     setupSettings();
 
-    let viewerHTML = `
+    let tplViewerHTML = `
     <!DOCTYPE html>
     <html>
       <head>
@@ -47,12 +51,44 @@ $(function() {
       <script id="bottomScript">
       </script>
     </html>
-    `,
-      parser = new DOMParser(),
-      viewerDOM = parser.parseFromString(viewerHTML, "text/html");
+    `;
+    /*let tplExitDialog = `
+    <h4>Naozaj chceš ukončiť Turban Quiz?</h4>
+    <p>Priebeh hry by mal byť uložený, ale pre istotu sa aj tak pýtam. Čo ak si sa iba preklikol?</p>
+    <x-buttons tracking="-1" id="windowControls">
+      <x-button id="reallyQuit" class="danger">
+        <x-box>
+          <x-icon name="exit-to-app"></x-icon>
+          <x-label>{{ i18n.__("Yes, let's finish it!") }}</x-label>
+        </x-box>
+      </x-button>
+      <x-button id="doNotQuit">
+        <x-box>
+          <x-icon name="replay"></x-icon>
+          <x-label>Nie, ešte sa chcem hrať</x-label>
+        </x-box>
+      </x-button>
+    </x-buttons>
+    `;*/
+    let parser = new DOMParser(),
+      viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
 
+    renderTemplates();
 
+    function renderTemplates() {
+      //exitDialog.innerHTML = ms.render(tplExitDialog, {});
+      document.getElementById("exitTitle").textContent = i18n.__("Are you sure about exiting impressPlayer?");
+      document.getElementById("exitText").textContent = i18n.__("Actually nothing bad could happen if you exit now, but still. <br />Do you really want to do it?");
+      document.getElementById("exitAgree").textContent = i18n.__("Yes, get me out of here!");
+      document.getElementById("exitDisagree").textContent = i18n.__("No, I haven't finished yet");
+      document.getElementById("tabLabelSettings").textContent = i18n.__("Options");
+      document.getElementById("tabLabelCurrentSlide").textContent = i18n.__("Presentation");
+      document.getElementById("tabLabelAllSlides").textContent = i18n.__("Slides List");
+      document.getElementById("tabLabelRemoteSources").textContent = i18n.__("Remote Sources");
+      document.getElementById("openFile").textContent = i18n.__("Load Presentation");
+      document.getElementById("nextSlideLabel").textContent = i18n.__("Next Slide");
 
+    }
     // Setup Settings Database
 
     function setupSettings() {
@@ -142,7 +178,7 @@ $(function() {
       ]
       }, function(fileNames) {
         if (fileNames === undefined) {
-          console.log("No file selected");
+          console.log(i18n.__("No file selected"));
           return;
         }
         loadProjectionFile(fileNames[0]);
@@ -150,7 +186,7 @@ $(function() {
     });
     /* Main Software Part */
 
-    function parseMarkdown(file){
+    function parseMarkdown(file) {
       const options = {
         layout: 'horizontal',
         theme: 'light',
@@ -174,7 +210,7 @@ $(function() {
     function loadProjectionFile(file) {
       fs.readFile(file, 'utf-8', (err, data) => {
         if (err) {
-          alert("An error ocurred reading the file :" + err.message);
+          alert(i18n.__("An error ocurred reading the file :") + err.message);
           return;
         }
         let el;
@@ -196,12 +232,12 @@ $(function() {
 
             // Add the error event listener
             unzipper.on('error', function(err) {
-              console.log('Unzip with decompress-zip failed', err);
+              console.log(i18n.__('Unzip with decompress-zip failed'), err);
             });
 
             // Notify when everything is extracted
             unzipper.on('extract', function(log) {
-              subfile = path.join(destinationPath, log[0].folder,  'impress.md');
+              subfile = path.join(destinationPath, log[0].folder, 'impress.md');
               parseMarkdown(subfile);
             });
 
@@ -216,7 +252,7 @@ $(function() {
             });
             break;
           default:
-            console.log("Something went wrong. Wrong file is loaded.");
+            console.log(i18n.__("Something went wrong. Wrong file is loaded."));
         }
       });
 
@@ -283,6 +319,12 @@ $(function() {
       webview0.setAudioMuted(true);
       webview1.setAudioMuted(true);
       webview2.setAudioMuted(true);
+      mousetrap.bind(['space'], function() {
+        webview0.send('nextSlide');
+      });
+      mousetrap.bind(['ctrl+backspace'], function() {
+        webview0.send('prevSlide');
+      });
       /*
 
         ipc.send('loadProjection', impressPath, data, css, 'projektor');
@@ -377,7 +419,7 @@ $(function() {
           displaySlideList(event.args[1]);
           break;
         default:
-          console.log("There is something new coming from impress.js.");
+          console.log(i18n.__("There is something new coming from impress.js."));
       }
     });
 
@@ -397,8 +439,13 @@ $(function() {
   console.log('Guest page logged a message:', e.message)
  })
 */
+    webview1.openDevTools();
 
-
+    window.addEventListener('keydown', function(e) {
+      if (e.keyCode == 32 && e.target == document.body) {
+        e.preventDefault();
+      }
+    });
 
   })();
 });

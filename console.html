@@ -32,12 +32,12 @@
         </x-buttons>
         <!--<input type="file" />-->
 
-        <x-button id="openFile">Načítať prezentáciu</x-button>
+        <x-button id="openFile"></x-button>
         <x-buttons tracking="-1" id="gameControls" class="impressControlBtns">
           <x-button id="nextSlideBtn">
             <x-box>
               <x-icon name="skip-next"></x-icon>
-              <x-label>Ďalší snímok</x-label>
+              <x-label id="nextSlideLabel">Ďalší snímok</x-label>
             </x-box>
           </x-button>
           <x-button id="prevSlideBtn" class="danger">
@@ -58,27 +58,27 @@
               <x-tab selected id="currentSlideTab">
                 <x-box>
                   <x-icon name="list"></x-icon>
-                  <x-label>Projekcia</x-label>
+                  <x-label id="tabLabelCurrentSlide"></x-label>
                 </x-box>
               </x-tab>
 
               <x-tab id="allSlidesTab">
                 <x-box>
                   <x-icon name="sort"></x-icon>
-                  <x-label>Všetky otázky</x-label>
+                  <x-label id="tabLabelAllSlides"></x-label>
                 </x-box>
               </x-tab>
               <x-tab id="teamsTableTab">
                 <x-box>
                   <x-icon name="settings"></x-icon>
-                  <x-label>Priebežná tabuľka</x-label>
+                  <x-label id="tabLabelRemoteSources"></x-label>
                 </x-box>
               </x-tab>
 
               <x-tab id="optionsTab">
                 <x-box>
                   <x-icon name="settings"></x-icon>
-                  <x-label>Nastavenia</x-label>
+                  <x-label id="tabLabelSettings"></x-label>
                 </x-box>
               </x-tab>
             </x-tabs>
@@ -116,20 +116,20 @@
       </div>
     </div>
   </div>
-  <x-dialog>
-    <h4>Naozaj chceš ukončiť Turban Quiz?</h4>
-    <p>Priebeh hry by mal byť uložený, ale pre istotu sa aj tak pýtam. Čo ak si sa iba preklikol?</p>
+  <x-dialog id="exitDialog">
+    <h4 id="exitTitle"></h4>
+    <p  id="exitText"></p>
     <x-buttons tracking="-1" id="windowControls">
       <x-button id="reallyQuit" class="danger">
         <x-box>
           <x-icon name="exit-to-app"></x-icon>
-          <x-label>Áno, ukončime to!</x-label>
+          <x-label  id="exitAgree"></x-label>
         </x-box>
       </x-button>
       <x-button id="doNotQuit">
         <x-box>
           <x-icon name="replay"></x-icon>
-          <x-label>Nie, ešte sa chcem hrať</x-label>
+          <x-label  id="exitDisagree"></x-label>
         </x-box>
       </x-button>
     </x-buttons>
