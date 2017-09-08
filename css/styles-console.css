@@ -158,3 +158,6 @@ li.future:hover{
   color: black;
 
 }
+x-button:hover{
+  cursor: pointer;
+}

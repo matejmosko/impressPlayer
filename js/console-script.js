@@ -52,43 +52,10 @@ $(function() {
       </script>
     </html>
     `;
-    /*let tplExitDialog = `
-    <h4>Naozaj chceš ukončiť Turban Quiz?</h4>
-    <p>Priebeh hry by mal byť uložený, ale pre istotu sa aj tak pýtam. Čo ak si sa iba preklikol?</p>
-    <x-buttons tracking="-1" id="windowControls">
-      <x-button id="reallyQuit" class="danger">
-        <x-box>
-          <x-icon name="exit-to-app"></x-icon>
-          <x-label>{{ i18n.__("Yes, let's finish it!") }}</x-label>
-        </x-box>
-      </x-button>
-      <x-button id="doNotQuit">
-        <x-box>
-          <x-icon name="replay"></x-icon>
-          <x-label>Nie, ešte sa chcem hrať</x-label>
-        </x-box>
-      </x-button>
-    </x-buttons>
-    `;*/
+
     let parser = new DOMParser(),
       viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
 
-    renderTemplates();
-
-    function renderTemplates() {
-      //exitDialog.innerHTML = ms.render(tplExitDialog, {});
-      document.getElementById("exitTitle").textContent = i18n.__("Are you sure about exiting impressPlayer?");
-      document.getElementById("exitText").textContent = i18n.__("Actually nothing bad could happen if you exit now, but still. <br />Do you really want to do it?");
-      document.getElementById("exitAgree").textContent = i18n.__("Yes, get me out of here!");
-      document.getElementById("exitDisagree").textContent = i18n.__("No, I haven't finished yet");
-      document.getElementById("tabLabelSettings").textContent = i18n.__("Options");
-      document.getElementById("tabLabelCurrentSlide").textContent = i18n.__("Presentation");
-      document.getElementById("tabLabelAllSlides").textContent = i18n.__("Slides List");
-      document.getElementById("tabLabelRemoteSources").textContent = i18n.__("Remote Sources");
-      document.getElementById("openFile").textContent = i18n.__("Load Presentation");
-      document.getElementById("nextSlideLabel").textContent = i18n.__("Next Slide");
-
-    }
     // Setup Settings Database
 
     function setupSettings() {
@@ -244,11 +211,6 @@ $(function() {
             // Start extraction of the content
             unzipper.extract({
               path: destinationPath
-              // You can filter the files that you want to unpack using the filter option
-              //filter: function (file) {
-              //console.log(file);
-              //return file.type !== "SymbolicLink";
-              //}
             });
             break;
           default:
@@ -325,12 +287,6 @@ $(function() {
       mousetrap.bind(['ctrl+backspace'], function() {
         webview0.send('prevSlide');
       });
-      /*
-
-        ipc.send('loadProjection', impressPath, data, css, 'projektor');
-
-
-        */
     }
 
     function getFutureSlides(current, offset) {
