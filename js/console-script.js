@@ -395,7 +395,7 @@ $(function() {
   console.log('Guest page logged a message:', e.message)
  })
 */
-    webview1.openDevTools();
+//    webview1.openDevTools();
 
     window.addEventListener('keydown', function(e) {
       if (e.keyCode == 32 && e.target == document.body) {

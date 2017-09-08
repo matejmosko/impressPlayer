@@ -24,12 +24,13 @@ const i18n = new(require('i18n-2'))({
   locales: ['en', 'sk']
 });
 global.i18n = i18n;
-//i18n.setLocaleFromEnvironmentVariable();
+i18n.setLocaleFromEnvironmentVariable();
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let impWindows = {};
 let windowState = {};
+let viewerFakeLocalized = "";
 
 let tplConsole = `
 <!DOCTYPE html>
@@ -183,27 +184,36 @@ let tplConsole = `
   <meta charset="UTF-8">
   <title>Load Presentation</title>
   <style>
-  body{font-family:sans-serif;background:#111;color:#DDD;padding:0px;margin:0px;height:100vh;overflow:hidden} #container{height: 100%;overflow:hidden;display:flex;justify-content: center; align-items: center;}#content{width:50vw;}
+  body{font-family:sans-serif;background:#111;color:#DDD;padding:0px;margin:0px;height:100vh;overflow:hidden}
+  #container{height: 100%;overflow:hidden;display:flex;justify-content: center; align-items: center;}
+  #content{width:50vw;text-align:center}
   </style>
 </head>
 
 <body>
-<div id="container"><div id="content">The presentation you load will be displayed here.</div></div>
+<div id="container"><div id="content">{{#i18n}}The presentation you load will be displayed here.{{/i18n}}</div></div>
 </body>
 </html>
 `;
 
 function saveTemplates() {
-  let x = ms.render(tplConsole, {
+  let consoleLocalized = ms.render(tplConsole, {
     i18n: function() {
       return function(text, render) {
         return render(i18n.__(text));
       };
     }
   });
-  fs.writeFile('viewer.html', tplViewerFake, (err) => {
+  viewerFakeLocalized = ms.render(tplViewerFake, {
+    i18n: function() {
+      return function(text, render) {
+        return render(i18n.__(text));
+      };
+    }
+  });
+  fs.writeFile('viewer.html', viewerFakeLocalized, (err) => {
     if (err) throw err;
-    fs.writeFile('console.html', x, (err) => {
+    fs.writeFile('console.html', consoleLocalized, (err) => {
       if (err) throw err;
       createWindow();
       createProjector();
@@ -475,7 +485,7 @@ ipcMain.on('loadProjection', (event) => {
 });
 
 ipcMain.on('reloadWindows', (event) => {
-  fs.writeFile('viewer.html', tplViewerFake, (err) => {
+  fs.writeFile('viewer.html', viewerFakeLocalized, (err) => {
     if (err) throw err;
     impWindows.projector.webContents.reload();
     impWindows.main.webContents.reload();

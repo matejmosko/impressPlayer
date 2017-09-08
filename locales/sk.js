@@ -11,5 +11,6 @@
 	"Slides List": "Zoznam snímkov",
 	"Remote Sources": "Iné zdroje",
 	"Next Slide": "Ďalší snímok",
-	"Load Presentation": "Načítaj prezentáciu"
+	"Load Presentation": "Načítaj prezentáciu",
+	"The presentation you load will be displayed here.": "Na tomto mieste sa zobrazí prezentácia, ktorú otvoríš."
 }
