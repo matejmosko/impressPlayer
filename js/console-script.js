@@ -240,9 +240,12 @@ $(function() {
       if (fs.existsSync(path.dirname(file) + "/style.css")) { // This is the external stylesheet. We look for style.css placed in the same folder as the presentation file is.
         extcss = path.dirname(file) + "/style.css";
       }
-
-      html = el.getElementById("impress").outerHTML; // Grab <div id="impress">...</div> and place it inside our template.
-
+      try {
+        html = el.getElementById("impress").outerHTML; // Grab <div id="impress">...</div> and place it inside our template.
+      } catch (err) {
+        console.log("There is a problem with a file you selected");
+        return;
+      }
       let dataPath = path.dirname(file) + "/"; // Baseurl for the presentation (for relative links to work inside presentation)
       let impressPath = path.join(__dirname, "impress.js"); // We load impress.js separately (with absolute path)
       let viewerPath = path.join(__dirname, "viewer-script.js"); // This is the script for impressPlayer console to work.
@@ -278,9 +281,6 @@ $(function() {
       document.getElementById("projectionTimer").addEventListener("click", function() { totalSeconds = 0; });
       running = true;
       document.body.classList.add('running');
-      webview0.setAudioMuted(true);
-      webview1.setAudioMuted(true);
-      webview2.setAudioMuted(true);
       mousetrap.bind(['space'], function() {
         webview0.send('nextSlide');
       });
@@ -310,6 +310,12 @@ $(function() {
       }
     }
 
+    webview0.addEventListener('did-finish-load', function() {
+      webview0.setAudioMuted(true);
+      webview1.setAudioMuted(true);
+      webview2.setAudioMuted(true);
+      webview0.send('setupEventHandlers', 'current');
+    });
 
     function renderNextSlide(current) {
       ipc.send('projectionGoToSlide', current);
@@ -322,13 +328,19 @@ $(function() {
     }
 
     function displaySlideList(current) {
-      var tplSlideList = "<ul id='slideList'>{{#slides}}<li id='{{step}}' class='{{isCurrent}}'>{{stepName}}</li>{{/slides}}</ul>";
+      var tplSlideList = `
+        <div id='slideList' class="grid">
+          {{#slides}}
+            <div id='{{step}}' class='grid-item {{isCurrent}}'><span>{{stepName}}<span></div>
+          {{/slides}}
+        </ul>
+      `;
       var rendered = ms.render(tplSlideList, {
         "slides": slideList,
         "isCurrent": function() { if (this.step == current) { return "current"; } else { return "future"; } }
       });
       document.getElementById("impressOverview").innerHTML = rendered;
-      $('ul#slideList li').click(function() {
+      $('div#slideList .grid-item').click(function() {
         renderNextSlide($(this).attr("id"));
       });
     }
@@ -364,6 +376,10 @@ $(function() {
 
     showTimer('current');
 
+    webview0.addEventListener('focus', function(e){
+      e.preventDefault();
+    });
+
     webview0.addEventListener('ipc-message', (event) => {
       switch (event.channel) {
         case 'gotoSlide':
@@ -395,13 +411,49 @@ $(function() {
   console.log('Guest page logged a message:', e.message)
  })
 */
-//    webview1.openDevTools();
+  //  webview0.openDevTools();
 
     window.addEventListener('keydown', function(e) {
       if (e.keyCode == 32 && e.target == document.body) {
         e.preventDefault();
       }
     });
+    
+    document.addEventListener( "keydown", function( event ) {
+        if ( event.keyCode === 9 ||
+           ( event.keyCode >= 32 && event.keyCode <= 34 ) ||
+           ( event.keyCode >= 37 && event.keyCode <= 40 ) ) {
+            event.preventDefault();
+        }
+    }, false );
+
+    document.addEventListener( "keyup", function( event ) {
+
+        if ( event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ) {
+            return;
+        }
+
+        if ( event.keyCode === 9 ||
+           ( event.keyCode >= 32 && event.keyCode <= 34 ) ||
+           ( event.keyCode >= 37 && event.keyCode <= 40 ) ) {
+            switch ( event.keyCode ) {
+                case 33: // Page up
+                case 37: // Left
+                case 38: // Up
+                  webview0.send('prevSlide');
+                         break;
+                case 9:  // Tab
+                case 32: // Space
+                case 34: // Page down
+                case 39: // Right
+                case 40: // Down
+                         webview0.send('nextSlide');
+                         break;
+            }
+
+            event.preventDefault();
+        }
+    }, false );
 
   })();
 });

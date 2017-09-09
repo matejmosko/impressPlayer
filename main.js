@@ -50,18 +50,20 @@ let tplConsole = `
     <div id="topbox">
       <x-card id="infobox">
         <x-buttons tracking="2" id="projectorControls">
-          <x-button id="reloadBtn" class="danger">
+          <x-button id="reloadBtn" class="danger" title="Click to reload the application">
             <x-icon name="power-settings-new"></x-icon>
           </x-button>
-          <x-button id="projectorBtn">
+          <x-button id="projectorBtn" title="Click to open projection window">
             <x-icon name="airplay"></x-icon>
           </x-button>
-          <x-button id="fullscreenBtn">
+          <x-button id="fullscreenBtn" title="Click to make projection window fullscreen">
             <x-icon name="fullscreen"></x-icon>
           </x-button>
+          <!--
           <x-button id="rulesBtn">
             <x-icon name="assignment"></x-icon>
           </x-button>
+          -->
         </x-buttons>
         <x-button id="openFile">{{#i18n}}Load Presentation{{/i18n}}</x-button>
         <x-buttons tracking="-1" id="gameControls" class="impressControlBtns">
@@ -99,6 +101,7 @@ let tplConsole = `
                   <x-label id="tabLabelAllSlides">{{#i18n}}Slides List{{/i18n}}</x-label>
                 </x-box>
               </x-tab>
+              <!--
               <x-tab id="teamsTableTab">
                 <x-box>
                   <x-icon name="settings"></x-icon>
@@ -112,16 +115,18 @@ let tplConsole = `
                   <x-label id="tabLabelSettings">{{#i18n}}Options{{/i18n}}</x-label>
                 </x-box>
               </x-tab>
+              -->
             </x-tabs>
 
             <div id="currentSlideDiv" class="content-table slidesPreview">
               <webview id="impressCurrent" autosize src="./viewer.html" style="display:flex;" nodeintegration></webview>
+              <div class="impressCurtain"><!-- The curtain preventing focusing webview element --></div>
             </div>
             <div id="allSlidesDiv" class="content-table slidesPreview" style="display:none">
               <div id="impressOverview"></div>
             </div>
-            <div id="teamsTableDiv" class="content-table" style="display:none">
-              <webview id="drivePage" src="https://docs.google.com/spreadsheets/d/1jbzbHWI7JSi-hwx8cz1LE3TiI8RRRVj86UxyEc1iomo/edit?usp=drive_web" autosize style="display:flex;" nodeintegration></webview>
+            <div id="remoteSourcesDiv" class="content-table" style="display:none">
+              Placeholder for remote sources
             </div>
             <div id="optionsDiv" class="content-table" style="display:none">
               Placeholder for options
@@ -133,13 +138,15 @@ let tplConsole = `
       <div id="sidebar">
         <div id="sideCards">
           <x-card class="nextSlide nextSlide-1">
-            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" autosize style="display:flex;" nodeintegration></webview>
+            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" webpreferences="focusable: false" autosize style="display:flex;" nodeintegration></webview>
+            <div class="impressCurtain"><!-- The curtain preventing focusing webview element --></div>
           </x-card>
           <x-card class="nextSlide nextSlide-2">
             <webview id="nextImpress-2" class="slidesPreview" src="./viewer.html" autosize style="display:flex;" nodeintegration></webview>
+            <div class="impressCurtain"><!-- The curtain preventing focusing webview element --></div>
           </x-card>
           <x-card class="nextSlide sideInfo">
-            <div id="bigTimer"><span id="projectionTimer">00:00:00</span></div>
+            <div id="bigTimer"><span id="projectionTimer" title="Click to reset timer">00:00:00</span></div>
             <div id="smallTimer"><span id="currentTime">00:00:00</span></div>
             <div id="currentSlideName"></div>
           </x-card>

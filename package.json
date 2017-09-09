@@ -1,6 +1,6 @@
 {
   "name": "turban-player",
-  "version": "2017.07.28",
+  "version": "2017.09.09",
   "description": "Turban Quiz Player App",
   "main": "main.js",
   "scripts": {

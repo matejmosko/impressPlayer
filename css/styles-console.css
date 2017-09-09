@@ -49,9 +49,15 @@ margin: 0px;
   padding: 0px 10px;
 }
 
-#currentSlideDiv, #allSlidesDiv {
+#currentSlideDiv {
   width:100%;
   padding-bottom: 75%;   /* This maintains 4:3 aspect ratio */
+  position: relative;
+}
+
+#allSlidesDiv{
+  width:100%;
+  padding: 20px 20px;
   position: relative;
 }
 
@@ -86,6 +92,15 @@ margin: 0px;
 
 .slidesPreview {
   display: flex;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #111;
+}
+
+.impressCurtain{
   position: absolute;
   top: 0;
   left: 0;
@@ -147,17 +162,39 @@ x-dialog {
   background-color: #222;
   color: #DDD;
 }
-li.current{
+.grid-item.current{
   font-weight: bold;
+  background:  gray;
+  color: white;
 }
-li.future{
-  color: #009688;
+.grid-item.future{
   cursor: pointer;
 }
-li.future:hover{
-  color: black;
+.grid-item.future:hover{
+  background-color:#00897B;
+  color: white;
+}
+x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer{
+  cursor: pointer;
+}
 
+.grid{
+  display: flex;
+  flex-flow: row wrap;
+  width: 100%;
 }
-x-button:hover{
-  cursor: pointer;
+
+.grid-item{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  margin: 5px;
+  min-height: 50px;
+  overflow: hidden;
+  background:  #B2DFDB;
+  color: #004D40;
+  min-width:20%;
+  flex: 1 1 30%;
+  text-align:center;
 }

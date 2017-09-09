@@ -3,7 +3,6 @@ $(function() {
     const ipc = require('electron').ipcRenderer;
     var running;
 
-    mediaEventListeners();
     consoleControls();
     running = true;
 
@@ -37,6 +36,38 @@ $(function() {
       var currentSlide = $('.active').attr('id');
       return currentSlide;
     }
+/*
+    document.addEventListener('DOMContentLoaded', function () {
+      document.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setTimeout(function () {
+          var path = e.target.href;
+          ipcRenderer.sendToHost('element-clicked', path);
+        }, 100);
+        return false;
+      }, true);
+      document.addEventListener('keyup', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        setTimeout(function () {
+          var path = e.target.href;
+          ipcRenderer.sendToHost('element-clicked', path);
+        }, 100);
+        return false;
+      }, true);
+    });
+*/
+    ipc.on('setupEventHandlers', (event, webview) => {
+      switch (webview) {
+        case 'current':
+        case 'projector':
+          mediaEventListeners();
+          break;
+        default:
+          console.log('There was a call for webview that does not exist.');
+      }
+    });
 
     ipc.on('nextSlide', (event) => {
       impress().next();
