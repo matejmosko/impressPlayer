@@ -12,6 +12,6 @@
 </head>
 
 <body>
-<div id="container"><div id="content">Na tomto mieste sa zobrazí prezentácia, ktorú otvoríš.</div></div>
+<div id="container"><div id="content">{{#i18n}}The presentation you load will be displayed here.{{/i18n}}</div></div>
 </body>
 </html>

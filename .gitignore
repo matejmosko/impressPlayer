@@ -9,6 +9,8 @@ dist
 audiovideo
 examples/*/*.jpg
 *.zip
+viewer.html
+console.html
 
 
 # OS generated files #

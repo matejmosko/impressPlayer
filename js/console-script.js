@@ -29,30 +29,11 @@ $(function() {
       totalSeconds = 0;
     setupSettings();
 
-    let tplViewerHTML = `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1.0">
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <base id="baseTag" href=".">
-        <title>impViewer</title>
-        <style id="defaultStyleBox"></style>
-        <link id="projectionStyleLink" rel="stylesheet" type="text/css" href="style.css">
-        <style id="printStyleBox" media="print"></style>
-      </head>
-      <body class="impress-not-supported">
-        <div id="container">
-          <div id="impress"></div>
-        </div>
-      </body>
-      <script id="impressScript" src="."></script>
-      <script id="bottomScript">
-      </script>
-    </html>
-    `;
+    // Load impress-viewer template
+    // TODO Move this to async function inside the part, where we generate viewer.html
+    // TODO Move all tmp files (viewer.html, console.html) to userData.
 
+    tplViewerHTML = fs.readFileSync(app.getAppPath() + '/templates/viewer.tpl', 'utf8');
     let parser = new DOMParser(),
       viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
 
@@ -376,7 +357,7 @@ $(function() {
 
     showTimer('current');
 
-    webview0.addEventListener('focus', function(e){
+    webview0.addEventListener('focus', function(e) {
       e.preventDefault();
     });
 
@@ -389,6 +370,26 @@ $(function() {
           slideList = event.args[0];
           renderNextSlide(event.args[1]);
           displaySlideList(event.args[1]);
+          break;
+        case 'multimedia':
+          switch (event.args[0]) {
+            case 'on':
+              $('#audiovideoControls').show();
+              break;
+            case 'off':
+              $('#audiovideoControls').hide();
+              break;
+          }
+          break;
+        case "audioVideoPlaying":
+          switch (event.args[0]) {
+            case 'on':
+              // TODO Change icon
+              break;
+            case 'off':
+              // TODO Change icon
+              break;
+          }
           break;
         default:
           console.log(i18n.__("There is something new coming from impress.js."));
@@ -404,6 +405,14 @@ $(function() {
     $("#reloadBtn").click(function() {
       ipc.send('reloadWindows');
     });
+    $("#playPauseBtn").click(function() {
+      webview0.send('audioVideoControls', 'playPause');
+      ipc.send('audioVideoControls', 'playPause');
+    });
+    $("#reloadBtn").click(function() {
+      webview0.send('audioVideoControls', 'reload');
+      ipc.send('audioVideoControls', 'reload');
+    });
 
     /* Uncomment for debugging */
     /*
@@ -411,49 +420,49 @@ $(function() {
   console.log('Guest page logged a message:', e.message)
  })
 */
-  //  webview0.openDevTools();
+    webview0.openDevTools();
 
     window.addEventListener('keydown', function(e) {
       if (e.keyCode == 32 && e.target == document.body) {
         e.preventDefault();
       }
     });
-    
-    document.addEventListener( "keydown", function( event ) {
-        if ( event.keyCode === 9 ||
-           ( event.keyCode >= 32 && event.keyCode <= 34 ) ||
-           ( event.keyCode >= 37 && event.keyCode <= 40 ) ) {
-            event.preventDefault();
+
+    document.addEventListener("keydown", function(event) {
+      if (event.keyCode === 9 ||
+        (event.keyCode >= 32 && event.keyCode <= 34) ||
+        (event.keyCode >= 37 && event.keyCode <= 40)) {
+        event.preventDefault();
+      }
+    }, false);
+
+    document.addEventListener("keyup", function(event) {
+
+      if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) {
+        return;
+      }
+
+      if (event.keyCode === 9 ||
+        (event.keyCode >= 32 && event.keyCode <= 34) ||
+        (event.keyCode >= 37 && event.keyCode <= 40)) {
+        switch (event.keyCode) {
+          case 33: // Page up
+          case 37: // Left
+          case 38: // Up
+            webview0.send('prevSlide');
+            break;
+          case 9: // Tab
+          case 32: // Space
+          case 34: // Page down
+          case 39: // Right
+          case 40: // Down
+            webview0.send('nextSlide');
+            break;
         }
-    }, false );
 
-    document.addEventListener( "keyup", function( event ) {
-
-        if ( event.shiftKey || event.altKey || event.ctrlKey || event.metaKey ) {
-            return;
-        }
-
-        if ( event.keyCode === 9 ||
-           ( event.keyCode >= 32 && event.keyCode <= 34 ) ||
-           ( event.keyCode >= 37 && event.keyCode <= 40 ) ) {
-            switch ( event.keyCode ) {
-                case 33: // Page up
-                case 37: // Left
-                case 38: // Up
-                  webview0.send('prevSlide');
-                         break;
-                case 9:  // Tab
-                case 32: // Space
-                case 34: // Page down
-                case 39: // Right
-                case 40: // Down
-                         webview0.send('nextSlide');
-                         break;
-            }
-
-            event.preventDefault();
-        }
-    }, false );
+        event.preventDefault();
+      }
+    }, false);
 
   })();
 });

@@ -25,9 +25,17 @@ $(function() {
         var videoStep = video.closest(".step");
         videoStep.addEventListener("impress:stepenter", function() {
           video.play();
+          ipc.sendToHost('multimedia', 'on');
         }, false);
         videoStep.addEventListener("impress:stepleave", function() {
           video.pause();
+          ipc.sendToHost('multimedia', 'off');
+        }, false);
+        video.addEventListener("playing", function(){
+          ipc.sendToHost('audioVideoPlaying', 'on');
+        }, false);
+        video.addEventListener("pause", function(){
+          ipc.sendToHost('audioVideoPlaying', 'off');
         }, false);
       });
     }
@@ -36,28 +44,7 @@ $(function() {
       var currentSlide = $('.active').attr('id');
       return currentSlide;
     }
-/*
-    document.addEventListener('DOMContentLoaded', function () {
-      document.addEventListener('click', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        setTimeout(function () {
-          var path = e.target.href;
-          ipcRenderer.sendToHost('element-clicked', path);
-        }, 100);
-        return false;
-      }, true);
-      document.addEventListener('keyup', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        setTimeout(function () {
-          var path = e.target.href;
-          ipcRenderer.sendToHost('element-clicked', path);
-        }, 100);
-        return false;
-      }, true);
-    });
-*/
+
     ipc.on('setupEventHandlers', (event, webview) => {
       switch (webview) {
         case 'current':
@@ -80,5 +67,24 @@ $(function() {
     ipc.on('gotoSlide', (event, arg) => {
       impress().goto(arg);
     });
+    ipc.on('audioVideoControls', (event, command) => {
+      console.log(command);
+      let current = document.getElementsByClassName("present")[0];
+      let video = document.getElementsByTagName("video")[0];
+      switch (command) {
+        case 'playPause':
+          if (video.paused) {
+            video.play();
+          } else {
+            video.pause();
+          }
+          break;
+        case 'reload':
+          video.load();
+          break;
+        default:
+      }
+    });
+
   })();
 });

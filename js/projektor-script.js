@@ -18,6 +18,10 @@ $(function() {
       webview.send('gotoSlide', current);
     });
 
+    ipc.on('audioVideoControls', (event, command) => {
+      webview.send('audioVideoControls', command);
+    });
+
     webview.addEventListener('did-finish-load', function() {
       webview.send('setupEventHandlers', 'projector');
     });

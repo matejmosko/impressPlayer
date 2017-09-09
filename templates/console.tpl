@@ -39,11 +39,11 @@
           </x-button>
         </x-buttons>
         <x-buttons tracking="-1" id="gameControls">
-        <x-button id="openFile">Načítaj prezentáciu</x-button>
+        <x-button id="openFile">{{#i18n}}Load Presentation{{/i18n}}</x-button>
           <x-button id="nextSlideBtn" class="impressControlBtns">
             <x-box>
               <x-icon name="skip-next"></x-icon>
-              <x-label id="nextSlideLabel">Ďalší snímok</x-label>
+              <x-label id="nextSlideLabel">{{#i18n}}Next Slide{{/i18n}}</x-label>
             </x-box>
           </x-button>
           <x-button id="prevSlideBtn" class="danger impressControlBtns">
@@ -64,28 +64,28 @@
               <x-tab selected id="currentSlideTab">
                 <x-box>
                   <x-icon name="list"></x-icon>
-                  <x-label id="tabLabelCurrentSlide">Projekcia</x-label>
+                  <x-label id="tabLabelCurrentSlide">{{#i18n}}Presentation{{/i18n}}</x-label>
                 </x-box>
               </x-tab>
 
               <x-tab id="allSlidesTab">
                 <x-box>
                   <x-icon name="sort"></x-icon>
-                  <x-label id="tabLabelAllSlides">Zoznam snímkov</x-label>
+                  <x-label id="tabLabelAllSlides">{{#i18n}}Slides List{{/i18n}}</x-label>
                 </x-box>
               </x-tab>
               <!--
               <x-tab id="teamsTableTab">
                 <x-box>
                   <x-icon name="settings"></x-icon>
-                  <x-label id="tabLabelRemoteSources">Iné zdroje</x-label>
+                  <x-label id="tabLabelRemoteSources">{{#i18n}}Remote Sources{{/i18n}}</x-label>
                 </x-box>
               </x-tab>
 
               <x-tab id="optionsTab">
                 <x-box>
                   <x-icon name="settings"></x-icon>
-                  <x-label id="tabLabelSettings">Nastavenia</x-label>
+                  <x-label id="tabLabelSettings">{{#i18n}}Options{{/i18n}}</x-label>
                 </x-box>
               </x-tab>
               -->
@@ -128,20 +128,19 @@
     </div>
   </div>
   <x-dialog id="exitDialog">
-    <h4 id="exitTitle">Si si istý, že chceš ukončiť impressPlayer?</h4>
-    <p  id="exitText">Nič zlého sa vlastne nemôže stať, ale aj tak sa ťa pre istotu opýtam znova. 
-Naozaj to chceš urobiť?</p>
+    <h4 id="exitTitle">{{#i18n}}Are you sure about exiting impressPlayer?{{/i18n}}</h4>
+    <p  id="exitText">{{#i18n}}Actually nothing bad could happen if you exit now, but still. <br />Do you really want to do it?{{/i18n}}</p>
     <x-buttons tracking="-1" id="windowControls">
       <x-button id="reallyQuit" class="danger">
         <x-box>
           <x-icon name="exit-to-app"></x-icon>
-          <x-label  id="exitAgree">Áno, dostaň ma odtiaľto!</x-label>
+          <x-label  id="exitAgree">{{#i18n}}Yes, get me out of here!{{/i18n}}</x-label>
         </x-box>
       </x-button>
       <x-button id="doNotQuit">
         <x-box>
           <x-icon name="replay"></x-icon>
-          <x-label  id="exitDisagree">Nie, ešte som neskončil</x-label>
+          <x-label  id="exitDisagree">{{#i18n}}No, I haven't finished yet{{/i18n}}</x-label>
         </x-box>
       </x-button>
     </x-buttons>
