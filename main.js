@@ -20,7 +20,9 @@ const {
 const settings = require('electron-settings');
 
 const i18n = new(require('i18n-2'))({
-  locales: ['en', 'sk']
+  locales: ['en', 'sk'],
+  directory: path.join(__dirname, './locales'),
+  extension: ".json"
 });
 global.i18n = i18n;
 i18n.setLocaleFromEnvironmentVariable();
@@ -32,33 +34,42 @@ let windowState = {};
 let viewerFakeLocalized = "";
 
 function saveTemplates() {
-  fs.readFile('./templates/console.tpl', 'utf8', (err, data) => {
+  mustacheOptions = {
+    "dirname": __dirname,
+    "usrPath": app.getPath('userData'),
+    "appPath": app.getAppPath(),
+    "i18n": function() {
+      return function(text, render) {
+        return render(i18n.__(text));
+      };
+    }
+  }
+  fs.readFile(path.join(__dirname, './templates/console.tpl'), 'utf8', (err, data) => {
     if (err) throw err;
     let tplConsole = data;
-    let consoleLocalized = ms.render(tplConsole, {
-      i18n: function() {
-        return function(text, render) {
-          return render(i18n.__(text));
-        };
-      }
-    });
-    let tplViewerFake = fs.readFileSync('./templates/viewer-fake.tpl', 'utf8');
-    viewerFakeLocalized = ms.render(tplViewerFake, {
-      i18n: function() {
-        return function(text, render) {
-          return render(i18n.__(text));
-        };
-      }
-    });
-    fs.writeFile('viewer.html', viewerFakeLocalized, (err) => {
+    let consoleLocalized = ms.render(tplConsole, mustacheOptions);
+    let tplViewerFake = fs.readFileSync(path.join(__dirname, './templates/viewer-fake.tpl'), 'utf8');
+    viewerFakeLocalized = ms.render(tplViewerFake, mustacheOptions);
+    fs.writeFile(path.join(app.getPath('userData'), './viewer.html'), viewerFakeLocalized, (err) => {
       if (err) throw err;
-      fs.writeFile('console.html', consoleLocalized, (err) => {
+
+      fs.writeFile(path.join(app.getPath('userData'), './console.html'), consoleLocalized, (err) => {
         if (err) throw err;
-        createWindow();
-        createProjector();
+        fs.readFile(path.join(__dirname, './templates/projector.tpl'), 'utf8', (err, data) => {
+          let tplProjector = data;
+          let projectorLocalized = ms.render(tplProjector, mustacheOptions);
+          fs.writeFile(path.join(app.getPath('userData'), './projector.html'), projectorLocalized, (err) => {
+            if (err) throw err;
+              createProjector();
+              createWindow();
+          });
+
+        });
+
       });
     });
   });
+
 }
 
 try {
@@ -86,7 +97,7 @@ try {
   // the file is there, but corrupt. Handle appropriately.
 }
 
-let storeWindowState = function() {
+function storeWindowState() {
   windowState.main.isMaximized = impWindows.main.isMaximized();
   windowState.projector.isMaximized = impWindows.projector.isMaximized();
   if (!windowState.main.isMaximized) {
@@ -120,7 +131,7 @@ function createWindow() {
 
   // and load the index.html of the app.
   impWindows.main.loadURL(url.format({
-    pathname: path.join(__dirname, 'console.html'),
+    pathname: path.join(app.getPath('userData'), './console.html'),
     protocol: 'file:',
     slashes: true
   }));
@@ -170,7 +181,7 @@ function createProjector() {
 
   // and load the index.html of the app.
   impWindows.projector.loadURL(url.format({
-    pathname: path.join(__dirname, 'projector.html'),
+    pathname: path.join(app.getPath('userData'), './projector.html'),
     protocol: 'file:',
     slashes: true,
     fullscreenable: true
@@ -218,6 +229,23 @@ function createProjector() {
   impWindows.projector.on('move', function() {
     storeWindowState();
   });
+  ipcMain.on('toggleFullscreen', (event) => {
+    if (impWindows.projector.isFullScreen()) {
+      impWindows.projector.setFullScreen(false);
+    } else {
+      impWindows.projector.setFullScreen(true);
+    }
+  });
+
+  ipcMain.on('toggleProjector', (event) => {
+    if (impWindows.projector.isVisible()) {
+      impWindows.projector.hide();
+      impWindows.main.webContents.send('buttonSwitch', "projectorBtn", false);
+    } else {
+      impWindows.projector.show();
+      impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
+    }
+  });
 }
 
 // This method will be called when Electron has finished
@@ -247,13 +275,8 @@ app.on('activate', function() {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-// Game Worlds scripts
 
-var dir = './savegame';
-
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir);
-}
+/* Impress Player scripts */
 
 // Logs generating
 
@@ -294,7 +317,7 @@ ipcMain.on('saveLogs', (event, text) => {
 ipcMain.on('toggleRules', (event) => {
   impWindows.projector.webContents.send('transferRules');
 });
-
+/*
 ipcMain.on('toggleFullscreen', (event) => {
   if (impWindows.projector.isFullScreen()) {
     impWindows.projector.setFullScreen(false);
@@ -311,7 +334,7 @@ ipcMain.on('toggleProjector', (event) => {
     impWindows.projector.show();
     impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
   }
-});
+});*/
 
 ipcMain.on('projectionGoToSlide', (event, arg) => {
   impWindows.projector.webContents.send('gotoSlide', arg);

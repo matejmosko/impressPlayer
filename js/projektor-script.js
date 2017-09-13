@@ -10,7 +10,6 @@
 
     ipc.on('loadProjection', (event) => {
       webview.reload();
-
     });
 
     ipc.on('gotoSlide', (event, current) => {
