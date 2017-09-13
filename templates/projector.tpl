@@ -3,10 +3,10 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=1024" />
+  <meta name="viewport" content="width=1280" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <title>impProjector</title>
-  <link rel="stylesheet" href="./css/styles-projector.css">
+  <link rel="stylesheet" href="{{{appPath}}}/css/styles-projector.css">
   <script>
   </script>
 </head>
@@ -19,7 +19,7 @@
     </ul>
   </div>
   <div id="container">
-    <webview id="impressCurrent" src="./viewer.html" autosize style="display:flex;" nodeintegration></webview>
+    <webview id="impressCurrent" src="{{{usrPath}}}/viewer.html" autosize style="display:flex;" nodeintegration></webview>
     <div class="impressCurtain"></div>
   </div>
 
@@ -27,7 +27,7 @@
 <script>
   // You can also require other files to run in this process
   //window.$ = window.jQuery = require('jquery');
-  require('./js/projektor-script.js');
+  require('{{{appPath}}}/js/projektor-script.js');
 </script>
 
 </html>

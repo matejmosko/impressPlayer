@@ -4,10 +4,11 @@
 <head>
   <meta charset="UTF-8">
   <title>impPlayer</title>
-  <link rel="import" href="./node_modules/xel/xel.min.html">
+  <base href="{{{dirname}}}/js" />
+  <link rel="import" href="{{{appPath}}}/node_modules/xel/xel.min.html">
   <!--<link rel="stylesheet" href="./node_modules/xel/stylesheets/material.theme.css">-->
-  <link rel="stylesheet" href="node_modules/xel/stylesheets/galaxy.theme.css">
-  <link rel="stylesheet" href="./css/styles-console.css">
+  <link rel="stylesheet" href="{{{appPath}}}/node_modules/xel/stylesheets/galaxy.theme.css">
+  <link rel="stylesheet" href="{{{appPath}}}/css/styles-console.css">
 </head>
 
 <body>
@@ -94,7 +95,7 @@
             </x-tabs>
 
             <div id="currentSlideDiv" class="content-table slidesPreview">
-              <webview id="impressCurrent" autosize src="./viewer.html" style="display:flex;" nodeintegration></webview>
+              <webview id="impressCurrent" autosize src="{{{usrPath}}}/viewer.html" style="display:flex;" nodeintegration></webview>
               <div class="impressCurtain">
                 <!-- The curtain preventing focusing webview element -->
               </div>
@@ -115,13 +116,13 @@
       <div id="sidebar">
         <div id="sideCards">
           <x-card class="nextSlide nextSlide-1">
-            <webview id="nextImpress-1" class="slidesPreview" src="./viewer.html" webpreferences="focusable: false" autosize style="display:flex;" nodeintegration></webview>
+            <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/viewer.html" webpreferences="focusable: false" autosize style="display:flex;" nodeintegration></webview>
             <div class="impressCurtain">
               <!-- The curtain preventing focusing webview element -->
             </div>
           </x-card>
           <x-card class="nextSlide nextSlide-2">
-            <webview id="nextImpress-2" class="slidesPreview" src="./viewer.html" autosize style="display:flex;" nodeintegration></webview>
+            <webview id="nextImpress-2" class="slidesPreview" src="{{{usrPath}}}/viewer.html" autosize style="display:flex;" nodeintegration></webview>
             <div class="impressCurtain">
               <!-- The curtain preventing focusing webview element -->
             </div>
@@ -157,7 +158,7 @@
 </body>
 <script>
   // You can also require other files to run in this process
-  require('./js/console-script.js');
+  require('{{{appPath}}}/js/console-script.js');
 </script>
 
 </html>

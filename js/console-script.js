@@ -31,7 +31,7 @@
     // TODO Move this to async function inside the part, where we generate viewer.html
     // TODO Move all tmp files (viewer.html, console.html) to userData.
 
-    tplViewerHTML = fs.readFileSync(path.join(app.getAppPath(), './app/templates/viewer.tpl'), 'utf8');
+    tplViewerHTML = fs.readFileSync(path.join(app.getAppPath(), './templates/viewer.tpl'), 'utf8');
     let parser = new DOMParser(),
       viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
 
@@ -249,7 +249,7 @@
 
     function saveViewer() {
       let serializer = new XMLSerializer();
-      fs.writeFile(path.join(app.getPath('userData'), './temp/viewer.html'), serializer.serializeToString(viewerDOM), (err) => {
+      fs.writeFile(path.join(app.getPath('userData'), './viewer.html'), serializer.serializeToString(viewerDOM), (err) => {
 
         if (err) throw err;
         ipc.send('loadProjection');

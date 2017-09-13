@@ -1,5 +1,5 @@
 {
-  "name": "turban-player",
+  "name": "impressPlayer",
   "version": "0.8.0",
   "description": "Turban Quiz Player App",
   "main": "main.js",
@@ -37,7 +37,7 @@
   "build": {
     "productName": "Game of Worlds Admin",
     "appId": "com.electron.MatejMosko.impressPlayer",
-    "asar": false,
+    "asar": true,
     "compression": "maximum",
     "linux": {
       "target": "AppImage",
