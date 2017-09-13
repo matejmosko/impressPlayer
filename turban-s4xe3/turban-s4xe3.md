@@ -1,7 +1,7 @@
 <!--markpress-opt
 
 {
-	"layout": "grid",
+	"layout": "vertical",
 	"autoSplit": true,
 	"sanitize": false,
 	"theme": "light",
@@ -10,11 +10,15 @@
 
 markpress-opt-->
 
-# Vesmírny Turban Quiz
+# Komixový Turban Quiz
 
-# Vesmírny Turban Quiz
+# Komixový Turban Quiz
 
-## 1. kolo: Falošný vesmír
+<audio width="100%" autoplay>
+  <source src="audiovideo/guru.mp3" type="audio/mp3">
+</audio>
+
+## 1. kolo: Komix
 
 # 1. Akému komixu patrí obálka?
 
@@ -26,7 +30,7 @@ markpress-opt-->
 
 # 2. Patrí komix Marvelu alebo DC?
 
-![first](12.jpg)
+![img](12.jpg)
 
 X-men, Strážcovia galaxie, Green Lantern, Fantastic Four, Aquaman, Deadool, Green Arrow, Lois Lane
 
@@ -36,7 +40,7 @@ X-men, Strážcovia galaxie, Green Lantern, Fantastic Four, Aquaman, Deadool, Gr
 2. Druhú priečku ($1,100,000) získal Amazing Fantasy #15. O kom je?
 3. Na tretej priečke ($1,075,000) je Detective Comics #27. Ktorý hrdina v tomto diele začal svoju kariéru?
 
-![first](13.jpg)
+![img](13.jpg)
 
 # 4. Obrázkogramy seriálov
 
@@ -44,12 +48,11 @@ X-men, Strážcovia galaxie, Green Lantern, Fantastic Four, Aquaman, Deadool, Gr
 
 <video width="100%" autoplay>
   <source src="audiovideo/batman-bomb.mp4" type="video/mp4">
-  Your browser does not support the video tag.
 </video>
 
 # 5. Čo ste videli vo videu?
 
-![first](15.jpg)
+![img](15.jpg)
 
 1. Akej farby bol čln, v ktorom sa bozkával párik?
 2. Koľko kačičiek plávalo vo vode?
@@ -58,28 +61,28 @@ X-men, Strážcovia galaxie, Green Lantern, Fantastic Four, Aquaman, Deadool, Gr
 
 # 6. Ako sa volajú ženské superhrdinky
 
-![first](161.jpg)
+![img](161.jpg)
 
-![first](162.jpg)
+![img](162.jpg)
 
-![first](163.jpg)
+![img](163.jpg)
 
-![first](164.jpg)
+![img](164.jpg)
 
 
 # 6. Ako sa volajú ženské superhrdinky
 
-![first](165.jpg)
+![img](165.jpg)
 
-![first](166.jpg)
+![img](166.jpg)
 
-![first](167.jpg)
+![img](167.jpg)
 
-![first](168.jpg)
+![img](168.jpg)
 
 # Vesmírny Turban Quiz
 
-## 1. kolo: Falošný vesmír
+## 1. kolo: Komix
 
 ### odpovede
 
@@ -93,7 +96,7 @@ X-men, Strážcovia galaxie, Green Lantern, Fantastic Four, Aquaman, Deadool, Gr
 
 # 2. Patrí komix Marvelu alebo DC?
 
-![first](12.jpg)
+![img](12.jpg)
 
 DC: <span class="answer">Green Lantern, Green Arrow, Lois Lane, Aquaman</span>
 Marvel: <span class="answer">X-men, Strážcovia galaxie,  Fantastic Four, Deadool</span>
@@ -104,14 +107,14 @@ Marvel: <span class="answer">X-men, Strážcovia galaxie,  Fantastic Four, Deado
 2. Druhú priečku ($1,100,000) získal Amazing Fantasy #15. O kom je? <span class="answer">O Spidermanovi</span>
 3. Na tretej priečke ($1,075,000) je Detective Comics #27. Ktorý hrdina v tomto diele začal svoju kariéru? <span class="answer">O Batmanovi</span>
 
-![first](13.jpg)
+![img](13.jpg)
 
 # 4. Obrázkogramy seriálov
 
 
 # 5. Čo ste videli vo videu?
 
-![first](15.jpg)
+![img](15.jpg)
 
 1. Akej farby bol čln, v ktorom sa bozkával párik? <span class="answer">Bielej</span>
 2. Koľko kačičiek plávalo vo vode? <span class="answer">Päť</span>
@@ -120,21 +123,91 @@ Marvel: <span class="answer">X-men, Strážcovia galaxie,  Fantastic Four, Deado
 
 # 6. Ako sa volajú ženské superhrdinky
 
-![first](161.jpg)<span class="picanswer">Black Widow</span>
+![img](161.jpg)<span class="picanswer">Black Widow</span>
 
-![first](162.jpg)<span class="picanswer">Suzanne</span>
+![img](162.jpg)<span class="picanswer">Suzanne</span>
 
-![first](163.jpg)<span class="picanswer">Gamora</span>
+![img](163.jpg)<span class="picanswer">Gamora</span>
 
-![first](164.jpg)<span class="picanswer">She-Hulk</span>
+![img](164.jpg)<span class="picanswer">She-Hulk</span>
 
 
 # 6. Ako sa volajú ženské superhrdinky
 
-![first](165.jpg)<span class="picanswer">Scarlet Witch</span>
+![img](165.jpg)<span class="picanswer">Scarlet Witch</span>
 
-![first](166.jpg)<span class="picanswer">Captain Marvel</span>
+![img](166.jpg)<span class="picanswer">Captain Marvel</span>
 
-![first](167.jpg)<span class="picanswer">Batgirl</span>
+![img](167.jpg)<span class="picanswer">Batgirl</span>
 
-![first](168.jpg)<span class="picanswer">Supergirl</span>
+![img](168.jpg)<span class="picanswer">Supergirl</span>
+
+# Vesmírny Turban Quiz
+
+## 2. kolo: Komix
+
+# 1. Čo je to a komu to patrí?
+
+![img](211.jpg)
+![img](212.jpg)
+
+![img](213.jpg)
+![img](214.jpg)
+
+# 2. Garfield
+
+1. Ako sa volá Garfieldov vlastník?
+2. V ktorej európskej krajine sa Garfield volá Karvinen?
+3. Garfield drží rekord v počte rôznych novín a magazínov, ktoré ho niekedy vytlačili. Koľko ich je? (tol. 300)
+
+![img](22.jpg)
+
+# 3. Zvučky seriálov?
+
+<video width="100%" autoplay>
+  <source src="audiovideo/komixy-zvucky.mp4" type="video/mp4">
+</video>
+
+# 3. Zvučky seriálov?
+
+![img](23.jpg)
+
+Z akého seriálu je zvučka?
+
+# 4. Ako sa volajú tieto české komixy?
+
+![img](241.jpg)
+
+![img](242.jpg)
+
+# 4. Ako sa volajú tieto české komixy?
+
+![img](243.jpg)
+
+![img](244.jpg)
+
+# 5. Asterix
+
+![img](25.jpg)
+
+1. Na ktorej časti oblečenia mal Asterix krídelká?
+2. V ktorom storočí sa odohráva komix Asterix?
+3. Koľko hraných filmov o Asterixovi zatiaľ vyšlo?
+
+# 6. Kto je to?
+
+![img](261.jpg)
+
+![img](262.jpg)
+
+![img](263.jpg)
+
+![img](264.jpg)
+
+# 6. Kto je to?
+
+![img](265.jpg)
+![img](266.jpg)
+
+![img](267.jpg)
+![img](268.jpg)

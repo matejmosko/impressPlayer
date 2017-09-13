@@ -1,10 +1,19 @@
 *, *:before, *:after {
     -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
 }
+:not(input):not(textarea),
+:not(input):not(textarea)::after,
+:not(input):not(textarea)::before {
+    -webkit-user-select: none;
+    user-select: none;
+    cursor: default;
+}
+input, button, textarea, :focus {
+    outline: none; // You should add some other style for :focus to help UX/a11y
+}
 body{
   width: auto;
 margin: 0px;
-  background-color: #212121;
 }
 #container{
 /*  overflow-x: hidden;*/
@@ -29,15 +38,8 @@ margin: 0px;
   flex: 4 0 100%;
   padding: 10px;
   display: flex;
+  justify-content: space-between;
   margin: 0px;
-}
-
-#infobox div, #projectorControls {
-  flex: 1 1 auto;
-}
-
-#top-buttons {
-  flex: 1 1 25%;
 }
 
 #main {
@@ -97,7 +99,6 @@ margin: 0px;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #111;
 }
 
 .impressCurtain{
@@ -113,7 +114,7 @@ margin: 0px;
 }
 
 .danger {
-  background-color: #ff8a65;
+  background-color: #cc3300;
 }
 
 x-dialog h4, x-dialog p {
@@ -159,8 +160,11 @@ x-dialog {
 }
 
 .sideInfo{
-  background-color: #222;
   color: #DDD;
+}
+
+.topButtons{
+  flex: 0 1 auto;
 }
 .grid-item.current{
   font-weight: bold;
@@ -171,7 +175,7 @@ x-dialog {
   cursor: pointer;
 }
 .grid-item.future:hover{
-  background-color:#00897B;
+  background-color: hsl(var(--accent-color-h), var(--accent-color-s), var(--accent-color-l));;
   color: white;
 }
 x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer{
@@ -192,9 +196,10 @@ x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer{
   margin: 5px;
   min-height: 50px;
   overflow: hidden;
-  background:  #B2DFDB;
-  color: #004D40;
   min-width:20%;
   flex: 1 1 30%;
   text-align:center;
+}
+.hidden{
+  display:none;
 }

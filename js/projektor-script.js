@@ -1,7 +1,6 @@
-// Mixing jQuery and Node.js code in the same file? Yes please!
 
-$(function() {
-  var impProjector = (function() {
+//$(function() { // No jQuery needed
+  let impProjector = (function() {
     const ipc = require('electron').ipcRenderer;
 
     const settings = require('electron').remote.require('electron-settings');
@@ -27,4 +26,4 @@ $(function() {
     });
 
   })();
-});
+//});

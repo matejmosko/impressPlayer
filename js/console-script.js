@@ -1,7 +1,4 @@
-// Mixing jQuery and Node.js code in the same file? Yes please!
-
-$(function() {
-  var impConsole = (function() {
+  let impConsole = (function() {
     const remote = require('electron').remote;
     const app = remote.app;
     const path = require('path');
@@ -26,7 +23,8 @@ $(function() {
       opts = {},
       running = false,
       exitDialog = document.getElementById("exitDialog"),
-      totalSeconds = 0;
+      totalSeconds = 0,
+      debugMode = false;
     setupSettings();
 
     // Load impress-viewer template
@@ -63,62 +61,69 @@ $(function() {
     }
 
     /* UI part - all buttons tabs, radios etc. */
+    let currentSlideDiv = document.getElementById("currentSlideDiv"),
+      allSlidesDiv = document.getElementById("allSlidesDiv"),
+      remoteSourcesDiv = document.getElementById("remoteSourcesDiv"),
+      optionsDiv = document.getElementById("optionsDiv");
 
-    $("#currentSlideTab").click(function() { // Toggle between main view Tabs
-      $('#currentSlideDiv').show();
-      $('#allSlidesDiv').hide();
-      $('#teamsTableDiv').hide();
-      $('#optionsDiv').hide();
-    });
-    $("#allSlidesTab").click(function() {
-      $('#currentSlideDiv').hide();
-      $('#allSlidesDiv').show();
-      $('#teamsTableDiv').hide();
-      $('#optionsDiv').hide();
-    });
-    $("#teamsTableTab").click(function() {
-      $('#currentSlideDiv').hide();
-      $('#allSlidesDiv').hide();
-      $('#teamsTableDiv').show();
-      $('#optionsDiv').hide();
-    });
-    $("#optionsTab").click(function() {
-      $('#currentSlideDiv').hide();
-      $('#allSlidesDiv').hide();
-      $('#teamsTableDiv').hide();
-      $('#optionsDiv').show();
-    });
+    document.getElementById("currentSlideTab").addEventListener("click", function() {
+      currentSlideDiv.classList.remove("hidden");
+      allSlidesDiv.classList.add("hidden");
+      remoteSourcesDiv.classList.add("hidden");
+      optionsDiv.classList.add("hidden");
+    }, false);
+    document.getElementById("allSlidesTab").addEventListener("click", function() {
+      currentSlideDiv.classList.add("hidden");
+      allSlidesDiv.classList.remove("hidden");
+      remoteSourcesDiv.classList.add("hidden");
+      optionsDiv.classList.add("hidden");
+    }, false);
+    document.getElementById("remoteSourcesTab").addEventListener("click", function() {
+      currentSlideDiv.classList.add("hidden");
+      allSlidesDiv.classList.add("hidden");
+      remoteSourcesDiv.classList.remove("hidden");
+      optionsDiv.classList.add("hidden");
+    }, false);
+    document.getElementById("optionsTab").addEventListener("click", function() {
+      currentSlideDiv.classList.add("hidden");
+      allSlidesDiv.classList.add("hidden");
+      remoteSourcesDiv.classList.add("hidden");
+      optionsDiv.classList.remove("hidden");
+    }, false);
 
-    $("#fullscreenBtn").click(function() { // Toggle Projector Window fullscreen
+    document.getElementById("fullscreenBtn").addEventListener("click", function() { // Toggle Projector Window fullscreen
       ipc.send('toggleFullscreen');
     });
-    $("#rulesBtn").click(function() { // Toggle visibility of Rules div
+
+    document.getElementById("disclamerBtn").addEventListener("click", function() { // Toggle visibility of Rules div
       ipc.send('toggleRules');
     });
 
-    $("#projectorBtn").click(function() { // Toggle visibility og Projector Window
+    document.getElementById("projectorBtn").addEventListener("click", function() { // Toggle visibility og Projector Window
       ipc.send('toggleProjector');
     });
 
     ipc.on('buttonSwitch', (event, btn, x) => { // Toggle "toggled" state of top buttons when non-click event change status
       if (x) {
-        $(btn).prop("toggled", true);
-      } else $(btn).prop("toggled", false);
+        document.getElementById(btn).setAttribute("toggled", true);
+      } else {
+        document.getElementById(btn).setAttribute("toggled", false);
+      }
     });
 
     ipc.on('quitModal', (event) => { // Show "Really Quit" dialog
       exitDialog.opened = true;
     });
 
-    $("#reallyQuit").click(function() { // "Really Quit"  confirmed. We are leaving the ship.
+    document.getElementById("reallyQuit").addEventListener("click", function() { // "Really Quit"  confirmed. We are leaving the ship.
       ipc.send('reallyQuit');
     });
 
-    $("#doNotQuit").click(function() { // "Really Quit" refused. The show must go on...
+    document.getElementById("doNotQuit").addEventListener("click", function() { // "Really Quit" refused. The show must go on...
       exitDialog.opened = false;
     });
 
-    $("#openFile").click(function() {
+    document.getElementById("openFile").addEventListener("click", function() {
       dialog.showOpenDialog({
         filters: [
           { name: 'impress.js presentations', extensions: ['md', 'mkd', 'markdown', 'html', 'htm', 'zip'] },
@@ -136,7 +141,7 @@ $(function() {
 
     function parseMarkdown(file) {
       const options = {
-        layout: 'horizontal',
+        //layout: 'horizontal',
         theme: 'light',
         autoSplit: true,
         allowHtml: false,
@@ -149,8 +154,8 @@ $(function() {
         html,
         md
       }) => {
-        var parser = new DOMParser();
-        var el = parser.parseFromString(html, "text/html");
+        let parser = new DOMParser();
+        let el = parser.parseFromString(html, "text/html");
         parseProjection(el, file);
       });
     }
@@ -170,7 +175,7 @@ $(function() {
             break;
           case ".html":
           case ".htm":
-            var parser = new DOMParser();
+            let parser = new DOMParser();
             el = parser.parseFromString(data, "text/html");
             parseProjection(el, file);
             break;
@@ -210,7 +215,7 @@ $(function() {
         extcss = "",
         styles;
       styles = el.getElementsByTagName("style");
-      for (var i = 0; i < styles.length; i++) { // This loads inline stylesheets from html / css file
+      for (let i = 0; i < styles.length; i++) { // This loads inline stylesheets from html / css file
         if (styles[i].media == "print") {
           printcss += styles[i].innerHTML;
         } else {
@@ -237,9 +242,9 @@ $(function() {
       viewerDOM.getElementById("printStyleBox").innerHTML = printcss;
       viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
       viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
-      viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); window.$ = window.jQuery = require('jquery'); require('" + viewerPath + "');";
+      viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); /*window.$ = window.jQuery = require('jquery');*/ require('" + viewerPath + "');";
 
-      loadProjection(); // Finally put it all into the template and loadProjection.
+      loadProjection(); // Finally put it all into the template and loadProjection. I am considering migration of this function to mustache. It is probably much faster.
 
     }
 
@@ -268,6 +273,12 @@ $(function() {
       mousetrap.bind(['ctrl+backspace'], function() {
         webview0.send('prevSlide');
       });
+      if (debugMode) {
+        webview0.openDevTools();
+        webview0.addEventListener('console-message', (e) => {
+         console.log('Guest page logged a message:', e.message)
+        })
+      }
     }
 
     function getFutureSlides(current, offset) {
@@ -309,20 +320,27 @@ $(function() {
     }
 
     function displaySlideList(current) {
-      var tplSlideList = `
+      /* Render clickable flexbox grid of all slides */
+      let tplSlideList = `
         <div id='slideList' class="grid">
           {{#slides}}
-            <div id='{{step}}' class='grid-item {{isCurrent}}'><span>{{stepName}}<span></div>
+            <x-card id='{{step}}' class='grid-item {{isCurrent}}'><span>{{stepName}}<span></x-card>
           {{/slides}}
-        </ul>
+        </div>
       `;
-      var rendered = ms.render(tplSlideList, {
+      let rendered = ms.render(tplSlideList, {
         "slides": slideList,
         "isCurrent": function() { if (this.step == current) { return "current"; } else { return "future"; } }
       });
       document.getElementById("impressOverview").innerHTML = rendered;
-      $('div#slideList .grid-item').click(function() {
-        renderNextSlide($(this).attr("id"));
+
+      /* Add click event listeners to all grid-items = Going to slide*/
+      let div = document.getElementById("slideList");
+      let items = div.getElementsByClassName("grid-item");
+      Array.prototype.forEach.call(items, function(item) {
+        item.addEventListener("click", function() {
+          renderNextSlide(this.id);
+        }, false);
       });
     }
 
@@ -333,7 +351,7 @@ $(function() {
     function showTimer(type) {
       switch (type) {
         case "current":
-          var today = new Date(),
+          let today = new Date(),
             h = checkTime(today.getHours()),
             m = checkTime(today.getMinutes()),
             s = checkTime(today.getSeconds());
@@ -341,9 +359,9 @@ $(function() {
           break;
         case "projection":
           ++totalSeconds;
-          var hour = checkTime(Math.floor(totalSeconds / 3600));
-          var minute = checkTime(Math.floor((totalSeconds - hour * 3600) / 60));
-          var seconds = checkTime(totalSeconds - (hour * 3600 + minute * 60));
+          let hour = checkTime(Math.floor(totalSeconds / 3600));
+          let minute = checkTime(Math.floor((totalSeconds - hour * 3600) / 60));
+          let seconds = checkTime(totalSeconds - (hour * 3600 + minute * 60));
 
           document.getElementById("projectionTimer").innerHTML = hour + ":" + minute + ":" + seconds;
 
@@ -372,22 +390,25 @@ $(function() {
           displaySlideList(event.args[1]);
           break;
         case 'multimedia':
+          let mediaControls = document.getElementById("audiovideoControls");
           switch (event.args[0]) {
             case 'on':
-              $('#audiovideoControls').show();
+              mediaControls.classList.remove("hidden");
               break;
             case 'off':
-              $('#audiovideoControls').hide();
+              mediaControls.classList.add("hidden");
               break;
           }
           break;
         case "audioVideoPlaying":
+          let playPauseMediaBtn = document.getElementById("playPauseMediaBtn"),
+            icon = playPauseMediaBtn.getElementsByTagName("x-icon")[0];
           switch (event.args[0]) {
             case 'on':
-              // TODO Change icon
+            icon.setAttribute("name", "pause");
               break;
             case 'off':
-              // TODO Change icon
+            icon.setAttribute("name", "play-arrow");
               break;
           }
           break;
@@ -396,31 +417,29 @@ $(function() {
       }
     });
 
-    $("#prevSlideBtn").click(function() {
+    document.getElementById("prevSlideBtn").addEventListener("click", function() {
       webview0.send('prevSlide');
-    });
-    $("#nextSlideBtn").click(function() {
+    }, false);
+
+    document.getElementById("nextSlideBtn").addEventListener("click", function() {
       webview0.send('nextSlide');
-    });
-    $("#reloadBtn").click(function() {
+    }, false);
+
+    document.getElementById("reloadBtn").addEventListener("click", function() {
       ipc.send('reloadWindows');
-    });
-    $("#playPauseBtn").click(function() {
+    }, false);
+
+
+    document.getElementById("playPauseMediaBtn").addEventListener("click", function() {
       webview0.send('audioVideoControls', 'playPause');
       ipc.send('audioVideoControls', 'playPause');
-    });
-    $("#reloadBtn").click(function() {
-      webview0.send('audioVideoControls', 'reload');
-      ipc.send('audioVideoControls', 'reload');
-    });
+    }, false);
 
-    /* Uncomment for debugging */
-    /*
- webview1.addEventListener('console-message', (e) => {
-  console.log('Guest page logged a message:', e.message)
- })
-*/
-    webview0.openDevTools();
+    document.getElementById("restartMediaBtn").addEventListener("click", function() {
+      webview0.send('audioVideoControls', 'restart');
+      ipc.send('audioVideoControls', 'restart');
+    }, false);
+
 
     window.addEventListener('keydown', function(e) {
       if (e.keyCode == 32 && e.target == document.body) {
@@ -465,4 +484,3 @@ $(function() {
     }, false);
 
   })();
-});

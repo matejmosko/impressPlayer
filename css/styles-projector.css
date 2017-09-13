@@ -15,11 +15,9 @@
   src: url('fonts/nasalization-rg.ttf')  format('truetype');
   /*URL to font*/
 }
-/*
-* {
-  margin: 0;
-  padding: 0;
-}*/
+*, *:before, *:after {
+    box-sizing: border-box;
+}
 
 body {
   height: 100%;
@@ -27,16 +25,15 @@ body {
   position: absolute;
   top: 0;
   width: 100%;
+  overflow: hidden;
 }
 #impressCurrent {
-  width: 100vw;
+  width: 99vw;
   display: flex;
-  height: 100vh;
+  height: 99vh;
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  margin: 0px;
+  padding: 0px;
 }
 
 .impressCurtain{
