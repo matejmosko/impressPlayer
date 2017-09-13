@@ -32,7 +32,7 @@ let windowState = {};
 let viewerFakeLocalized = "";
 
 function saveTemplates() {
-  fs.readFile('./templates/console.tpl', 'utf8', (err, data) => {
+  fs.readFile('file://' + __dirname + '/app/templates/console.tpl', 'utf8', (err, data) => {
     if (err) throw err;
     let tplConsole = data;
     let consoleLocalized = ms.render(tplConsole, {
@@ -42,7 +42,7 @@ function saveTemplates() {
         };
       }
     });
-    let tplViewerFake = fs.readFileSync('./templates/viewer-fake.tpl', 'utf8');
+    let tplViewerFake = fs.readFileSync('file://' + __dirname + '/app/templates/viewer-fake.tpl', 'utf8');
     viewerFakeLocalized = ms.render(tplViewerFake, {
       i18n: function() {
         return function(text, render) {
@@ -50,9 +50,9 @@ function saveTemplates() {
         };
       }
     });
-    fs.writeFile('viewer.html', viewerFakeLocalized, (err) => {
+    fs.writeFile(path.join(app.getPath('userData'), './temp/viewer.html'), viewerFakeLocalized, (err) => {
       if (err) throw err;
-      fs.writeFile('console.html', consoleLocalized, (err) => {
+      fs.writeFile(path.join(app.getPath('userData'), './temp/console.html'), consoleLocalized, (err) => {
         if (err) throw err;
         createWindow();
         createProjector();
@@ -120,7 +120,7 @@ function createWindow() {
 
   // and load the index.html of the app.
   impWindows.main.loadURL(url.format({
-    pathname: path.join(__dirname, 'console.html'),
+    pathname: path.join(app.getPath('userData'), './temp/console.html'),
     protocol: 'file:',
     slashes: true
   }));
@@ -247,13 +247,8 @@ app.on('activate', function() {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
-// Game Worlds scripts
 
-var dir = './savegame';
-
-if (!fs.existsSync(dir)) {
-  fs.mkdirSync(dir);
-}
+/* Impress Player scripts */
 
 // Logs generating
 
