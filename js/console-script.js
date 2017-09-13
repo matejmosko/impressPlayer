@@ -24,7 +24,7 @@
       running = false,
       exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
-      debugMode = false;
+      debugMode = true;
     setupSettings();
 
     // Load impress-viewer template
@@ -105,9 +105,9 @@
 
     ipc.on('buttonSwitch', (event, btn, x) => { // Toggle "toggled" state of top buttons when non-click event change status
       if (x) {
-        document.getElementById(btn).setAttribute("toggled", true);
+        document.getElementById(btn).toggled = true;
       } else {
-        document.getElementById(btn).setAttribute("toggled", false);
+        document.getElementById(btn).toggled = false;
       }
     });
 
@@ -141,7 +141,6 @@
 
     function parseMarkdown(file) {
       const options = {
-        //layout: 'horizontal',
         theme: 'light',
         autoSplit: true,
         allowHtml: false,
@@ -276,7 +275,7 @@
       if (debugMode) {
         webview0.openDevTools();
         webview0.addEventListener('console-message', (e) => {
-         console.log('Guest page logged a message:', e.message)
+          console.log('Guest page logged a message:', e.message);
         })
       }
     }
@@ -386,7 +385,7 @@
           break;
         case 'slideList':
           slideList = event.args[0];
-          renderNextSlide(event.args[1]);
+          //renderNextSlide(event.args[1]);
           displaySlideList(event.args[1]);
           break;
         case 'multimedia':
@@ -405,10 +404,28 @@
             icon = playPauseMediaBtn.getElementsByTagName("x-icon")[0];
           switch (event.args[0]) {
             case 'on':
-            icon.setAttribute("name", "pause");
+              icon.setAttribute("name", "pause");
               break;
             case 'off':
-            icon.setAttribute("name", "play-arrow");
+              icon.setAttribute("name", "play-arrow");
+              break;
+          }
+          break;
+        case "controlsEnabled":
+        let nextSlideBtn = document.getElementById("nextSlideBtn");
+        let prevSlideBtn = document.getElementById("prevSlideBtn");
+          switch (event.args[0]) {
+            case true:
+              document.removeEventListener("keyup", setupKeyboardControls, false);
+              document.addEventListener("keyup", setupKeyboardControls, false);
+              nextSlideBtn.removeAttribute("disabled");
+              prevSlideBtn.removeAttribute("disabled");
+              /*TODO Apply for button as well */
+              break;
+            case false:
+              document.removeEventListener("keyup", setupKeyboardControls, false);
+              nextSlideBtn.setAttribute("disabled", true);
+              prevSlideBtn.setAttribute("disabled", true);
               break;
           }
           break;
@@ -455,8 +472,9 @@
       }
     }, false);
 
-    document.addEventListener("keyup", function(event) {
+    document.addEventListener("keyup", setupKeyboardControls, false);
 
+    function setupKeyboardControls() {
       if (event.shiftKey || event.altKey || event.ctrlKey || event.metaKey) {
         return;
       }
@@ -481,6 +499,6 @@
 
         event.preventDefault();
       }
-    }, false);
+    }
 
   })();

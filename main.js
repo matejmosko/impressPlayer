@@ -185,15 +185,16 @@ function createProjector() {
   });
   impWindows.projector.on('close', event => {
     event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
-    impWindows.main.webContents.send('buttonSwitch', "#projectorBtn", false);
-    impWindows.main.webContents.send('buttonSwitch', "#fullscreenBtn", false);
+    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", false);
+    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", false);
     impWindows.projector.hide();
   });
   impWindows.projector.on('leave-full-screen', () => {
-    impWindows.main.webContents.send('buttonSwitch', "#fullscreenBtn", false);
+    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", false);
   });
   impWindows.projector.on('enter-full-screen', () => {
-    impWindows.main.webContents.send('buttonSwitch', "#fullscreenBtn", true);
+    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", true);
+    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
   });
   impWindows.projector.webContents.on('did-finish-load', () => {
 
@@ -305,10 +306,10 @@ ipcMain.on('toggleFullscreen', (event) => {
 ipcMain.on('toggleProjector', (event) => {
   if (impWindows.projector.isVisible()) {
     impWindows.projector.hide();
-    impWindows.main.webContents.send('buttonSwitch', "#projectorBtn", false);
+    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", false);
   } else {
     impWindows.projector.show();
-    impWindows.main.webContents.send('buttonSwitch', "#projectorBtn", true);
+    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
   }
 });
 
