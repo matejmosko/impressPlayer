@@ -165,7 +165,7 @@ Marvel: <span class="answer">X-men, Strážcovia galaxie,  Fantastic Four, Deado
 # 3. Zvučky seriálov?
 
 <video width="100%" autoplay>
-  <source src="audiovideo/komixy-zvucky.mp4" type="video/mp4">
+  <source src="audiovideo/komixy-zvucky.mp4" autoplay type="video/mp4">
 </video>
 
 # 3. Zvučky seriálov?
