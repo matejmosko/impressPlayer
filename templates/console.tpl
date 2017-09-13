@@ -130,6 +130,7 @@
             <div id="bigTimer"><span id="projectionTimer" title="Click to reset timer">00:00:00</span></div>
             <div id="smallTimer"><span id="currentTime">00:00:00</span></div>
             <div id="currentSlideName"></div>
+            <div id="slidesCount"></div>
           </x-card>
         </div>
       </div>

@@ -12,5 +12,6 @@
 	"Remote Sources": "Iné zdroje",
 	"Next Slide": "Ďalší snímok",
 	"Load Presentation": "Načítaj prezentáciu",
-	"The presentation you load will be displayed here.": "Na tomto mieste sa zobrazí prezentácia, ktorú otvoríš."
+	"The presentation you load will be displayed here.": "Na tomto mieste sa zobrazí prezentácia, ktorú otvoríš.",
+	"Slide %s of %s": "Stránka %s z %s"
 }

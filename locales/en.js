@@ -13,4 +13,5 @@
 	"Next Slide": "Next Slide",
 	"Load Presentation": "Load Presentation",
 	"The presentation you load will be displayed here.": "The presentation you load will be displayed here."
+	"Slide %s of %s": "Slide %s of %s"
 }

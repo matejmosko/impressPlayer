@@ -1,24 +1,29 @@
 *, *:before, *:after {
-    -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
 }
-:not(input):not(textarea),
-:not(input):not(textarea)::after,
-:not(input):not(textarea)::before {
-    -webkit-user-select: none;
-    user-select: none;
-    cursor: default;
+
+:not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before {
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: default;
 }
+
 input, button, textarea, :focus {
-    outline: none; // You should add some other style for :focus to help UX/a11y
+  outline: none; // You should add some other style for :focus to help UX/a11y
 }
-body{
+
+body {
   width: auto;
-margin: 0px;
+  margin: 0px;
 }
-#container{
-/*  overflow-x: hidden;*/
-  box-sizing:border-box;
+
+#container {
+  /*  overflow-x: hidden;*/
+  box-sizing: border-box;
 }
+
 #topbox {
   width: 100%;
   display: flex;
@@ -47,18 +52,19 @@ margin: 0px;
   display: flex;
 }
 
-#gameTables{
+#gameTables {
   padding: 0px 10px;
 }
 
 #currentSlideDiv {
-  width:100%;
-  padding-bottom: 75%;   /* This maintains 4:3 aspect ratio */
+  width: 100%;
+  padding-bottom: 75%;
+  /* This maintains 4:3 aspect ratio */
   position: relative;
 }
 
-#allSlidesDiv{
-  width:100%;
+#allSlidesDiv {
+  width: 100%;
   padding: 20px 20px;
   position: relative;
 }
@@ -89,7 +95,8 @@ margin: 0px;
   position: relative;
   width: 100%;
   height: 0px;
-  padding-bottom: 75%;   /* This maintains 4:3 aspect ratio */
+  padding-bottom: 75%;
+  /* This maintains 4:3 aspect ratio */
 }
 
 .slidesPreview {
@@ -101,7 +108,7 @@ margin: 0px;
   bottom: 0;
 }
 
-.impressCurtain{
+.impressCurtain {
   position: absolute;
   top: 0;
   left: 0;
@@ -140,55 +147,60 @@ x-dialog {
 .running #openFile {
   display: none;
 }
-.imp-ui-text, x-label{
-      -webkit-user-select:none;
-  }
-#bigTimer{
+
+.imp-ui-text, x-label {
+  -webkit-user-select: none;
+}
+
+#bigTimer {
   font-size: 4.0em;
-  font-weight: bold;
-  text-align: center;
 }
 
-#smallTimer{
+#smallTimer {
   font-size: 1.5em;
-  text-align: center;
-  font-weight: bold;
-}
-#currentSlideName{
-  text-align: center;
-  font-weight: bold;
 }
 
-.sideInfo{
+.sideInfo {
+  text-align: center;
   color: #DDD;
+  font-weight: bold;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  justify-content: space-between;
 }
 
-.topButtons{
+.topButtons {
   flex: 0 1 auto;
 }
-.grid-item.current{
+
+.grid-item.current {
   font-weight: bold;
-  background:  gray;
+  background: gray;
   color: white;
 }
-.grid-item.future{
-  cursor: pointer;
-}
-.grid-item.future:hover{
-  background-color: hsl(var(--accent-color-h), var(--accent-color-s), var(--accent-color-l));;
-  color: white;
-}
-x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer{
+
+.grid-item.future {
   cursor: pointer;
 }
 
-.grid{
+.grid-item.future:hover {
+  background-color: hsl(var(--accent-color-h), var(--accent-color-s), var(--accent-color-l));
+  ;
+  color: white;
+}
+
+x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer {
+  cursor: pointer;
+}
+
+.grid {
   display: flex;
   flex-flow: row wrap;
   width: 100%;
 }
 
-.grid-item{
+.grid-item {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -196,10 +208,11 @@ x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer{
   margin: 5px;
   min-height: 50px;
   overflow: hidden;
-  min-width:20%;
+  min-width: 20%;
   flex: 1 1 30%;
-  text-align:center;
+  text-align: center;
 }
-.hidden{
-  display:none;
+
+.hidden {
+  display: none;
 }

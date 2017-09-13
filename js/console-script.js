@@ -313,8 +313,6 @@
       webview0.send('gotoSlide', current);
       webview1.send('gotoSlide', getFutureSlides(current, 1));
       webview2.send('gotoSlide', getFutureSlides(current, 2));
-      let x = slideList.find(x => x.step === current).stepName;
-      document.getElementById("currentSlideName").innerHTML = x;
       displaySlideList(current);
     }
 
@@ -332,6 +330,14 @@
         "isCurrent": function() { if (this.step == current) { return "current"; } else { return "future"; } }
       });
       document.getElementById("impressOverview").innerHTML = rendered;
+
+      /* Display current Slide Name in bottom-right infobox */
+      let x = slideList.find(x => x.step === current).stepName;
+      document.getElementById("currentSlideName").innerHTML = x;
+
+      /* Display current Slide Number in bottom-right infobox */
+      i = slideList.map((el) => el.step).indexOf(current);
+      document.getElementById("slidesCount").innerHTML = i18n.__("Slide %s of %s", (i + 1), slideList.length);
 
       /* Add click event listeners to all grid-items = Going to slide*/
       let div = document.getElementById("slideList");
@@ -374,10 +380,6 @@
 
     showTimer('current');
 
-    webview0.addEventListener('focus', function(e) {
-      e.preventDefault();
-    });
-
     webview0.addEventListener('ipc-message', (event) => {
       switch (event.channel) {
         case 'gotoSlide':
@@ -412,8 +414,8 @@
           }
           break;
         case "controlsEnabled":
-        let nextSlideBtn = document.getElementById("nextSlideBtn");
-        let prevSlideBtn = document.getElementById("prevSlideBtn");
+          let nextSlideBtn = document.getElementById("nextSlideBtn");
+          let prevSlideBtn = document.getElementById("prevSlideBtn");
           switch (event.args[0]) {
             case true:
               document.removeEventListener("keyup", setupKeyboardControls, false);
