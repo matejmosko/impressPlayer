@@ -138,7 +138,8 @@ function createWindow() {
     width: windowState.main.bounds && windowState.main.bounds.width || 800,
     height: windowState.main.bounds && windowState.main.bounds.height || 600,
     icon: path.resolve(__dirname, 'img/icon.png'),
-    title: 'imp Console',
+    title: 'impressPlayer Console',
+    show: false,
     backgroundColor: '#13132A'
   });
 
@@ -152,6 +153,11 @@ function createWindow() {
     protocol: 'file:',
     slashes: true
   }));
+
+  impWindows.main.on('ready-to-show', function() {
+      impWindows.main.show();
+      impWindows.main.focus();
+  });
 
   impWindows.main.webContents.on('did-frame-finish-load', function() {
     //impWindows.main.webContents.executeJavaScript(require(path.resolve(app.getAppPath(), "./js/console-script.js")));
@@ -194,7 +200,7 @@ function createProjector() {
     width: windowState.projector.bounds && windowState.projector.bounds.width || 800,
     height: windowState.projector.bounds && windowState.projector.bounds.height || 600,
     icon: path.resolve(__dirname, 'img/icon.png'),
-    title: 'imp Projector',
+    title: 'impressPlayer Console',
     backgroundColor: '#13132A',
     show: false
   });

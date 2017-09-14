@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>impPlayer</title>
+  <title>impressPlayer Console</title>
   <base href="{{{dirname}}}/js" />
   <link rel="import" href="{{{appPath}}}/node_modules/xel/xel.min.html">
   <!--<link rel="stylesheet" href="./node_modules/xel/stylesheets/material.theme.css">-->

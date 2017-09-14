@@ -41,7 +41,6 @@
     "asar": true,
     "compression": "maximum",
     "npmRebuild": true,
-    "nodeGypRebuild": false,
     "linux": {
       "target": "AppImage",
       "category": "Office"
