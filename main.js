@@ -21,10 +21,20 @@ const settings = require('electron-settings');
 
 const i18n = new(require('i18n-2'))({
   locales: ['en', 'sk'],
-  directory: path.join(__dirname, './locales'),
+  directory: path.resolve(__dirname, './locales'),
   extension: ".json"
 });
-global.i18n = i18n;
+global.globalObject = {
+  "i18n": i18n,
+  "arguments": process.argv,
+};
+
+let debugMode = true;
+
+if (arguments[0] == "debug") {
+  debugMode = true;
+}
+
 i18n.setLocaleFromEnvironmentVariable();
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -38,30 +48,38 @@ function saveTemplates() {
     "dirname": __dirname,
     "usrPath": app.getPath('userData'),
     "appPath": app.getAppPath(),
+    "jsPath": path.resolve(app.getAppPath(), "./js"),
+    "consolePath": JSON.stringify(path.resolve(app.getAppPath(), "./js/console-script.js")),
+    "projectorPath": JSON.stringify(path.resolve(app.getAppPath(), "./js/projector-script.js")),
     "i18n": function() {
       return function(text, render) {
         return render(i18n.__(text));
       };
     }
   }
-  fs.readFile(path.join(__dirname, './templates/console.tpl'), 'utf8', (err, data) => {
+  fs.readFile(path.resolve(__dirname, './templates/console.tpl'), 'utf8', (err, data) => {
+    ms.escapeHtml = function(text) { return text; }
     if (err) throw err;
     let tplConsole = data;
     let consoleLocalized = ms.render(tplConsole, mustacheOptions);
-    let tplViewerFake = fs.readFileSync(path.join(__dirname, './templates/viewer-fake.tpl'), 'utf8');
+
+    let tplViewerFake = fs.readFileSync(path.resolve(__dirname, './templates/viewer-fake.tpl'), 'utf8');
     viewerFakeLocalized = ms.render(tplViewerFake, mustacheOptions);
-    fs.writeFile(path.join(app.getPath('userData'), './viewer.html'), viewerFakeLocalized, (err) => {
+    fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), viewerFakeLocalized, (err) => {
       if (err) throw err;
 
-      fs.writeFile(path.join(app.getPath('userData'), './console.html'), consoleLocalized, (err) => {
+      fs.writeFile(path.resolve(app.getPath('userData'), './console.html'), consoleLocalized, (err) => {
         if (err) throw err;
-        fs.readFile(path.join(__dirname, './templates/projector.tpl'), 'utf8', (err, data) => {
+        fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, data) => {
           let tplProjector = data;
           let projectorLocalized = ms.render(tplProjector, mustacheOptions);
-          fs.writeFile(path.join(app.getPath('userData'), './projector.html'), projectorLocalized, (err) => {
+  
+
+
+          fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), projectorLocalized, (err) => {
             if (err) throw err;
-              createProjector();
-              createWindow();
+            createProjector();
+            createWindow();
           });
 
         });
@@ -120,7 +138,7 @@ function createWindow() {
     y: windowState.main.bounds && windowState.main.bounds.y || undefined,
     width: windowState.main.bounds && windowState.main.bounds.width || 800,
     height: windowState.main.bounds && windowState.main.bounds.height || 600,
-    icon: path.join(__dirname, 'img/icon.png'),
+    icon: path.resolve(__dirname, 'img/icon.png'),
     title: 'imp Console',
     backgroundColor: '#13132A'
   });
@@ -131,10 +149,14 @@ function createWindow() {
 
   // and load the index.html of the app.
   impWindows.main.loadURL(url.format({
-    pathname: path.join(app.getPath('userData'), './console.html'),
+    pathname: path.resolve(app.getPath('userData'), './console.html'),
     protocol: 'file:',
     slashes: true
   }));
+
+  impWindows.main.webContents.on('did-frame-finish-load', function() {
+    //impWindows.main.webContents.executeJavaScript(require(path.resolve(app.getAppPath(), "./js/console-script.js")));
+  });
 
   impWindows.main.on('close', event => {
     storeWindowState();
@@ -158,6 +180,9 @@ function createWindow() {
   impWindows.main.on('move', function() {
     storeWindowState();
   });
+  if (debugMode) {
+    impWindows.main.webContents.openDevTools()
+  }
 }
 
 
@@ -169,7 +194,7 @@ function createProjector() {
     y: windowState.projector.bounds && windowState.projector.bounds.y || undefined,
     width: windowState.projector.bounds && windowState.projector.bounds.width || 800,
     height: windowState.projector.bounds && windowState.projector.bounds.height || 600,
-    icon: path.join(__dirname, 'img/icon.png'),
+    icon: path.resolve(__dirname, 'img/icon.png'),
     title: 'imp Projector',
     backgroundColor: '#13132A',
     show: false
@@ -181,7 +206,7 @@ function createProjector() {
 
   // and load the index.html of the app.
   impWindows.projector.loadURL(url.format({
-    pathname: path.join(app.getPath('userData'), './projector.html'),
+    pathname: path.resolve(app.getPath('userData'), './projector.html'),
     protocol: 'file:',
     slashes: true,
     fullscreenable: true
@@ -246,6 +271,9 @@ function createProjector() {
       impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
     }
   });
+  if (debugMode) {
+    impWindows.projector.webContents.openDevTools()
+  }
 }
 
 // This method will be called when Electron has finished

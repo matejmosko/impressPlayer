@@ -16,7 +16,8 @@
     } = require('electron').remote;
     const settings = remote.require('electron-settings');
 
-    const i18n = remote.getGlobal('i18n');
+    const i18n = remote.getGlobal('globalObject').i18n;
+    const arguments = remote.getGlobal('globalObject').arguments;
 
     const ipc = require('electron').ipcRenderer;
     let slidesList = [],
@@ -27,11 +28,15 @@
       debugMode = true;
     setupSettings();
 
+    if (arguments[0] == "debug"){
+      debugMode = true;
+    }
+
     // Load impress-viewer template
     // TODO Move this to async function inside the part, where we generate viewer.html
     // TODO Move all tmp files (viewer.html, console.html) to userData.
 
-    tplViewerHTML = fs.readFileSync(path.join(app.getAppPath(), './templates/viewer.tpl'), 'utf8');
+    tplViewerHTML = fs.readFileSync(path.resolve(app.getAppPath(), './templates/viewer.tpl'), 'utf8');
     let parser = new DOMParser(),
       viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
 
@@ -189,7 +194,7 @@
 
             // Notify when everything is extracted
             unzipper.on('extract', function(log) {
-              subfile = path.join(destinationPath, log[0].folder, 'impress.md');
+              subfile = path.resolve(destinationPath, log[0].folder, 'impress.md');
               parseMarkdown(subfile);
             });
 
@@ -232,8 +237,8 @@
         return;
       }
       let dataPath = path.dirname(file) + "/"; // Baseurl for the presentation (for relative links to work inside presentation)
-      let impressPath = path.join(__dirname, "impress.js"); // We load impress.js separately (with absolute path)
-      let viewerPath = path.join(__dirname, "viewer-script.js"); // This is the script for impressPlayer console to work.
+      let impressPath = path.resolve(__dirname, "impress.js"); // We load impress.js separately (with absolute path)
+      let viewerPath = path.resolve(__dirname, "viewer-script.js"); // This is the script for impressPlayer console to work.
 
       viewerDOM.getElementById("baseTag").setAttribute("href", dataPath);
       viewerDOM.getElementById("container").innerHTML = html;
@@ -241,7 +246,7 @@
       viewerDOM.getElementById("printStyleBox").innerHTML = printcss;
       viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
       viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
-      viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); /*window.$ = window.jQuery = require('jquery');*/ require('" + viewerPath + "');";
+      viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); require('" + viewerPath + "');";
 
       loadProjection(); // Finally put it all into the template and loadProjection. I am considering migration of this function to mustache. It is probably much faster.
 
@@ -249,7 +254,7 @@
 
     function saveViewer() {
       let serializer = new XMLSerializer();
-      fs.writeFile(path.join(app.getPath('userData'), './viewer.html'), serializer.serializeToString(viewerDOM), (err) => {
+      fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), serializer.serializeToString(viewerDOM), (err) => {
 
         if (err) throw err;
         ipc.send('loadProjection');

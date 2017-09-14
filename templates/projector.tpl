@@ -24,10 +24,9 @@
   </div>
 
 </body>
-<script>
+<script id="require">
   // You can also require other files to run in this process
-  //window.$ = window.jQuery = require('jquery');
-  require('{{{appPath}}}/js/projektor-script.js');
+  require({{{projectorPath}}});
 </script>
 
 </html>

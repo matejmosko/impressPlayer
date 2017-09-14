@@ -156,9 +156,11 @@
     </x-buttons>
   </x-dialog>
 </body>
-<script>
-  // You can also require other files to run in this process
-  require('{{{appPath}}}/js/console-script.js');
+
+<script id="require">
+  <!--// You can also require other files to run in this process
+  require({{{consolePath}}});
+  //require("consolePathPlaceHolder");
 </script>
 
 </html>
