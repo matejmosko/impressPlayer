@@ -13,7 +13,6 @@ const fs = require('fs');
 const url = require('url');
 const ms = require('mustache');
 
-
 const {
   ipcMain
 } = require('electron');
@@ -29,7 +28,7 @@ global.globalObject = {
   "arguments": process.argv,
 };
 
-let debugMode = true;
+let debugMode = false;
 
 if (arguments[0] == "debug") {
   debugMode = true;
@@ -73,7 +72,7 @@ function saveTemplates() {
         fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, data) => {
           let tplProjector = data;
           let projectorLocalized = ms.render(tplProjector, mustacheOptions);
-  
+
 
 
           fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), projectorLocalized, (err) => {

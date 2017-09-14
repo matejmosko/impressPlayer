@@ -25,7 +25,7 @@
       running = false,
       exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
-      debugMode = true;
+      debugMode = false;
     setupSettings();
 
     if (arguments[0] == "debug"){
@@ -246,7 +246,7 @@
       viewerDOM.getElementById("printStyleBox").innerHTML = printcss;
       viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
       viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
-      viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); require('" + viewerPath + "');";
+      viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); require(" + JSON.stringify(viewerPath) + ");";
 
       loadProjection(); // Finally put it all into the template and loadProjection. I am considering migration of this function to mustache. It is probably much faster.
 

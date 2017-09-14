@@ -19,7 +19,7 @@
   ],
   "author": "Matej Moško",
   "license": "CC0-1.0",
-  "postinstall": "electron-builder install-app-deps",
+  "postinstall": "install-app-deps",
   "devDependencies": {
     "electron": "^1.7.6",
     "electron-builder": "^18.0.1",
@@ -39,7 +39,7 @@
     "productName": "impress Player",
     "appId": "com.electron.MatejMosko.impressPlayer",
     "asar": true,
-    "compression": "store",
+    "compression": "maximum",
     "npmRebuild": true,
     "nodeGypRebuild": false,
     "linux": {
@@ -47,7 +47,7 @@
       "category": "Office"
     },
     "win": {
-      "target": "portable",
+      "target": "nsis",
       "icon": "build/icon.ico"
     }
   }
