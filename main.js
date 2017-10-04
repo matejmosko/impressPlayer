@@ -1,93 +1,52 @@
+/* Initial settings */
+
 const electron = require('electron');
-// Module to control application life.
+/* Module to control application life. */
 const app = electron.app;
+/* Module to create native browser window. */
+const BrowserWindow = electron.BrowserWindow;
+/* Modules to serve webcontents and modal dialogs */
 const {
   dialog,
   webContents
 } = require('electron');
-// Module to create native browser window.
-const BrowserWindow = electron.BrowserWindow;
-
-const path = require('path');
-const fs = require('fs');
-const url = require('url');
-const ms = require('mustache');
-
+/* IPC system to communicate between main and renderer processes */
 const {
   ipcMain
 } = require('electron');
-const settings = require('electron-settings');
 
-const i18n = new(require('i18n-2'))({
-  locales: ['en', 'sk'],
+/* Various necessary modules */
+const path = require('path'); // System paths
+const fs = require('fs'); // Access to filesystem
+const url = require('url'); // Access to web urls
+const ms = require('mustache'); // We use Mustache to work with templates
+const settings = require('electron-settings'); // Electron-settings stores application settings between sessions
+const i18n = new(require('i18n-2'))({ // i18n helps with translations
+  locales: ['en', 'sk'], // TODO This has to be enhanced after other translations are available.
   directory: path.resolve(__dirname, './locales'),
   extension: ".json"
 });
+
+/* GLOBAL VARIABLES that have to be accessible through whole application */
 global.globalObject = {
   "i18n": i18n,
   "arguments": process.argv,
 };
 
+/* DEBUG mode settings */
 let debugMode = false;
-
 if (arguments[0] == "debug") {
   debugMode = true;
 }
 
+/* Window management */
+let impWindows = {}; // Keeps a global reference of the window object, if you don't, the window will be closed automatically when the JavaScript object is garbage collected.
+let windowState = {}; // Keeps a global reference to window position and size.
+let localeViewerFake = ""; // This a hack that helps us flush previously loaded presentation on app restart.
+
+
+/* Get system languages and change the app's language accoridngly. If there is no such lang in locales, fallback (english) will be used. */
 i18n.setLocaleFromEnvironmentVariable();
-
-// Keep a global reference of the window object, if you don't, the window will
-// be closed automatically when the JavaScript object is garbage collected.
-let impWindows = {};
-let windowState = {};
-let viewerFakeLocalized = "";
-
-function saveTemplates() {
-  mustacheOptions = {
-    "dirname": __dirname,
-    "usrPath": app.getPath('userData'),
-    "appPath": app.getAppPath(),
-    "jsPath": path.resolve(app.getAppPath(), "./js"),
-    "consolePath": JSON.stringify(path.resolve(app.getAppPath(), "./js/console-script.js")),
-    "projectorPath": JSON.stringify(path.resolve(app.getAppPath(), "./js/projector-script.js")),
-    "i18n": function() {
-      return function(text, render) {
-        return render(i18n.__(text));
-      };
-    }
-  }
-  fs.readFile(path.resolve(__dirname, './templates/console.tpl'), 'utf8', (err, data) => {
-    ms.escapeHtml = function(text) { return text; }
-    if (err) throw err;
-    let tplConsole = data;
-    let consoleLocalized = ms.render(tplConsole, mustacheOptions);
-
-    let tplViewerFake = fs.readFileSync(path.resolve(__dirname, './templates/viewer-fake.tpl'), 'utf8');
-    viewerFakeLocalized = ms.render(tplViewerFake, mustacheOptions);
-    fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), viewerFakeLocalized, (err) => {
-      if (err) throw err;
-
-      fs.writeFile(path.resolve(app.getPath('userData'), './console.html'), consoleLocalized, (err) => {
-        if (err) throw err;
-        fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, data) => {
-          let tplProjector = data;
-          let projectorLocalized = ms.render(tplProjector, mustacheOptions);
-
-
-
-          fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), projectorLocalized, (err) => {
-            if (err) throw err;
-            createProjector();
-            createWindow();
-          });
-
-        });
-
-      });
-    });
-  });
-
-}
 
 try {
   windowState = settings.get('windowstate', {
@@ -114,6 +73,46 @@ try {
   // the file is there, but corrupt. Handle appropriately.
 }
 
+/* END Initial settings*/
+
+/* START Real application */
+function saveTemplates() {
+  mustacheOptions = {
+    "dirname": __dirname,
+    "usrPath": app.getPath('userData'),
+    "appPath": app.getAppPath(),
+    "jsPath": path.resolve(app.getAppPath(), "./js"),
+    "consolePath": JSON.stringify(path.resolve(app.getAppPath(), "./js/console-script.js")),
+    "projectorPath": JSON.stringify(path.resolve(app.getAppPath(), "./js/projector-script.js")),
+    "i18n": function() { // This is a function that translates i18n found in templates.
+      return function(text, render) {
+        return render(i18n.__(text));
+      };
+    }
+  }
+  fs.readFile(path.resolve(__dirname, './templates/viewer-fake.tpl'), 'utf8', (err, tplViewerFake) => {
+    localeViewerFake = ms.render(tplViewerFake, mustacheOptions);
+    fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), localeViewerFake, (err) => {
+      if (err) throw err;
+      fs.readFile(path.resolve(__dirname, './templates/console.tpl'), 'utf8', (err, tplConsole) => { // Read console.tpl (main console interface) asynchronously
+        if (err) throw err;
+        let localeConsole = ms.render(tplConsole, mustacheOptions);
+        fs.writeFile(path.resolve(app.getPath('userData'), './console.html'), localeConsole, (err) => {
+          if (err) throw err;
+          createWindow();
+        });
+      });
+      fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
+        let localeProjector = ms.render(tplProjector, mustacheOptions);
+        fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), localeProjector, (err) => {
+          if (err) throw err;
+          createProjector();
+        });
+      });
+    });
+  });
+}
+
 function storeWindowState() {
   windowState.main.isMaximized = impWindows.main.isMaximized();
   windowState.projector.isMaximized = impWindows.projector.isMaximized();
@@ -133,10 +132,10 @@ function storeWindowState() {
 function createWindow() {
   // Create the browser window.
   impWindows.main = new BrowserWindow({
-    x: windowState.main.bounds && windowState.main.bounds.x || undefined,
-    y: windowState.main.bounds && windowState.main.bounds.y || undefined,
-    width: windowState.main.bounds && windowState.main.bounds.width || 800,
-    height: windowState.main.bounds && windowState.main.bounds.height || 600,
+    x: windowState.main && windowState.main.bounds && windowState.main.bounds.x || undefined,
+    y: windowState.main && windowState.main.bounds && windowState.main.bounds.y || undefined,
+    width: windowState.main && windowState.main.bounds && windowState.main.bounds.width || 800,
+    height: windowState.main && windowState.main.bounds && windowState.main.bounds.height || 600,
     icon: path.resolve(__dirname, 'img/icon.png'),
     title: 'impressPlayer Console',
     show: false,
@@ -155,8 +154,8 @@ function createWindow() {
   }));
 
   impWindows.main.on('ready-to-show', function() {
-      impWindows.main.show();
-      impWindows.main.focus();
+    impWindows.main.show();
+    impWindows.main.focus();
   });
 
   impWindows.main.webContents.on('did-frame-finish-load', function() {
@@ -195,10 +194,10 @@ function createWindow() {
 function createProjector() {
   // Create the browser window.
   impWindows.projector = new BrowserWindow({
-    x: windowState.projector.bounds && windowState.projector.bounds.x || undefined,
-    y: windowState.projector.bounds && windowState.projector.bounds.y || undefined,
-    width: windowState.projector.bounds && windowState.projector.bounds.width || 800,
-    height: windowState.projector.bounds && windowState.projector.bounds.height || 600,
+    x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
+    y: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.y || undefined,
+    width: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.width || 800,
+    height: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.height || 600,
     icon: path.resolve(__dirname, 'img/icon.png'),
     title: 'impressPlayer Console',
     backgroundColor: '#13132A',
@@ -386,7 +385,7 @@ ipcMain.on('audioVideoControls', (event, arg) => {
 });
 
 ipcMain.on('reloadWindows', (event) => {
-  fs.writeFile('viewer.html', viewerFakeLocalized, (err) => {
+  fs.writeFile('viewer.html', localeViewerFake, (err) => {
     if (err) throw err;
     impWindows.projector.webContents.reload();
     impWindows.main.webContents.reload();

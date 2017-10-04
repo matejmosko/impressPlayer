@@ -147,11 +147,8 @@
     function parseMarkdown(file) {
       const options = {
         theme: 'light',
-        autoSplit: true,
-        allowHtml: false,
         verbose: false,
-        embed: false,
-        title: 'Optional title for output HTML'
+        embed: false
       };
 
       markpress(file, options).then(({

@@ -43,17 +43,17 @@
         <x-buttons tracking="-1" id="gameControls" class="topButtons">
           <x-button id="openFile">{{#i18n}}Load Presentation{{/i18n}}</x-button>
           <x-buttons>
-        <x-buttons tracking="-1" id="gameControls" class="topButtons">
-          <x-button id="nextSlideBtn" class="impressControlBtns">
-            <x-box>
-              <x-icon name="skip-next"></x-icon>
-              <x-label id="nextSlideLabel">{{#i18n}}Next Slide{{/i18n}}</x-label>
-            </x-box>
-          </x-button>
-          <x-button id="prevSlideBtn" class="danger impressControlBtns">
-            <x-icon name="backspace"></x-icon>
-          </x-button>
-        </x-buttons>
+            <x-buttons tracking="-1" id="gameControls" class="topButtons">
+              <x-button id="nextSlideBtn" class="impressControlBtns">
+                <x-box>
+                  <x-icon name="skip-next"></x-icon>
+                  <x-label id="nextSlideLabel">{{#i18n}}Next Slide{{/i18n}}</x-label>
+                </x-box>
+              </x-button>
+              <x-button id="prevSlideBtn" class="danger impressControlBtns">
+                <x-icon name="backspace"></x-icon>
+              </x-button>
+            </x-buttons>
       </x-card>
 
 
@@ -61,60 +61,56 @@
 
     <div id="main">
       <div id="content">
-        <div id="gameTables">
-
-          <x-card id="contentCard">
-            <x-tabs centered>
-              <x-tab selected id="currentSlideTab">
-                <x-box>
-                  <x-icon name="list"></x-icon>
-                  <x-label id="tabLabelCurrentSlide">{{#i18n}}Presentation{{/i18n}}</x-label>
-                </x-box>
-              </x-tab>
+        <x-tabs centered>
+          <x-tab selected id="currentSlideTab">
+            <x-box>
+              <x-icon name="list"></x-icon>
+              <x-label id="tabLabelCurrentSlide">{{#i18n}}Presentation{{/i18n}}</x-label>
+            </x-box>
+          </x-tab>
 
 
-              <x-tab id="remoteSourcesTab" class="hidden">
-                <x-box>
-                  <x-icon name="settings"></x-icon>
-                  <x-label id="tabLabelRemoteSources">{{#i18n}}Remote Sources{{/i18n}}</x-label>
-                </x-box>
-              </x-tab>
+          <x-tab id="remoteSourcesTab" class="hidden">
+            <x-box>
+              <x-icon name="settings"></x-icon>
+              <x-label id="tabLabelRemoteSources">{{#i18n}}Remote Sources{{/i18n}}</x-label>
+            </x-box>
+          </x-tab>
 
-              <x-tab id="optionsTab" class="hidden">
-                <x-box>
-                  <x-icon name="settings"></x-icon>
-                  <x-label id="tabLabelSettings">{{#i18n}}Options{{/i18n}}</x-label>
-                </x-box>
-              </x-tab>
-              <x-tab id="allSlidesTab">
-                <x-box>
-                  <x-icon name="sort"></x-icon>
-                  <x-label id="tabLabelAllSlides">{{#i18n}}Slides List{{/i18n}}</x-label>
-                </x-box>
-              </x-tab>
-            </x-tabs>
+          <x-tab id="optionsTab" class="hidden">
+            <x-box>
+              <x-icon name="settings"></x-icon>
+              <x-label id="tabLabelSettings">{{#i18n}}Options{{/i18n}}</x-label>
+            </x-box>
+          </x-tab>
+          <x-tab id="allSlidesTab">
+            <x-box>
+              <x-icon name="sort"></x-icon>
+              <x-label id="tabLabelAllSlides">{{#i18n}}Slides List{{/i18n}}</x-label>
+            </x-box>
+          </x-tab>
+        </x-tabs>
+        <x-card id="contentCard">
 
-            <div id="currentSlideDiv" class="content-table slidesPreview">
-              <webview id="impressCurrent" autosize src="{{{usrPath}}}/viewer.html" style="display:flex;" nodeintegration></webview>
-              <div class="impressCurtain">
-                <!-- The curtain preventing focusing webview element -->
-              </div>
+          <div id="currentSlideDiv" class="content-table slidesPreview">
+            <webview id="impressCurrent" autosize src="{{{usrPath}}}/viewer.html" style="display:flex;" nodeintegration></webview>
+            <div class="impressCurtain">
+              <!-- The curtain preventing focusing webview element -->
             </div>
-            <div id="allSlidesDiv" class="content-table hidden">
-              <div id="impressOverview"></div>
-            </div>
-            <div id="remoteSourcesDiv" class="content-table hidden">
-              Placeholder for remote sources
-            </div>
-            <div id="optionsDiv" class="content-table hidden">
-              Placeholder for options
-            </div>
-          </x-card>
-        </div>
+          </div>
+          <div id="allSlidesDiv" class="content-table hidden">
+            <div id="impressOverview"></div>
+          </div>
+          <div id="remoteSourcesDiv" class="content-table hidden">
+            Placeholder for remote sources
+          </div>
+          <div id="optionsDiv" class="content-table hidden">
+            Placeholder for options
+          </div>
+        </x-card>
       </div>
 
       <div id="sidebar">
-        <div id="sideCards">
           <x-card class="nextSlide nextSlide-1">
             <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/viewer.html" webpreferences="focusable: false" autosize style="display:flex;" nodeintegration></webview>
             <div class="impressCurtain">
@@ -127,14 +123,15 @@
               <!-- The curtain preventing focusing webview element -->
             </div>
           </x-card>
-          <x-card class="nextSlide sideInfo">
-            <div id="bigTimer"><span id="projectionTimer" title="Click to reset timer">00:00:00</span></div>
-            <div id="smallTimer"><span id="currentTime">00:00:00</span></div>
-            <div id="currentSlideName"></div>
-            <div id="slidesCount"></div>
-          </x-card>
-        </div>
       </div>
+    </div>
+    <div id="footer">
+      <x-card class="presentationInfo">
+        <div id="smallTimer"><span id="currentTime">00:00:00</span></div>
+        <div id="bigTimer"><span id="projectionTimer" title="Click to reset timer">00:00:00</span></div>
+        <div id="currentSlideName">---</div>
+        <div id="slidesCount">-/-</div>
+      </x-card>
     </div>
   </div>
   <x-dialog id="exitDialog">
