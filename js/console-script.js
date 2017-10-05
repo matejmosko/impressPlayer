@@ -130,11 +130,13 @@
 
     document.getElementById("openFile").addEventListener("click", function() {
       dialog.showOpenDialog({
+        defaultPath: settings.get("defaultPath") || app.getPath("home"),
         filters: [
           { name: 'impress.js presentations', extensions: ['md', 'mkd', 'markdown', 'html', 'htm', 'zip'] },
           { name: 'All Files', extensions: ['*'] }
       ]
       }, function(fileNames) {
+        settings.set("defaultPath", path.dirname(fileNames[0]))
         if (fileNames === undefined) {
           console.log(i18n.__("No file selected"));
           return;
