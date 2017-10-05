@@ -1,6 +1,6 @@
 - [x] Load formatted zip file
 - [x] Dynamic baseurl
-- [ ] Translations
+- [x] Translations
 - [ ] English comments
 - [x] Positioning
 - [ ] clean Files
