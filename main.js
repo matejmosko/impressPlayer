@@ -84,7 +84,7 @@ function saveTemplates() {
     "jsPath": path.resolve(app.getAppPath(), "./js"),
     "consolePath": JSON.stringify(path.resolve(app.getAppPath(), "./js/console-script.js")),
     "projectorPath": JSON.stringify(path.resolve(app.getAppPath(), "./js/projector-script.js")),
-    "i18n": function() { // This is a function that translates i18n found in templates.
+    "i18n": function() { // This is a function that translates {{{i18n}}} strings found in templates.
       return function(text, render) {
         return render(i18n.__(text));
       };
@@ -94,36 +94,39 @@ function saveTemplates() {
     localeViewerFake = ms.render(tplViewerFake, mustacheOptions);
     fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), localeViewerFake, (err) => {
       if (err) throw err;
-      fs.readFile(path.resolve(__dirname, './templates/console.tpl'), 'utf8', (err, tplConsole) => { // Read console.tpl (main console interface) asynchronously
-        if (err) throw err;
-        let localeConsole = ms.render(tplConsole, mustacheOptions);
-        fs.writeFile(path.resolve(app.getPath('userData'), './console.html'), localeConsole, (err) => {
-          if (err) throw err;
-          createWindow();
-        });
-      });
-      fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
-        let localeProjector = ms.render(tplProjector, mustacheOptions);
-        fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), localeProjector, (err) => {
-          if (err) throw err;
-          createProjector();
-        });
-      });
+    });
+  });
+  fs.readFile(path.resolve(__dirname, './templates/console.tpl'), 'utf8', (err, tplConsole) => { // Read console.tpl (main console interface) asynchronously
+    if (err) throw err;
+    let localeConsole = ms.render(tplConsole, mustacheOptions);
+    fs.writeFile(path.resolve(app.getPath('userData'), './console.html'), localeConsole, (err) => {
+      if (err) throw err;
+    });
+  });
+  fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
+    let localeProjector = ms.render(tplProjector, mustacheOptions);
+    fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), localeProjector, (err) => {
+      if (err) throw err;
     });
   });
 }
 
 function storeWindowState() {
-  windowState.main.isMaximized = impWindows.main.isMaximized();
-  windowState.projector.isMaximized = impWindows.projector.isMaximized();
-  if (!windowState.main.isMaximized) {
-    // only update bounds if the window isn't currently maximized
-    windowState.main.bounds = impWindows.main.getBounds();
+  if (typeof(impWindows.main) === "object") {
+    windowState.main.isMaximized = impWindows.main.isMaximized();
+    if (!windowState.main.isMaximized) {
+      // only update bounds if the window isn't currently maximized
+      windowState.main.bounds = impWindows.main.getBounds();
+    }
   }
-  if (!windowState.projector.isMaximized) {
-    // only update bounds if the window isn't currently maximized
-    windowState.projector.bounds = impWindows.projector.getBounds();
+  if (typeof(impWindows.projector) === "object") {
+    windowState.projector.isMaximized = impWindows.projector.isMaximized();
+    if (!windowState.projector.isMaximized) {
+      // only update bounds if the window isn't currently maximized
+      windowState.projector.bounds = impWindows.projector.getBounds();
+    }
   }
+
   settings.set('windowstate', windowState);
 };
 
@@ -142,7 +145,7 @@ function createWindow() {
     backgroundColor: '#13132A'
   });
 
-  if (windowState.main !== "undefined" && windowState.main.isMaximized) {
+  if (typeof(windowState.main) === "object" && windowState.main.isMaximized) {
     impWindows.main.maximize();
   }
 
@@ -156,6 +159,12 @@ function createWindow() {
   impWindows.main.on('ready-to-show', function() {
     impWindows.main.show();
     impWindows.main.focus();
+    impWindows.main.on('resize', function() {
+      storeWindowState();
+    });
+    impWindows.main.on('move', function() {
+      storeWindowState();
+    });
   });
 
   impWindows.main.webContents.on('did-frame-finish-load', function() {
@@ -163,11 +172,10 @@ function createWindow() {
   });
 
   impWindows.main.on('close', event => {
-    storeWindowState();
     event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
     impWindows.main.webContents.send('quitModal');
-
     ipcMain.on('reallyQuit', (event) => {
+      storeWindowState();
       app.exit();
     });
   });
@@ -178,12 +186,7 @@ function createWindow() {
     // when you should delete the corresponding element.
     impWindows.main = null;
   });
-  impWindows.main.on('resize', function() {
-    storeWindowState();
-  });
-  impWindows.main.on('move', function() {
-    storeWindowState();
-  });
+
   if (debugMode) {
     impWindows.main.webContents.openDevTools()
   }
@@ -204,10 +207,6 @@ function createProjector() {
     show: false
   });
 
-  if (windowState.projector !== "undefined" && windowState.projector.isMaximized) {
-    impWindows.projector.maximize();
-  }
-
   // and load the index.html of the app.
   impWindows.projector.loadURL(url.format({
     pathname: path.resolve(app.getPath('userData'), './projector.html'),
@@ -223,22 +222,7 @@ function createProjector() {
     // when you should delete the corresponding element.
     impWindows.projector = null;
   });
-  impWindows.projector.on('close', event => {
-    event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
-    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", false);
-    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", false);
-    impWindows.projector.hide();
-  });
-  impWindows.projector.on('leave-full-screen', () => {
-    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", false);
-  });
-  impWindows.projector.on('enter-full-screen', () => {
-    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", true);
-    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
-  });
-  impWindows.projector.webContents.on('did-finish-load', () => {
-
-  });
+  // Window positioning and size
   impWindows.projector.on('resize', () => {
     storeWindowState();
     const [width, height] = impWindows.projector.getContentSize();
@@ -258,6 +242,11 @@ function createProjector() {
   impWindows.projector.on('move', function() {
     storeWindowState();
   });
+
+  if (typeof(windowState.projector) === "object" && windowState.projector.isMaximized) {
+    impWindows.projector.maximize();
+  }
+
   ipcMain.on('toggleFullscreen', (event) => {
     if (impWindows.projector.isFullScreen()) {
       impWindows.projector.setFullScreen(false);
@@ -266,24 +255,56 @@ function createProjector() {
     }
   });
 
-  ipcMain.on('toggleProjector', (event) => {
-    if (impWindows.projector.isVisible()) {
-      impWindows.projector.hide();
-      impWindows.main.webContents.send('buttonSwitch', "projectorBtn", false);
-    } else {
-      impWindows.projector.show();
-      impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
-    }
+  impWindows.projector.webContents.on('did-finish-load', () => {
+    impWindows.projector.hide();
   });
   if (debugMode) {
     impWindows.projector.webContents.openDevTools()
   }
 }
 
+function setupProjectorButtons() {
+  // Button events
+  impWindows.projector.on('hide', event => {
+    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", false);
+    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", false);
+  });
+
+  impWindows.projector.on('show', event => {
+    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
+  });
+
+  impWindows.projector.on('close', event => {
+    event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
+    impWindows.projector.hide();
+  });
+  impWindows.projector.on('leave-full-screen', () => {
+    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", false);
+  });
+  impWindows.projector.on('enter-full-screen', () => {
+    impWindows.main.webContents.send('buttonSwitch', "fullscreenBtn", true);
+    impWindows.main.webContents.send('buttonSwitch', "projectorBtn", true);
+  });
+
+  ipcMain.on('toggleProjector', (event) => {
+    if (impWindows.projector.isVisible()) {
+      impWindows.projector.hide();
+    } else {
+      impWindows.projector.show();
+
+    }
+  });
+}
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', saveTemplates);
+app.on('ready', function() {
+  saveTemplates();
+  createWindow();
+  createProjector();
+  setupProjectorButtons();
+});
 //app.on('ready', );
 
 // Quit when all windows are closed.
@@ -294,8 +315,6 @@ app.on('window-all-closed', function() {
     app.quit();
   }
 });
-
-
 
 app.on('activate', function() {
   // On OS X it's common to re-create a window in the app when the

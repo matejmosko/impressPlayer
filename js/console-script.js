@@ -28,7 +28,7 @@
       debugMode = false;
     setupSettings();
 
-    if (arguments[0] == "debug"){
+    if (arguments[0] == "debug") {
       debugMode = true;
     }
 
@@ -104,7 +104,7 @@
       ipc.send('toggleRules');
     });
 
-    document.getElementById("projectorBtn").addEventListener("click", function() { // Toggle visibility og Projector Window
+    document.getElementById("projectorBtn").addEventListener("click", function() { // Toggle visibility of Projector Window
       ipc.send('toggleProjector');
     });
 
@@ -131,13 +131,19 @@
     document.getElementById("openFile").addEventListener("click", function() {
       dialog.showOpenDialog({
         defaultPath: settings.get("defaultPath") || app.getPath("home"),
-        filters: [
-          { name: 'impress.js presentations', extensions: ['md', 'mkd', 'markdown', 'html', 'htm', 'zip'] },
-          { name: 'All Files', extensions: ['*'] }
-      ]
+        filters: [{
+            name: 'impress.js presentations',
+            extensions: ['md', 'mkd', 'markdown', 'html', 'htm', 'zip']
+          },
+          {
+            name: 'All Files',
+            extensions: ['*']
+          }
+        ]
       }, function(fileNames) {
         settings.set("defaultPath", path.dirname(fileNames[0]))
         if (fileNames === undefined) {
+          saveLogs(i18n.__("No file selected"));
           console.log(i18n.__("No file selected"));
           return;
         }
@@ -188,6 +194,7 @@
 
             // Add the error event listener
             unzipper.on('error', function(err) {
+              saveLogs(i18n.__('Unzip with decompress-zip failed'), err);
               console.log(i18n.__('Unzip with decompress-zip failed'), err);
             });
 
@@ -203,6 +210,7 @@
             });
             break;
           default:
+            saveLogs(i18n.__("Something went wrong. Wrong file is loaded."));
             console.log(i18n.__("Something went wrong. Wrong file is loaded."));
         }
       });
@@ -232,6 +240,7 @@
       try {
         html = el.getElementById("impress").outerHTML; // Grab <div id="impress">...</div> and place it inside our template.
       } catch (err) {
+        saveLogs("There is a problem with a file you selected");
         console.log("There is a problem with a file you selected");
         return;
       }
@@ -267,7 +276,9 @@
       saveViewer();
       showTimer('projection');
       totalSeconds = 0;
-      document.getElementById("projectionTimer").addEventListener("click", function() { totalSeconds = 0; });
+      document.getElementById("projectionTimer").addEventListener("click", function() {
+        totalSeconds = 0;
+      });
       running = true;
       document.body.classList.add('running');
       mousetrap.bind(['space'], function() {
@@ -279,6 +290,7 @@
       if (debugMode) {
         webview0.openDevTools();
         webview0.addEventListener('console-message', (e) => {
+          saveLogs('Guest page logged a message:', e.message);
           console.log('Guest page logged a message:', e.message);
         })
       }
@@ -331,7 +343,13 @@
       `;
       let rendered = ms.render(tplSlideList, {
         "slides": slideList,
-        "isCurrent": function() { if (this.step == current) { return "current"; } else { return "future"; } }
+        "isCurrent": function() {
+          if (this.step == current) {
+            return "current";
+          } else {
+            return "future";
+          }
+        }
       });
       document.getElementById("impressOverview").innerHTML = rendered;
 
@@ -436,6 +454,7 @@
           }
           break;
         default:
+          saveLogs(i18n.__("There is something new coming from impress.js."));
           console.log(i18n.__("There is something new coming from impress.js."));
       }
     });
