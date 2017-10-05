@@ -144,7 +144,6 @@
         settings.set("defaultPath", path.dirname(fileNames[0]))
         if (fileNames === undefined) {
           saveLogs(i18n.__("No file selected"));
-          console.log(i18n.__("No file selected"));
           return;
         }
         loadProjectionFile(fileNames[0]);
@@ -195,7 +194,6 @@
             // Add the error event listener
             unzipper.on('error', function(err) {
               saveLogs(i18n.__('Unzip with decompress-zip failed'), err);
-              console.log(i18n.__('Unzip with decompress-zip failed'), err);
             });
 
             // Notify when everything is extracted
@@ -211,7 +209,6 @@
             break;
           default:
             saveLogs(i18n.__("Something went wrong. Wrong file is loaded."));
-            console.log(i18n.__("Something went wrong. Wrong file is loaded."));
         }
       });
 
@@ -241,7 +238,6 @@
         html = el.getElementById("impress").outerHTML; // Grab <div id="impress">...</div> and place it inside our template.
       } catch (err) {
         saveLogs("There is a problem with a file you selected");
-        console.log("There is a problem with a file you selected");
         return;
       }
       let dataPath = path.dirname(file) + "/"; // Baseurl for the presentation (for relative links to work inside presentation)
@@ -291,7 +287,6 @@
         webview0.openDevTools();
         webview0.addEventListener('console-message', (e) => {
           saveLogs('Guest page logged a message:', e.message);
-          console.log('Guest page logged a message:', e.message);
         })
       }
     }
@@ -455,7 +450,6 @@
           break;
         default:
           saveLogs(i18n.__("There is something new coming from impress.js."));
-          console.log(i18n.__("There is something new coming from impress.js."));
       }
     });
 

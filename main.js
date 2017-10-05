@@ -113,6 +113,9 @@ function saveTemplates() {
 
 function storeWindowState() {
   if (typeof(impWindows.main) === "object") {
+    if (typeof(windowState.main) !== "object"){
+      windowState.main = {};
+    }
     windowState.main.isMaximized = impWindows.main.isMaximized();
     if (!windowState.main.isMaximized) {
       // only update bounds if the window isn't currently maximized
@@ -120,6 +123,9 @@ function storeWindowState() {
     }
   }
   if (typeof(impWindows.projector) === "object") {
+    if (typeof(windowState.projector) !== "object"){
+      windowState.projector = {};
+    }
     windowState.projector.isMaximized = impWindows.projector.isMaximized();
     if (!windowState.projector.isMaximized) {
       // only update bounds if the window isn't currently maximized
