@@ -142,7 +142,7 @@ function createWindow() {
     backgroundColor: '#13132A'
   });
 
-  if (windowState.main.isMaximized) {
+  if (windowState.main !== "undefined" && windowState.main.isMaximized) {
     impWindows.main.maximize();
   }
 
@@ -204,7 +204,7 @@ function createProjector() {
     show: false
   });
 
-  if (windowState.projector.isMaximized) {
+  if (windowState.projector !== "undefined" && windowState.projector.isMaximized) {
     impWindows.projector.maximize();
   }
 
