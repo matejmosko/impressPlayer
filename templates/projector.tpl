@@ -19,7 +19,7 @@
     </ul>
   </div>
   <div id="container">
-    <webview id="impressCurrent" src="{{{usrPath}}}/viewer.html" autosize style="display:flex;" nodeintegration></webview>
+    <webview id="impressCurrent" src="{{{usrPath}}}/projector.html" autosize style="display:flex;" nodeintegration></webview>
     <div class="impressCurtain"></div>
   </div>
 

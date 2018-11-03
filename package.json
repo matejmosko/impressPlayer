@@ -1,6 +1,6 @@
 {
   "name": "impressPlayer",
-  "version": "0.8.2",
+  "version": "0.8.3",
   "description": "Standalone impress.js presentations viewer and controller. Accepts html, markdown and specifically structured zip.",
   "main": "main.js",
   "scripts": {
@@ -21,9 +21,9 @@
   "license": "CC0-1.0",
   "postinstall": "install-app-deps",
   "devDependencies": {
-    "electron": "^1.7.6",
+    "electron": "^3.0.7",
     "electron-builder": "^18.0.1",
-    "electron-rebuild": "^1.6.0"
+    "electron-rebuild": "^1.7.3"
   },
   "dependencies": {
     "decompress-zip": "^0.3.0",
@@ -33,6 +33,7 @@
     "markpress": "^4.0.0",
     "mousetrap": "^1.6.1",
     "mustache": "^2.3.0",
+    "oniguruma": "7.0.2",
     "xel": "0.0.48"
   },
   "build": {
