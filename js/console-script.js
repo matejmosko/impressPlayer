@@ -256,30 +256,17 @@
 
     }
 
-    function removeVideoForConsole(){
-      videos = viewerDom.getElementsByTagName("video");
-      for (let i = 0; i < videos.length; i++) { // This lists all videos in presentation. I have to remove them from console to preserve better ram optimization.
-        videos[i].outerHTML = "<p>Video</p>";
-      }
-    }
-
     function saveViewer() {
       let serializer = new XMLSerializer();
-      fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), serializer.serializeToString(viewerDOM), (err) => {
-
-        if (err) throw err;
-        ipc.send('loadProjection');
-      });
-    }
-    removeVideoForConsole();
       fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), serializer.serializeToString(viewerDOM), (err) => {
 
         if (err) throw err;
+        ipc.send('loadProjection');
         webview0.reload();
         webview1.reload();
         webview2.reload();
       });
-
+    }
 
     function loadProjection() {
       saveViewer();
