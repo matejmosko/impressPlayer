@@ -256,15 +256,26 @@
 
     }
 
+    function removeMultimedia(domData){ // Removes multimedia from previewer.html for previewers to spend less ram.
+      let videoPreview = document.createelement('p');
+      videos = domData.getElementsByTagName(video);
+      videos.forEach(function(med){
+        med.parentNode().replaceChild(med, videoPreview);
+      });
+    }
+
     function saveViewer() {
       let serializer = new XMLSerializer();
+      previewerDom = removeMultimedia(viewerDOM);
+      fs.writeFile(path.resolve(app.getPath('userData'), './previewer.html'), serializer.serializeToString(previewerDOM), (err) => {
+        if (err) throw err;
+        webview1.reload();
+        webview2.reload();
+      });
       fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), serializer.serializeToString(viewerDOM), (err) => {
-
         if (err) throw err;
         ipc.send('loadProjection');
         webview0.reload();
-        webview1.reload();
-        webview2.reload();
       });
     }
 

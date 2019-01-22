@@ -19,7 +19,7 @@ let impViewer = (function() {
     });
     let stepList = document.getElementsByClassName("step");
     let ids = [].map.call(stepList, function(elem) {
-      return { "step": elem.id, "stepName": elem.getElementsByTagName("h1")[0].innerHTML };
+      return { "step": elem.id, "stepName": elem.getElementsByTagName("h1")[0] && elem.getElementsByTagName("h1")[0].innerHTML || "" };
     });
     ipc.sendToHost('slideList', ids, getCurrentSlide());
   }

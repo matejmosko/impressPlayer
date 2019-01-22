@@ -356,7 +356,7 @@ function currentDate() {
 }
 
 function createLog(text) {
-  var file = fs.openSync(app.gatPath('userData') + "log-" + currentDate() + ".log", 'a');
+  var file = fs.openSync(app.getPath('userData') + "log-" + currentDate() + ".log", 'a');
   fs.writeFile(file, text, function(err) {
     if (err) {
       return console.log(err);

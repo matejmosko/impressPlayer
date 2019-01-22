@@ -112,13 +112,13 @@
 
       <div id="sidebar">
           <x-card class="nextSlide nextSlide-1">
-            <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/viewer.html" webpreferences="focusable: false" autosize style="display:flex;" nodeintegration></webview>
+            <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/previewer.html" webpreferences="focusable: false" autosize style="display:flex;" nodeintegration></webview>
             <div class="impressCurtain">
               <!-- The curtain preventing focusing webview element -->
             </div>
           </x-card>
           <x-card class="nextSlide nextSlide-2">
-            <webview id="nextImpress-2" class="slidesPreview" src="{{{usrPath}}}/viewer.html" autosize style="display:flex;" nodeintegration></webview>
+            <webview id="nextImpress-2" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize style="display:flex;" nodeintegration></webview>
             <div class="impressCurtain">
               <!-- The curtain preventing focusing webview element -->
             </div>
