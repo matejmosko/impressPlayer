@@ -34,7 +34,6 @@
     "mousetrap": "^1.6.1",
     "mustache": "^2.3.0",
     "npm": "^6.6.0",
-    "npm-check-updates": "^2.15.0",
     "oniguruma": "^7.0.2",
     "xel": "0.0.193"
   },
