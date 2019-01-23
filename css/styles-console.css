@@ -84,12 +84,13 @@ body {
 }
 
 #contentCard {
-  height: 100%;
+  height: 95%;
   width: 100%;
   margin: 10px 0px;
   overflow-y: hidden;
   display: flex;
   justify-content: center;
+
 }
 
 #currentSlideDiv {
@@ -156,8 +157,8 @@ x-tabs {
   margin:0px;
   overflow: hidden;
   position: relative;
-  width: 100%;
-  min-height: 30vh;
+  width: 25vw;
+  height: 25vh;
   /* This maintains 4:3 aspect ratio */
 }
 

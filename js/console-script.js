@@ -25,7 +25,7 @@
       running = false,
       exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
-      debugMode = false;
+      debugMode = true;
     setupSettings();
 
     if (arguments[0] == "debug") {
@@ -256,26 +256,29 @@
 
     }
 
-    function removeMultimedia(domData){ // Removes multimedia from previewer.html for previewers to spend less ram.
-      let videoPreview = document.createelement('p');
-      videos = domData.getElementsByTagName(video);
-      videos.forEach(function(med){
-        med.parentNode().replaceChild(med, videoPreview);
-      });
+    function removeMultimedia(domData) { // Removes multimedia from previewer.html for previewers to spend less ram.
+      let videoPreview = domData.createElement('div');
+      videoPreview.classList.add("videoPreview");
+      videoPreview.innerHTML += "Video";
+      videos = domData.getElementsByTagName("video");
+      for (i = 0; i < videos.length; i++) {
+        videos[i].parentNode.replaceChild(videoPreview, videos[i]);
+      }
+      return domData;
     }
 
     function saveViewer() {
       let serializer = new XMLSerializer();
-      previewerDom = removeMultimedia(viewerDOM);
-      fs.writeFile(path.resolve(app.getPath('userData'), './previewer.html'), serializer.serializeToString(previewerDOM), (err) => {
-        if (err) throw err;
-        webview1.reload();
-        webview2.reload();
-      });
       fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), serializer.serializeToString(viewerDOM), (err) => {
         if (err) throw err;
         ipc.send('loadProjection');
         webview0.reload();
+      });
+      let previewerDOM = removeMultimedia(viewerDOM);
+      fs.writeFile(path.resolve(app.getPath('userData'), './previewer.html'), serializer.serializeToString(previewerDOM), (err) => {
+        if (err) throw err;
+        webview1.reload();
+        webview2.reload();
       });
     }
 
@@ -295,8 +298,8 @@
         webview0.send('prevSlide');
       });
       if (debugMode) {
-        webview0.openDevTools();
-        webview0.addEventListener('console-message', (e) => {
+        webview1.openDevTools();
+        webview1.addEventListener('console-message', (e) => {
           saveLogs('Guest page logged a message:', e.message);
         })
       }

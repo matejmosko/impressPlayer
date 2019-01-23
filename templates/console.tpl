@@ -5,10 +5,11 @@
   <meta charset="UTF-8">
   <title>impressPlayer Console</title>
   <base href="{{{dirname}}}/js" />
-  <link rel="import" href="{{{appPath}}}/node_modules/xel/xel.min.html">
   <!--<link rel="stylesheet" href="./node_modules/xel/stylesheets/material.theme.css">-->
-  <link rel="stylesheet" href="{{{appPath}}}/node_modules/xel/stylesheets/galaxy.theme.css">
+  <link rel="stylesheet" href="{{{appPath}}}/node_modules/xel/themes/material.css">
   <link rel="stylesheet" href="{{{appPath}}}/css/styles-console.css">
+  <script src="{{{appPath}}}/node_modules/xel/xel.min.js"></script>
+
 </head>
 
 <body>
@@ -112,13 +113,13 @@
 
       <div id="sidebar">
           <x-card class="nextSlide nextSlide-1">
-            <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/previewer.html" webpreferences="focusable: false" autosize style="display:flex;" nodeintegration></webview>
+            <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
             <div class="impressCurtain">
               <!-- The curtain preventing focusing webview element -->
             </div>
           </x-card>
           <x-card class="nextSlide nextSlide-2">
-            <webview id="nextImpress-2" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize style="display:flex;" nodeintegration></webview>
+            <webview id="nextImpress-2" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
             <div class="impressCurtain">
               <!-- The curtain preventing focusing webview element -->
             </div>
