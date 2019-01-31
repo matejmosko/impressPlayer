@@ -3,6 +3,9 @@
 const electron = require('electron');
 /* Module to control application life. */
 const app = electron.app;
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required'); // Disable new security feature of chrome 66. Not working right now. Necesary for video.play
+
+
 /* Module to create native browser window. */
 const BrowserWindow = electron.BrowserWindow;
 /* Modules to serve webcontents and modal dialogs */
@@ -212,6 +215,7 @@ function createProjector() {
     backgroundColor: '#13132A',
     show: false
   });
+
 
   // and load the index.html of the app.
   impWindows.projector.loadURL(url.format({

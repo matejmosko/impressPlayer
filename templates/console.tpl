@@ -42,7 +42,6 @@
           </x-button>
         </x-buttons>
         <x-buttons tracking="-1" id="gameControls" class="topButtons">
-          <x-button id="openFile">{{#i18n}}Load Presentation{{/i18n}}</x-button>
           <x-buttons>
             <x-buttons tracking="-1" id="gameControls" class="topButtons">
               <x-button id="nextSlideBtn" class="impressControlBtns">
@@ -124,6 +123,20 @@
               <!-- The curtain preventing focusing webview element -->
             </div>
           </x-card>
+          <x-card>
+            <x-button id="refreshBtn" class="additionalBtns">
+              <x-box>
+                <x-icon name="skip-next"></x-icon>
+                <x-label id="refreshLabel">{{#i18n}}Refresh presentation{{/i18n}}</x-label>
+              </x-box>
+            </x-button>
+            <x-button id="openFile" class="additionalBtns">
+              <x-box>
+                <x-icon name="skip-next"></x-icon>
+                <x-label id="refreshLabel">{{#i18n}}Load Presentation{{/i18n}}</x-label>
+              </x-box>
+            </x-button>
+          </x-card>
       </div>
     </div>
     <div id="footer">
@@ -135,7 +148,7 @@
       </x-card>
     </div>
   </div>
-  <x-dialog id="exitDialog">
+  <dialog id="exitDialog">
     <h4 id="exitTitle">{{#i18n}}Are you sure about exiting impressPlayer?{{/i18n}}</h4>
     <p id="exitText">{{#i18n}}Actually nothing bad could happen if you exit now, but still. <br />Do you really want to do it?{{/i18n}}</p>
     <x-buttons tracking="-1" id="windowControls">
@@ -152,7 +165,7 @@
         </x-box>
       </x-button>
     </x-buttons>
-  </x-dialog>
+  </dialog>
 </body>
 
 <script id="require">

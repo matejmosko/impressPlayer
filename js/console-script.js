@@ -25,6 +25,7 @@
       running = false,
       exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
+      loadedFile,
       debugMode = true;
     setupSettings();
 
@@ -117,7 +118,7 @@
     });
 
     ipc.on('quitModal', (event) => { // Show "Really Quit" dialog
-      exitDialog.opened = true;
+      exitDialog.showModal();
     });
 
     document.getElementById("reallyQuit").addEventListener("click", function() { // "Really Quit"  confirmed. We are leaving the ship.
@@ -125,10 +126,10 @@
     });
 
     document.getElementById("doNotQuit").addEventListener("click", function() { // "Really Quit" refused. The show must go on...
-      exitDialog.opened = false;
+      exitDialog.close();
     });
 
-    document.getElementById("openFile").addEventListener("click", function() {
+    function selectFile(){
       dialog.showOpenDialog({
         defaultPath: settings.get("defaultPath") || app.getPath("home"),
         filters: [{
@@ -146,9 +147,19 @@
           saveLogs(i18n.__("No file selected"));
           return;
         }
+        loadedFile = fileNames[0];
         loadProjectionFile(fileNames[0]);
       });
+    }
+
+    document.getElementById("openFile").addEventListener("click", function() {
+      selectFile();
     });
+
+    document.getElementById("refreshBtn").addEventListener("click", function() {
+      loadProjectionFile(loadedFile);
+    });
+
     /* Main Software Part */
 
     function parseMarkdown(file) {
@@ -298,8 +309,8 @@
         webview0.send('prevSlide');
       });
       if (debugMode) {
-        webview1.openDevTools();
-        webview1.addEventListener('console-message', (e) => {
+        webview0.openDevTools();
+        webview0.addEventListener('console-message', (e) => {
           saveLogs('Guest page logged a message:', e.message);
         })
       }

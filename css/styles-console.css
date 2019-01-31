@@ -200,7 +200,7 @@ x-tabs {
 }
 
 .running #openFile {
-  display: none;
+  /*display: none;*/
 }
 
 .imp-ui-text, x-label {
@@ -260,14 +260,14 @@ x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer {
 
 /* DIALOGs (exit...) */
 
-x-dialog h4, x-dialog p {
+#exitDialog h4, #exitDialog p {
   text-align: center;
 }
 
-x-dialog x-buttons {
+#exitDialog x-buttons {
   margin: 0 auto;
 }
 
-x-dialog {
+#exitDialog {
   padding: 20px;
 }
