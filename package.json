@@ -1,6 +1,6 @@
 {
   "name": "impressPlayer",
-  "version": "0.8.3",
+  "version": "0.9.0",
   "description": "Standalone impress.js presentations viewer and controller. Accepts html, markdown and specifically structured zip.",
   "main": "main.js",
   "scripts": {
