@@ -19,7 +19,10 @@ let impViewer = (function() {
     });
     let stepList = document.getElementsByClassName("step");
     let ids = [].map.call(stepList, function(elem) {
-      return { "step": elem.id, "stepName": elem.getElementsByTagName("h1")[0] && elem.getElementsByTagName("h1")[0].innerHTML || "" };
+      return {
+        "step": elem.id,
+        "stepName": elem.getElementsByTagName("h1")[0] && elem.getElementsByTagName("h1")[0].innerHTML || ""
+      };
     });
     ipc.sendToHost('slideList', ids, getCurrentSlide());
   }
@@ -31,7 +34,7 @@ let impViewer = (function() {
       let videoStep = video.closest(".step");
       videoStep.classList.add("hasVideo");
       addEvent(videoStep, video);
-      });
+    });
 
     /* HTML5 Audio tags */
     let audios = document.getElementsByTagName("audio");
@@ -42,9 +45,11 @@ let impViewer = (function() {
     });
 
     /* Add event listeners to autoplay and to PlayPause */
-    function addEvent(mediaStep, media){
+    function addEvent(mediaStep, media) {
       mediaStep.addEventListener("impress:stepenter", function autoplay() {
-        if (media.autoplay == true) { media.play(); }
+        if (media.autoplay == true) {
+          media.play();
+        }
         ipc.sendToHost('multimedia', 'on');
       }, false);
       mediaStep.addEventListener("impress:stepleave", function autoplay() {
@@ -89,7 +94,7 @@ let impViewer = (function() {
   ipc.on('gotoSlide', (event, arg) => {
     impress().goto(arg);
   });
-  ipc.on('audioVideoControls', (event, command) => {
+  ipc.on('audioVideoControls', (event, command, data) => {
     let current = document.getElementsByClassName("present")[0];
     let media;
     if (current.classList.contains("hasVideo")) {
@@ -97,6 +102,13 @@ let impViewer = (function() {
     } else if (current.classList.contains("hasAudio")) {
       media = current.getElementsByTagName("audio")[0];
     }
+
+    media.addEventListener("timeupdate", function() {
+      // Calculate the slider value
+      let value = (100 / media.duration) * media.currentTime;
+      // Update the slider value
+      ipc.sendToHost('mediaTime', value);
+    });
 
     switch (command) {
       case 'playPause':
@@ -108,6 +120,18 @@ let impViewer = (function() {
         break;
       case 'restart':
         media.load();
+        break;
+      case 'pause':
+        media.pause();
+        break;
+      case 'play':
+        media.play();
+        break;
+      case 'seek':
+        // Calculate the new time
+        var time = media.duration * (data / 100);
+        // Update the video time
+        media.currentTime = time;
         break;
       default:
     }

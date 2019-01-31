@@ -22,7 +22,6 @@ body {
   padding: 0px;
 }
 
-
 /* LAYOUT divs */
 
 #container {
@@ -72,7 +71,6 @@ body {
   justify-content: space-around;
 }
 
-
 /* FUNCTIONAL DIVS with IDs */
 
 #infobox {
@@ -86,11 +84,10 @@ body {
 #contentCard {
   height: 95%;
   width: 100%;
-  margin: 10px 0px;
+  margin: 0px;
   overflow-y: hidden;
   display: flex;
   justify-content: center;
-
 }
 
 #currentSlideDiv {
@@ -130,8 +127,8 @@ body {
   bottom: 0;
 }
 
-x-tabs {
-  height: 30px;
+.tabs {
+  height: 52px;
 }
 
 #footer .presentationInfo {
@@ -151,10 +148,33 @@ x-tabs {
   font-size: 1.0rem;
 }
 
+#mediaControlsDiv{
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-start;
+  min-width: 300px;
+  width: 50%;
+}
+
+#audioVideoSlider{
+  min-width: 300px;
+}
+
+.additionalControls {
+  display: flex;
+  flex-flow: column;
+  align-items: center;
+  justify-content: space-around;
+  min-height: 75px;
+  min-width: 215px;
+  height: 20%;
+  overflow-x: hidden;
+}
+
 /* WEBVIEW settings */
 
 .nextSlide {
-  margin:0px;
+  margin: 0px;
   overflow: hidden;
   position: relative;
   width: 25vw;
@@ -184,7 +204,6 @@ x-tabs {
   padding: 0px;
 }
 
-
 /* BUTTTONS etc. */
 
 .danger {
@@ -203,7 +222,7 @@ x-tabs {
   /*display: none;*/
 }
 
-.imp-ui-text, x-label {
+.imp-ui-text, .label {
   -webkit-user-select: none;
 }
 
@@ -211,14 +230,13 @@ x-tabs {
   flex: 0 1 auto;
 }
 
-x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer {
+.btn:hover *, .btn:hover, .tab:hover, #projectionTimer {
   cursor: pointer;
 }
 
 .hidden {
   display: none;
 }
-
 
 /* GRID for allSlides Navigation */
 
@@ -257,14 +275,13 @@ x-button:hover *, x-button:hover, x-tab:hover, #projectionTimer {
   color: white;
 }
 
-
 /* DIALOGs (exit...) */
 
 #exitDialog h4, #exitDialog p {
   text-align: center;
 }
 
-#exitDialog x-buttons {
+#exitDialog .exitBtns {
   margin: 0 auto;
 }
 

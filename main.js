@@ -169,6 +169,7 @@ function createWindow() {
     impWindows.main.show();
     impWindows.main.focus();
     impWindows.main.on('resize', function() {
+      impWindows.main.webContents.send('windowResized');
       storeWindowState();
     });
     impWindows.main.on('move', function() {
@@ -409,8 +410,8 @@ ipcMain.on('loadProjection', (event) => {
   impWindows.projector.webContents.send('loadProjection');
 });
 
-ipcMain.on('audioVideoControls', (event, arg) => {
-  impWindows.projector.webContents.send('audioVideoControls', arg);
+ipcMain.on('audioVideoControls', (event, command, data) => {
+  impWindows.projector.webContents.send('audioVideoControls', command, data);
 });
 
 ipcMain.on('reloadWindows', (event) => {

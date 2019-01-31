@@ -17,40 +17,43 @@
     <div id="topbox">
       <x-card id="infobox">
         <x-buttons tracking="2" id="projectorControls" class="topButtons">
-          <x-button id="reloadBtn" class="danger" title="Click to reload the application">
+          <x-button id="reloadBtn" class="danger btn" title="Click to reload the application">
             <x-icon name="power-settings-new"></x-icon>
           </x-button>
-          <x-button id="disclamerBtn" class="hidden">
+          <x-button id="disclamerBtn" class="hidden btn">
             <x-icon name="assignment"></x-icon>
           </x-button>
-          <x-button id="projectorBtn" title="Click to open projection window">
+          <x-button id="projectorBtn" title="Click to open projection window" class="btn">
             <x-icon name="airplay"></x-icon>
           </x-button>
-          <x-button id="fullscreenBtn" title="Click to make projection window fullscreen">
+          <x-button id="fullscreenBtn" title="Click to make projection window fullscreen" class="btn">
             <x-icon name="fullscreen"></x-icon>
           </x-button>
 
 
 
         </x-buttons>
-        <x-buttons tracking="-1" id="audiovideoControls" class="topButtons audiovideoControls hidden">
-          <x-button id="playPauseMediaBtn">
+        <div id="mediaControlsDiv" class="hidden">
+        <x-buttons tracking="-1" id="audiovideoControls" class="topButtons audiovideoControls">
+          <x-button id="playPauseMediaBtn" class="btn">
             <x-icon name="play-arrow"></x-icon>
           </x-button>
-          <x-button id="restartMediaBtn">
+          <x-slider id="audioVideoSlider" value="0"></x-slider>
+          <x-button id="restartMediaBtn" class="btn">
             <x-icon name="replay"></x-icon>
           </x-button>
         </x-buttons>
+      </div>
         <x-buttons tracking="-1" id="gameControls" class="topButtons">
           <x-buttons>
             <x-buttons tracking="-1" id="gameControls" class="topButtons">
-              <x-button id="nextSlideBtn" class="impressControlBtns">
+              <x-button id="nextSlideBtn" class="impressControlBtns btn">
                 <x-box>
                   <x-icon name="skip-next"></x-icon>
-                  <x-label id="nextSlideLabel">{{#i18n}}Next Slide{{/i18n}}</x-label>
+                  <x-label id="nextSlideLabel" class="label">{{#i18n}}Next Slide{{/i18n}}</x-label>
                 </x-box>
               </x-button>
-              <x-button id="prevSlideBtn" class="danger impressControlBtns">
+              <x-button id="prevSlideBtn" class="danger impressControlBtns btn">
                 <x-icon name="backspace"></x-icon>
               </x-button>
             </x-buttons>
@@ -61,32 +64,32 @@
 
     <div id="main">
       <div id="content">
-        <x-tabs centered>
-          <x-tab selected id="currentSlideTab">
+        <x-tabs class="tabs" centered>
+          <x-tab selected id="currentSlideTab" class="tab">
             <x-box>
               <x-icon name="list"></x-icon>
-              <x-label id="tabLabelCurrentSlide">{{#i18n}}Presentation{{/i18n}}</x-label>
+              <x-label id="tabLabelCurrentSlide" class="label">{{#i18n}}Presentation{{/i18n}}</x-label>
             </x-box>
           </x-tab>
 
 
-          <x-tab id="remoteSourcesTab" class="hidden">
+          <x-tab id="remoteSourcesTab" class="hidden" class="tab">
             <x-box>
               <x-icon name="settings"></x-icon>
-              <x-label id="tabLabelRemoteSources">{{#i18n}}Remote Sources{{/i18n}}</x-label>
+              <x-label id="tabLabelRemoteSources" class="label">{{#i18n}}Remote Sources{{/i18n}}</x-label>
             </x-box>
           </x-tab>
 
-          <x-tab id="optionsTab" class="hidden">
+          <x-tab id="optionsTab" class="hidden" class="tab">
             <x-box>
               <x-icon name="settings"></x-icon>
-              <x-label id="tabLabelSettings">{{#i18n}}Options{{/i18n}}</x-label>
+              <x-label id="tabLabelSettings" class="label">{{#i18n}}Options{{/i18n}}</x-label>
             </x-box>
           </x-tab>
-          <x-tab id="allSlidesTab">
+          <x-tab id="allSlidesTab" class="tab">
             <x-box>
               <x-icon name="sort"></x-icon>
-              <x-label id="tabLabelAllSlides">{{#i18n}}Slides List{{/i18n}}</x-label>
+              <x-label id="tabLabelAllSlides" class="label">{{#i18n}}Slides List{{/i18n}}</x-label>
             </x-box>
           </x-tab>
         </x-tabs>
@@ -123,17 +126,17 @@
               <!-- The curtain preventing focusing webview element -->
             </div>
           </x-card>
-          <x-card>
-            <x-button id="refreshBtn" class="additionalBtns">
+          <x-card class="additionalControls">
+            <x-button id="refreshBtn" class="additionalBtns btn">
               <x-box>
-                <x-icon name="skip-next"></x-icon>
-                <x-label id="refreshLabel">{{#i18n}}Refresh presentation{{/i18n}}</x-label>
+                <x-icon name="refresh"></x-icon>
+                <x-label id="refreshLabel" class="label">{{#i18n}}Refresh presentation{{/i18n}}</x-label>
               </x-box>
             </x-button>
-            <x-button id="openFile" class="additionalBtns">
+            <x-button id="openFile" class="additionalBtns btn">
               <x-box>
-                <x-icon name="skip-next"></x-icon>
-                <x-label id="refreshLabel">{{#i18n}}Load Presentation{{/i18n}}</x-label>
+                <x-icon name="folder-open"></x-icon>
+                <x-label id="refreshLabel" class="label">{{#i18n}}Load Presentation{{/i18n}}</x-label>
               </x-box>
             </x-button>
           </x-card>
@@ -151,17 +154,17 @@
   <dialog id="exitDialog">
     <h4 id="exitTitle">{{#i18n}}Are you sure about exiting impressPlayer?{{/i18n}}</h4>
     <p id="exitText">{{#i18n}}Actually nothing bad could happen if you exit now, but still. <br />Do you really want to do it?{{/i18n}}</p>
-    <x-buttons tracking="-1" id="windowControls">
-      <x-button id="reallyQuit" class="danger">
+    <x-buttons tracking="-1" id="windowControls" class="exitBtns">
+      <x-button id="reallyQuit" class="danger btn">
         <x-box>
           <x-icon name="exit-to-app"></x-icon>
-          <x-label id="exitAgree">{{#i18n}}Yes, get me out of here!{{/i18n}}</x-label>
+          <x-label id="exitAgree" class="label">{{#i18n}}Yes, get me out of here!{{/i18n}}</x-label>
         </x-box>
       </x-button>
-      <x-button id="doNotQuit">
+      <x-button id="doNotQuit" class="btn">
         <x-box>
           <x-icon name="replay"></x-icon>
-          <x-label id="exitDisagree">{{#i18n}}No, I haven't finished yet{{/i18n}}</x-label>
+          <x-label id="exitDisagree" class="label">{{#i18n}}No, I haven't finished yet{{/i18n}}</x-label>
         </x-box>
       </x-button>
     </x-buttons>

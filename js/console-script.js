@@ -26,6 +26,8 @@
       exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
       loadedFile,
+      currentVideo,
+      seekBar = document.getElementById("audioVideoSlider"),
       debugMode = true;
     setupSettings();
 
@@ -42,6 +44,30 @@
       viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
 
     // Setup Settings Database
+
+    function setupWebviewSizes() {
+      let webDiv = document.getElementById("currentSlideDiv");
+      let contentCard = document.getElementById("contentCard");
+      let aspectRatio = window.screen.width / window.screen.height;
+      if (webDiv.offsetWidth / webDiv.offsetHeigth < aspectRatio) {
+        console.log("webDiv.offsetWidth");
+        webDiv.style.width = webDiv.offsetWidth + "px";
+        webDiv.style.height = webDiv.offsetWidth / aspectRatio + "px";
+        console.log("webDiv.offsetWidth");
+      } else {
+        webDiv.style.height = webDiv.offsetHeight + "px";
+        console.log(webDiv.offsetHeight);
+        webDiv.style.width = webDiv.offsetHeight * aspectRatio + "px";
+        console.log("webDiv.offsetWidth");
+      }
+    }
+
+    setupWebviewSizes();
+
+    ipc.on('windowResized', (event) => { // Resize window according to aspectRatio of a device
+      console.log("dine");
+      //setupWebviewSizes();
+    });
 
     function setupSettings() {
       if (!settings.has("name")) {
@@ -129,7 +155,7 @@
       exitDialog.close();
     });
 
-    function selectFile(){
+    function selectFile() {
       dialog.showOpenDialog({
         defaultPath: settings.get("defaultPath") || app.getPath("home"),
         filters: [{
@@ -433,7 +459,7 @@
           displaySlideList(event.args[1]);
           break;
         case 'multimedia':
-          let mediaControls = document.getElementById("audiovideoControls");
+          let mediaControls = document.getElementById("mediaControlsDiv");
           switch (event.args[0]) {
             case 'on':
               mediaControls.classList.remove("hidden");
@@ -454,6 +480,9 @@
               icon.setAttribute("name", "play-arrow");
               break;
           }
+          break;
+        case "mediaTime":
+          seekBar.value = event.args[0];
           break;
         case "controlsEnabled":
           let nextSlideBtn = document.getElementById("nextSlideBtn");
@@ -501,6 +530,21 @@
       ipc.send('audioVideoControls', 'restart');
     }, false);
 
+    // Event listener for the seek bar
+    seekBar.addEventListener("change", function() {
+      webview0.send('audioVideoControls', 'seek', seekBar.value);
+      ipc.send('audioVideoControls', 'seek', seekBar.value);
+    });
+
+    seekBar.addEventListener("mousedown", function() {
+      webview0.send('audioVideoControls', 'pause');
+      ipc.send('audioVideoControls', 'pause');
+    });
+
+    seekBar.addEventListener("mousedown", function() {
+      webview0.send('audioVideoControls', 'play');
+      ipc.send('audioVideoControls', 'play');
+    });
 
     window.addEventListener('keydown', function(e) {
       if (e.keyCode == 32 && e.target == document.body) {

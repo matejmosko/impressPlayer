@@ -16,8 +16,8 @@
       webview.send('gotoSlide', current);
     });
 
-    ipc.on('audioVideoControls', (event, command) => {
-      webview.send('audioVideoControls', command);
+    ipc.on('audioVideoControls', (event, command, data) => {
+      webview.send('audioVideoControls', command, data);
     });
 
     webview.addEventListener('did-finish-load', function() {
