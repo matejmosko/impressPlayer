@@ -1,10 +1,8 @@
 //$(function() { // No jQuery needed
 let impViewer = (function() {
   const ipc = require('electron').ipcRenderer;
-  let running;
 
   consoleControls();
-  running = true;
 
   function consoleControls() {
     let impressRoot = document.getElementById("impress");

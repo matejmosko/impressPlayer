@@ -19,27 +19,25 @@
   ],
   "author": "Matej Moško",
   "license": "CC0-1.0",
-  "postinstall": "install-app-deps",
+  "postinstall": "electron-builder install-app-deps",
   "devDependencies": {
     "electron": "^3.1.1",
-    "electron-builder": "^20.38.5",
-    "electron-rebuild": "^1.6.0"
+    "electron-builder": "^20.38.5"
   },
   "dependencies": {
     "decompress-zip": "^0.3.0",
     "electron-settings": "^3.1.1",
-    "fs": "0.0.1-security",
     "i18n-2": "^0.7.1",
     "markpress": "^4.0.0",
     "mousetrap": "^1.6.1",
     "mustache": "^2.3.0",
-    "npm": "^6.6.0",
     "oniguruma": "^7.0.2",
-    "xel": "0.0.193"
+    "xel": "0.0.193",
+    "npm": "^6.6.0"
   },
   "build": {
-    "productName": "impress Player",
-    "appId": "com.electron.MatejMosko.impressPlayer",
+    "productName": "impressPlayer",
+    "appId": "sk.panakrala.impressPlayer",
     "asar": true,
     "compression": "maximum",
     "npmRebuild": true,

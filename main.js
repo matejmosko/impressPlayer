@@ -10,7 +10,6 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required'); // 
 const BrowserWindow = electron.BrowserWindow;
 /* Modules to serve webcontents and modal dialogs */
 const {
-  dialog,
   webContents
 } = require('electron');
 /* IPC system to communicate between main and renderer processes */
@@ -21,7 +20,7 @@ const {
 /* Various necessary modules */
 const path = require('path'); // System paths
 const fs = require('fs'); // Access to filesystem
-const url = require('url'); // Access to web urls
+//const url = require('url'); // Access to web urls
 const ms = require('mustache'); // We use Mustache to work with templates
 const settings = require('electron-settings'); // Electron-settings stores application settings between sessions
 const i18n = new(require('i18n-2'))({ // i18n helps with translations
@@ -30,17 +29,23 @@ const i18n = new(require('i18n-2'))({ // i18n helps with translations
   extension: ".json"
 });
 
+let debugMode = false,
+  userPath = app.getPath('userData');
+
+process.argv.forEach(function(argv) {
+  if (argv == "debug") {
+    debugMode = true;
+  }
+});
+
 /* GLOBAL VARIABLES that have to be accessible through whole application */
 global.globalObject = {
   "i18n": i18n,
-  "arguments": process.argv,
+  "debugMode": debugMode
 };
 
 /* DEBUG mode settings */
-let debugMode = false;
-if (arguments[0] == "debug") {
-  debugMode = true;
-}
+
 
 /* Window management */
 let impWindows = {}; // Keeps a global reference of the window object, if you don't, the window will be closed automatically when the JavaScript object is garbage collected.
@@ -79,7 +84,7 @@ try {
 /* END Initial settings*/
 
 /* START Real application */
-function saveTemplates() {
+function saveTemplates(template) {
   mustacheOptions = {
     "dirname": __dirname,
     "usrPath": app.getPath('userData'),
@@ -93,55 +98,74 @@ function saveTemplates() {
       };
     }
   }
+
+  fs.readFile(path.resolve(__dirname, './templates/console.tpl'), 'utf8', (err, tplConsole) => { // Read console.tpl (main console interface) asynchronously
+    if (err) throw err;
+    let localeConsole = ms.render(tplConsole, mustacheOptions);
+    fs.writeFile('./console.html', localeConsole, (err) => {
+      //fs.writeFile('./console.html', localeConsole, (err) => {
+      createConsoleWindow();
+      if (err) throw err;
+    });
+  });
+
+  fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
+    let localeProjector = ms.render(tplProjector, mustacheOptions);
+    if (err) throw err;
+    fs.writeFile('./projector.html', localeProjector, (err) => {
+      if (err) throw err;
+      createProjectorWindow();
+    });
+  });
+
   fs.readFile(path.resolve(__dirname, './templates/viewer-fake.tpl'), 'utf8', (err, tplViewerFake) => {
     localeViewerFake = ms.render(tplViewerFake, mustacheOptions);
+    if (err) throw err;
     fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), localeViewerFake, (err) => {
       if (err) throw err;
     });
   });
-  fs.readFile(path.resolve(__dirname, './templates/console.tpl'), 'utf8', (err, tplConsole) => { // Read console.tpl (main console interface) asynchronously
-    if (err) throw err;
-    let localeConsole = ms.render(tplConsole, mustacheOptions);
-    fs.writeFile(path.resolve(app.getPath('userData'), './console.html'), localeConsole, (err) => {
-      if (err) throw err;
-    });
-  });
-  fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
-    let localeProjector = ms.render(tplProjector, mustacheOptions);
-    fs.writeFile(path.resolve(app.getPath('userData'), './projector.html'), localeProjector, (err) => {
-      if (err) throw err;
-    });
-  });
+
 }
 
-function storeWindowState() {
-  if (typeof(impWindows.main) === "object") {
-    if (typeof(windowState.main) !== "object"){
-      windowState.main = {};
-    }
-    windowState.main.isMaximized = impWindows.main.isMaximized();
-    if (!windowState.main.isMaximized) {
-      // only update bounds if the window isn't currently maximized
-      windowState.main.bounds = impWindows.main.getBounds();
-    }
+function storeWindowState(window) {
+  switch (window) {
+    case "console":
+      if (typeof(impWindows.main) === "object") {
+        if (typeof(windowState.main) !== "object") {
+          windowState.main = {};
+        }
+        windowState.main.isMaximized = impWindows.main.isMaximized();
+        if (!windowState.main.isMaximized) {
+          // only update bounds if the window isn't currently maximized
+          windowState.main.bounds = impWindows.main.getBounds();
+        }
+      }
+      break;
+    case "projector":
+      if (typeof(impWindows.projector) === "object") {
+        if (typeof(windowState.projector) !== "object") {
+          windowState.projector = {};
+        }
+        windowState.projector.isMaximized = impWindows.projector.isMaximized();
+        if (!windowState.projector.isMaximized) {
+          // only update bounds if the window isn't currently maximized
+          windowState.projector.bounds = impWindows.projector.getBounds();
+        }
+      }
+      break;
+    default:
+
   }
-  if (typeof(impWindows.projector) === "object") {
-    if (typeof(windowState.projector) !== "object"){
-      windowState.projector = {};
-    }
-    windowState.projector.isMaximized = impWindows.projector.isMaximized();
-    if (!windowState.projector.isMaximized) {
-      // only update bounds if the window isn't currently maximized
-      windowState.projector.bounds = impWindows.projector.getBounds();
-    }
-  }
+
+
 
   settings.set('windowstate', windowState);
 };
 
 // main process
 
-function createWindow() {
+function createConsoleWindow() {
   // Create the browser window.
   impWindows.main = new BrowserWindow({
     x: windowState.main && windowState.main.bounds && windowState.main.bounds.x || undefined,
@@ -159,21 +183,17 @@ function createWindow() {
   }
 
   // and load the index.html of the app.
-  impWindows.main.loadURL(url.format({
-    pathname: path.resolve(app.getPath('userData'), './console.html'),
-    protocol: 'file:',
-    slashes: true
-  }));
+  impWindows.main.loadFile('./console.html');
 
   impWindows.main.on('ready-to-show', function() {
     impWindows.main.show();
     impWindows.main.focus();
     impWindows.main.on('resize', function() {
       impWindows.main.webContents.send('windowResized');
-      storeWindowState();
+      storeWindowState("console");
     });
     impWindows.main.on('move', function() {
-      storeWindowState();
+      storeWindowState("console");
     });
   });
 
@@ -185,7 +205,7 @@ function createWindow() {
     event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
     impWindows.main.webContents.send('quitModal');
     ipcMain.on('reallyQuit', (event) => {
-      storeWindowState();
+      storeWindowState("console");
       app.exit();
     });
   });
@@ -204,7 +224,7 @@ function createWindow() {
 
 
 
-function createProjector() {
+function createProjectorWindow() {
   // Create the browser window.
   impWindows.projector = new BrowserWindow({
     x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
@@ -217,14 +237,18 @@ function createProjector() {
     show: false
   });
 
-
+  //saveTemplates("projector.tpl");
   // and load the index.html of the app.
+
+  impWindows.projector.loadFile('./projector.html');
+
+  /*
   impWindows.projector.loadURL(url.format({
     pathname: path.resolve(app.getPath('userData'), './projector.html'),
     protocol: 'file:',
     slashes: true,
     fullscreenable: true
-  }));
+  }));*/
 
   // Emitted when the window is closed.
   impWindows.projector.on('closed', function() {
@@ -235,7 +259,7 @@ function createProjector() {
   });
   // Window positioning and size
   impWindows.projector.on('resize', () => {
-    storeWindowState();
+    storeWindowState("projector");
     const [width, height] = impWindows.projector.getContentSize();
     for (let wc of webContents.getAllWebContents()) {
       // Check if `wc` belongs to a webview in the `win` window.
@@ -251,7 +275,7 @@ function createProjector() {
     }
   });
   impWindows.projector.on('move', function() {
-    storeWindowState();
+    storeWindowState("projector");
   });
 
   if (typeof(windowState.projector) === "object" && windowState.projector.isMaximized) {
@@ -274,7 +298,9 @@ function createProjector() {
   }
 }
 
-function setupProjectorButtons() {
+async function setupProjectorButtons() {
+
+  let windows = await saveTemplates();
   // Button events
   impWindows.projector.on('hide', event => {
     impWindows.main.webContents.send('buttonSwitch', "projectorBtn", false);
@@ -311,9 +337,8 @@ function setupProjectorButtons() {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', function() {
-  saveTemplates();
-  createWindow();
-  createProjector();
+  //createConsoleWindow();
+  //createProjectorWindow();
   setupProjectorButtons();
 });
 //app.on('ready', );
@@ -331,7 +356,7 @@ app.on('activate', function() {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (impWindows.main === null) {
-    createWindow();
+    createConsoleWindow();
   }
 });
 

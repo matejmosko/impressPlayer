@@ -2,7 +2,6 @@
     const remote = require('electron').remote;
     const app = remote.app;
     const path = require('path');
-    const url = require('url');
     const fs = require('fs');
     const ms = require('mustache');
     const markpress = require('markpress');
@@ -17,23 +16,14 @@
     const settings = remote.require('electron-settings');
 
     const i18n = remote.getGlobal('globalObject').i18n;
-    const arguments = remote.getGlobal('globalObject').arguments;
+    const debugMode = remote.getGlobal('globalObject').debugMode;
 
     const ipc = require('electron').ipcRenderer;
-    let slidesList = [],
-      opts = {},
-      running = false,
-      exitDialog = document.getElementById("exitDialog"),
+    let exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
       loadedFile,
-      currentVideo,
-      seekBar = document.getElementById("audioVideoSlider"),
-      debugMode = true;
+      seekBar = document.getElementById("audioVideoSlider");
     setupSettings();
-
-    if (arguments[0] == "debug") {
-      debugMode = true;
-    }
 
     // Load impress-viewer template
     // TODO Move this to async function inside the part, where we generate viewer.html
@@ -47,25 +37,19 @@
 
     function setupWebviewSizes() {
       let webDiv = document.getElementById("currentSlideDiv");
-      let contentCard = document.getElementById("contentCard");
       let aspectRatio = window.screen.width / window.screen.height;
       if (webDiv.offsetWidth / webDiv.offsetHeigth < aspectRatio) {
-        console.log("webDiv.offsetWidth");
         webDiv.style.width = webDiv.offsetWidth + "px";
         webDiv.style.height = webDiv.offsetWidth / aspectRatio + "px";
-        console.log("webDiv.offsetWidth");
       } else {
         webDiv.style.height = webDiv.offsetHeight + "px";
-        console.log(webDiv.offsetHeight);
         webDiv.style.width = webDiv.offsetHeight * aspectRatio + "px";
-        console.log("webDiv.offsetWidth");
       }
     }
 
     setupWebviewSizes();
 
     ipc.on('windowResized', (event) => { // Resize window according to aspectRatio of a device
-      console.log("dine");
       //setupWebviewSizes();
     });
 
@@ -73,11 +57,6 @@
       if (!settings.has("name")) {
         ipc.send('saveDefaultSettings');
       }
-      loadSettings(settings.getAll());
-    }
-
-    function loadSettings(p) {
-      opts = p;
     }
 
     /* Logs */
@@ -86,11 +65,11 @@
       console.log(text);
       ipc.send('saveLogs', text);
     }
-
+/*
     function loadFile(loadedFile) { // load file
       file = fs.openSync(loadedFile[0], 'a');
       fs.readFile(loadedFile[0]);
-    }
+    }*/
 
     /* UI part - all buttons tabs, radios etc. */
     let currentSlideDiv = document.getElementById("currentSlideDiv"),
@@ -196,8 +175,7 @@
       };
 
       markpress(file, options).then(({
-        html,
-        md
+        html
       }) => {
         let parser = new DOMParser();
         let el = parser.parseFromString(html, "text/html");
@@ -326,7 +304,6 @@
       document.getElementById("projectionTimer").addEventListener("click", function() {
         totalSeconds = 0;
       });
-      running = true;
       document.body.classList.add('running');
       mousetrap.bind(['space'], function() {
         webview0.send('nextSlide');
