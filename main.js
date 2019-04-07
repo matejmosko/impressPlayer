@@ -85,6 +85,8 @@ catch (err) {
 
 /* START Real application */
 function initializeWindows() {
+
+  // setup initial settings for Windows
  mustacheOptions = {
   "dirname": __dirname,
   "usrPath": app.getPath('userData'),
@@ -99,16 +101,17 @@ function initializeWindows() {
   }
  }
 
+/* Render controller template (async) and create a window after that */
  fs.readFile(path.resolve(__dirname, './templates/controller.tpl'), 'utf8', (err, tplController) => { // Read controller.tpl (main controller interface) asynchronously
   if (err) throw err;
   let localeController = ms.render(tplController, mustacheOptions);
   fs.writeFile('./controller.html', localeController, (err) => {
-   //fs.writeFile('./controller.html', localeController, (err) => {
 if (err) throw err;
-   createcontrollerWindow();
+   createControllerWindow();
   });
  });
 
+/* Render projector template (async) and create a window after that */
  fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
   let localeProjector = ms.render(tplProjector, mustacheOptions);
   if (err) throw err;
@@ -118,6 +121,7 @@ if (err) throw err;
   });
  });
 
+ /* Render a fake viewer.html to be used on first run */
  fs.readFile(path.resolve(__dirname, './templates/viewer-fake.tpl'), 'utf8', (err, tplViewerFake) => {
   localeViewerFake = ms.render(tplViewerFake, mustacheOptions);
   if (err) throw err;
@@ -126,17 +130,15 @@ if (err) throw err;
   });
  });
 
-/* Run after all windows are loaded */
-
-Promise.all([createProjectorWindow(), createcontrollerWindow()]).then(_values => {
+/* Setup windows' interoperability after all windows are loaded */
+Promise.all([createProjectorWindow(), createControllerWindow()]).then(_values => {
   setupProjectorButtons();
 });
-
-
 
 }
 
 function storeWindowState(window) {
+  /* Get saved dimensions of windows and set them up as current ones */
  switch (window) {
   case "controller":
    if (typeof(impWindows.controller) === "object") {
@@ -166,18 +168,14 @@ function storeWindowState(window) {
 
  }
 
-
-
  settings.set('windowstate', windowState);
+ /* Save windows' dimmensions to electron settings */
 };
 
-// main process
-
-function createcontrollerWindow() {
-
+function createControllerWindow() {
+ /* Create a promised Controller Window and set it up after it's created */
  return new Promise(function(resolve, reject, err) {
-  // Create the browser window.
-  let controller = new BrowserWindow({
+  let controller = new BrowserWindow({ // Create the browser window.
    x: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.x || undefined,
    y: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.y || undefined,
    width: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.width || 800,
@@ -204,7 +202,7 @@ function createcontrollerWindow() {
 }
 
 function setupControllerWindow() {
-
+/* Setup all necesary details on already created window */
  if (typeof(windowState.controller) === "object" && windowState.controller.isMaximized) {
   impWindows.controller.maximize();
  }
@@ -246,13 +244,10 @@ function setupControllerWindow() {
  }
 }
 
-
-
 function createProjectorWindow() {
- // Create the browser window.
+ /* Create a promised Projector Window and set it up after it's created */
 
  return new Promise(function(resolve, reject, err) {
-  // Do async jobPromise
   let projector = new BrowserWindow({
    x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
    y: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.y || undefined,
@@ -277,35 +272,12 @@ function createProjectorWindow() {
  });
 }
 
-/*
- impWindows.projector = new BrowserWindow({
-  x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
-  y: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.y || undefined,
-  width: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.width || 800,
-  height: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.height || 600,
-  icon: path.resolve(__dirname, 'img/icon.png'),
-  title: 'impressPlayer Controller',
-  backgroundColor: '#13132A',
-  show: false
- });
-*/
-//saveTemplates("projector.tpl");
-// and load the index.html of the app.
-
 function setupProjectorWindow() {
- /*
- impWindows.projector.loadURL(url.format({
-   pathname: path.resolve(app.getPath('userData'), './projector.html'),
-   protocol: 'file:',
-   slashes: true,
-   fullscreenable: true
- }));*/
+  /* Setup all necesary details on already created window */
 
  // Emitted when the window is closed.
  impWindows.projector.on('closed', function() {
-  // Dereference the window object, usually you would store windows
-  // in an array if your app supports multi windows, this is the time
-  // when you should delete the corresponding element.
+  // Dereference the window object on exit
   impWindows.projector = null;
  });
  // Window positioning and size
@@ -316,7 +288,7 @@ function setupProjectorWindow() {
    // Check if `wc` belongs to a webview in the `win` window.
    if (wc.hostWebContents &&
     wc.hostWebContents.id === impWindows.projector.webContents.id) {
-    wc.setSize({
+    wc.setSize({  // TODO deprecated function
      normal: {
       width: width,
       height: height
