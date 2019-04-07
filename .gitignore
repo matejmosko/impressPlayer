@@ -10,7 +10,8 @@ audiovideo
 examples/*/*.jpg
 *.zip
 viewer.html
-console.html
+controller.html
+projector.html
 
 # OS generated files #
 ######################
