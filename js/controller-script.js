@@ -1,4 +1,4 @@
-  let impConsole = (function() {
+  let impController = (function() {
     const remote = require('electron').remote;
     const app = remote.app;
     const path = require('path');
@@ -27,7 +27,7 @@
 
     // Load impress-viewer template
     // TODO Move this to async function inside the part, where we generate viewer.html
-    // TODO Move all tmp files (viewer.html, console.html) to userData.
+    // TODO Move all tmp files (viewer.html, controller.html) to userData.
 
     tplViewerHTML = fs.readFileSync(path.resolve(app.getAppPath(), './templates/viewer.tpl'), 'utf8');
     let parser = new DOMParser(),
@@ -49,7 +49,7 @@
 
     setupWebviewSizes();
 
-    ipc.on('windowResized', (event) => { // Resize window according to aspectRatio of a device
+    ipc.on('windowResized', (_event) => { // Resize window according to aspectRatio of a device
       //setupWebviewSizes();
     });
 
@@ -114,7 +114,7 @@
       ipc.send('toggleProjector');
     });
 
-    ipc.on('buttonSwitch', (event, btn, x) => { // Toggle "toggled" state of top buttons when non-click event change status
+    ipc.on('buttonSwitch', (_event, btn, x) => { // Toggle "toggled" state of top buttons when non-click event change status
       if (x) {
         document.getElementById(btn).toggled = true;
       } else {
@@ -122,7 +122,7 @@
       }
     });
 
-    ipc.on('quitModal', (event) => { // Show "Really Quit" dialog
+    ipc.on('quitModal', (_event) => { // Show "Really Quit" dialog
       exitDialog.showModal();
     });
 
@@ -257,7 +257,7 @@
       }
       let dataPath = path.dirname(file) + "/"; // Baseurl for the presentation (for relative links to work inside presentation)
       let impressPath = path.resolve(__dirname, "impress.js"); // We load impress.js separately (with absolute path)
-      let viewerPath = path.resolve(__dirname, "viewer-script.js"); // This is the script for impressPlayer console to work.
+      let viewerPath = path.resolve(__dirname, "viewer-script.js"); // This is the script for impressPlayer Controller to work.
 
       viewerDOM.getElementById("baseTag").setAttribute("href", dataPath);
       viewerDOM.getElementById("container").innerHTML = html;

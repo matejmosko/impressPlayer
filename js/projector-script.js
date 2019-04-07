@@ -8,15 +8,15 @@
 
     // renderer process
 
-    ipc.on('loadProjection', (event) => {
+    ipc.on('loadProjection', (_event) => {
       webview.reload();
     });
 
-    ipc.on('gotoSlide', (event, current) => {
+    ipc.on('gotoSlide', (_event, current) => {
       webview.send('gotoSlide', current);
     });
 
-    ipc.on('audioVideoControls', (event, command, data) => {
+    ipc.on('audioVideoControls', (_event, command, data) => {
       webview.send('audioVideoControls', command, data);
     });
 

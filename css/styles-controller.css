@@ -1,9 +1,10 @@
 /* RESET DEFAULT css settings */
+html {
+  box-sizing: border-box;
+}
 
 *, *:before, *:after {
-  -moz-box-sizing: border-box;
-  -webkit-box-sizing: border-box;
-  box-sizing: border-box;
+  box-sizing: inherit;
 }
 
 :not(input):not(textarea), :not(input):not(textarea)::after, :not(input):not(textarea)::before {
@@ -13,7 +14,16 @@
 }
 
 input, button, textarea, :focus {
-  outline: none; // You should add some other style for :focus to help UX/a11y
+  outline: none;
+  /* You should add some other style for :focus to help UX/a11y */
+}
+
+/* Setting up global properties */
+:root {
+  --dangerColor: #d33a2c;
+  --currentColor: #ffff99;
+  --textOnDark: #222;
+  --textOnLight: #222;
 }
 
 body {
@@ -23,13 +33,11 @@ body {
 }
 
 /* LAYOUT divs */
-
 #container {
   margin: 0px;
   padding: 0px;
   width: 100%;
   height: 100%;
-  box-sizing: border-box;
   overflow-y: hidden;
 }
 
@@ -72,7 +80,6 @@ body {
 }
 
 /* FUNCTIONAL DIVS with IDs */
-
 #infobox {
   flex: 4 0 100%;
   padding: 10px;
@@ -148,7 +155,7 @@ body {
   font-size: 1.0rem;
 }
 
-#mediaControlsDiv{
+#mediaControlsDiv {
   display: flex;
   flex-flow: row nowrap;
   align-items: flex-start;
@@ -156,7 +163,7 @@ body {
   width: 50%;
 }
 
-#audioVideoSlider{
+#audioVideoSlider {
   min-width: 300px;
 }
 
@@ -172,7 +179,6 @@ body {
 }
 
 /* WEBVIEW settings */
-
 .nextSlide {
   margin: 0px;
   overflow: hidden;
@@ -205,21 +211,18 @@ body {
 }
 
 /* BUTTTONS etc. */
-
 .danger {
-  background-color: #cc3300;
+  color: var(--textonDark);
+  background-color: var(--dangerColor);
 }
 
 .impressControlBtns {
   display: none;
+  color: var(--textOnDark);
 }
 
 .running .impressControlBtns {
   display: flex;
-}
-
-.running #openFile {
-  /*display: none;*/
 }
 
 .imp-ui-text, .label {
@@ -239,7 +242,6 @@ body {
 }
 
 /* GRID for allSlides Navigation */
-
 .grid {
   display: flex;
   flex-flow: row wrap;
@@ -250,7 +252,6 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  box-sizing: border-box;
   margin: 5px;
   min-height: 50px;
   overflow: hidden;
@@ -261,8 +262,8 @@ body {
 
 .grid-item.current {
   font-weight: bold;
-  background: gray;
-  color: white;
+  background-color: var(--currentColor);
+  color: var(--textonDark);
 }
 
 .grid-item.future {
@@ -271,12 +272,10 @@ body {
 
 .grid-item.future:hover {
   background-color: hsl(var(--accent-color-h), var(--accent-color-s), var(--accent-color-l));
-  ;
-  color: white;
+  color: var(--textonDark);
 }
 
 /* DIALOGs (exit...) */
-
 #exitDialog h4, #exitDialog p {
   text-align: center;
 }
