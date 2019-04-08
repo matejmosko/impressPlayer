@@ -14,53 +14,81 @@
 
 <body>
   <div id="container">
-    <div id="topbox">
-      <x-card id="infobox">
-        <x-buttons tracking="2" id="projectorControls" class="topButtons">
-          <x-button id="reloadBtn" class="danger btn" title="Click to reload the application">
-            <x-icon name="power-settings-new" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-          </x-button>
-          <x-button id="disclamerBtn" class="hidden btn">
-            <x-icon name="assignment" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-          </x-button>
-          <x-button id="projectorBtn" title="Click to open projection window" class="btn">
-            <x-icon name="airplay" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-          </x-button>
-          <x-button id="fullscreenBtn" title="Click to make projection window fullscreen" class="btn">
-            <x-icon name="fullscreen" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-          </x-button>
+    <x-menubar>
+      <x-menuitem>
+        <x-label>File</x-label>
 
+        <x-menu>
+          <x-menuitem id="openFile">
+            <x-label>{{#i18n}}Load Presentation{{/i18n}}</x-label>
+            <x-shortcut value="Control+N"></x-shortcut>
+          </x-menuitem>
 
+          <x-menuitem id="refreshImpress">
+            <x-label>{{#i18n}}Refresh presentation{{/i18n}}</x-label>
+            <x-shortcut value="Control+O"></x-shortcut>
+          </x-menuitem>
 
-        </x-buttons>
-        <div id="mediaControlsDiv" class="hidden">
+                    <hr>
+
+          <x-menuitem id="exitApp">
+            <x-label>{{#i18n}}Exit{{/i18n}}</x-label>
+            <x-shortcut value="Control+O"></x-shortcut>
+          </x-menuitem>
+
+        </x-menu>
+      </x-menuitem>
+      <x-menuitem>
+        <x-label>Help</x-label>
+
+        <x-menu>
+          <x-menuitem id="showDocumentation">
+            <x-label>{{#i18n}}Documentation{{/i18n}}</x-label>
+          </x-menuitem>
+          <hr />
+          <x-menuitem id="reloadApp">
+            <x-label>{{#i18n}}Reload Application{{/i18n}}</x-label>
+          </x-menuitem>
+        </x-menu>
+      </x-menuitem>
+<div id="menuBtns">
+      <x-buttons tracking="2" id="projectorControls" class="topButtons">
+        <x-button id="disclamerBtn" class="hidden btn" skin="flat">
+          <x-icon name="assignment" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
+        </x-button>
+        <x-button id="projectorBtn" title="Click to open projection window" class="btn" skin="flat">
+          <x-icon name="airplay" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
+        </x-button>
+        <x-button id="fullscreenBtn" title="Click to make projection window fullscreen" class="btn" skin="flat">
+          <x-icon name="fullscreen" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
+        </x-button>
+      </x-buttons>
+      <div id="mediaControlsDiv" class="hidden">
         <x-buttons tracking="-1" id="audiovideoControls" class="topButtons audiovideoControls">
-          <x-button id="playPauseMediaBtn" class="btn">
+          <x-button id="playPauseMediaBtn" class="btn" skin="flat">
             <x-icon name="play-arrow" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
           </x-button>
           <x-slider id="audioVideoSlider" value="1"></x-slider>
-          <x-button id="restartMediaBtn" class="btn">
+          <x-button id="restartMediaBtn" class="btn" skin="flat">
             <x-icon name="replay" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
           </x-button>
         </x-buttons>
       </div>
-        <x-buttons tracking="-1" id="gameControls" class="topButtons">
-          <x-buttons>
-            <x-buttons tracking="-1" id="gameControls" class="topButtons">
-              <x-button id="nextSlideBtn" class="impressControlBtns btn">
-                <x-box>
-                  <x-icon name="skip-next" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-                  <x-label id="nextSlideLabel" class="label">{{#i18n}}Next Slide{{/i18n}}</x-label>
-                </x-box>
-              </x-button>
-              <x-button id="prevSlideBtn" class="danger impressControlBtns btn">
-                <x-icon name="backspace" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-              </x-button>
-            </x-buttons>
-      </x-card>
-
-
-    </div>
+      <x-buttons tracking="-1" id="gameControls" class="topButtons">
+        <x-buttons>
+          <x-buttons tracking="-1" id="gameControls" class="topButtons">
+            <x-button id="nextSlideBtn" class="impressControlBtns btn">
+              <x-box>
+                <x-icon name="skip-next" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
+                <x-label id="nextSlideLabel" class="label">{{#i18n}}Next Slide{{/i18n}}</x-label>
+              </x-box>
+            </x-button>
+            <x-button id="prevSlideBtn" class="danger impressControlBtns btn">
+              <x-icon name="backspace" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
+            </x-button>
+          </x-buttons>
+</div>
+    </x-menubar>
 
     <div id="main">
       <div id="content">
@@ -96,7 +124,7 @@
         <x-card id="contentCard">
 
           <div id="currentSlideDiv" class="content-table slidesPreview">
-            <webview id="impressCurrent" autosize src="{{{usrPath}}}/viewer.html" style="display:flex;" nodeintegration></webview>
+            <webview id="impressCurrent" src="{{{usrPath}}}/viewer.html" nodeintegration></webview>
             <div class="impressCurtain">
               <!-- The curtain preventing focusing webview element -->
             </div>
@@ -114,32 +142,18 @@
       </div>
 
       <div id="sidebar">
-          <x-card class="nextSlide nextSlide-1">
-            <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
-            <div class="impressCurtain">
-              <!-- The curtain preventing focusing webview element -->
-            </div>
-          </x-card>
-          <x-card class="nextSlide nextSlide-2">
-            <webview id="nextImpress-2" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
-            <div class="impressCurtain">
-              <!-- The curtain preventing focusing webview element -->
-            </div>
-          </x-card>
-          <x-card class="additionalControls">
-            <x-button id="refreshBtn" class="additionalBtns btn">
-              <x-box>
-                <x-icon name="refresh" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-                <x-label id="refreshLabel" class="label">{{#i18n}}Refresh presentation{{/i18n}}</x-label>
-              </x-box>
-            </x-button>
-            <x-button id="openFile" class="additionalBtns btn">
-              <x-box>
-                <x-icon name="folder-open" iconset="{{{appPath}}}/node_modules/xel/images/icons.svg"></x-icon>
-                <x-label id="refreshLabel" class="label">{{#i18n}}Load Presentation{{/i18n}}</x-label>
-              </x-box>
-            </x-button>
-          </x-card>
+        <x-card class="nextSlide nextSlide-1 sidebarCard">
+          <webview id="nextImpress-1" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
+          <div class="impressCurtain">
+            <!-- The curtain preventing focusing webview element -->
+          </div>
+        </x-card>
+        <x-card class="nextSlide nextSlide-2 sidebarCard">
+          <webview id="nextImpress-2" class="slidesPreview" src="{{{usrPath}}}/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
+          <div class="impressCurtain">
+            <!-- The curtain preventing focusing webview element -->
+          </div>
+        </x-card>
       </div>
     </div>
     <div id="footer">

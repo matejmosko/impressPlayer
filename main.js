@@ -109,7 +109,7 @@ function initializeWindows() {
  fs.readFile(path.resolve(__dirname, './templates/controller.tpl'), 'utf8', (err, tplController) => { // Read controller.tpl (main controller interface) asynchronously
   if (err) throw err;
   let localeController = ms.render(tplController, mustacheOptions);
-  fs.writeFile('./controller.html', localeController, (err) => {
+  fs.writeFile(userPath+'/controller.html', localeController, (err) => {
    if (err) throw err;
    setupControllerWindow();
   });
@@ -122,7 +122,7 @@ function initializeWindows() {
   if (err) throw err;
  impWindows.controller = createControllerWindow();
  impWindows.projector = createProjectorWindow();
-  fs.writeFile('./projector.html', localeProjector, (err) => {
+  fs.writeFile(userPath+'/projector.html', localeProjector, (err) => {
    if (err) throw err;
    setupProjectorWindow();
   });
@@ -132,7 +132,10 @@ function initializeWindows() {
  fs.readFile(path.resolve(__dirname, './templates/viewer-fake.tpl'), 'utf8', (err, tplViewerFake) => {
   localeViewerFake = ms.render(tplViewerFake, mustacheOptions);
   if (err) throw err;
-  fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), localeViewerFake, (err) => {
+  fs.writeFile(path.resolve(app.getPath('userData'), userPath+'/viewer.html'), localeViewerFake, (err) => {
+   if (err) throw err;
+  });
+  fs.writeFile(path.resolve(app.getPath('userData'), userPath+'/previewer.html'), localeViewerFake, (err) => {
    if (err) throw err;
   });
  });
@@ -192,7 +195,7 @@ function createControllerWindow() {
 
 function setupControllerWindow() {
  /* Setup all necesary details on already created window */
- impWindows.controller.loadFile('./controller.html');
+ impWindows.controller.loadFile(userPath+'/controller.html');
 
  if (typeof(windowState.controller) === "object" && windowState.controller.isMaximized) {
   impWindows.controller.maximize();
@@ -217,10 +220,10 @@ function setupControllerWindow() {
  impWindows.controller.on('close', event => {
   event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
   impWindows.controller.webContents.send('quitModal');
-  ipcMain.on('reallyQuit', (_event) => {
-   storeWindowState("controller");
-   app.exit();
-  });
+ });
+ ipcMain.on('reallyQuit', (_event) => {
+  storeWindowState("controller");
+  app.exit();
  });
  // Emitted when the window is closed.
  impWindows.controller.on('closed', function() {
@@ -253,13 +256,14 @@ function createProjectorWindow() {
 
 function setupProjectorWindow() {
  /* Setup all necesary details on already created window */
- impWindows.projector.loadFile('./projector.html');
- // Emitted when the window is closed.
- impWindows.projector.on('closed', function() {
-  // Dereference the window object on exit
-  impWindows.projector = null;
- });
+ impWindows.projector.loadFile(userPath+'/projector.html');
  // Window positioning and size
+
+
+  impWindows.projector.on('close', event => {
+   event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
+   impWindows.projector.hide();
+  });
  impWindows.projector.on('resize', () => {
   storeWindowState("projector");
  });
@@ -299,10 +303,6 @@ function setupProjectorButtons() {
   impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", true);
  });
 
- impWindows.projector.on('close', event => {
-  event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
-  impWindows.projector.hide();
- });
  impWindows.projector.on('leave-full-screen', () => {
   impWindows.controller.webContents.send('buttonSwitch', "fullscreenBtn", false);
  });

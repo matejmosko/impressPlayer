@@ -39,31 +39,26 @@ body {
   width: 100%;
   height: 100%;
   overflow-y: hidden;
-}
-
-#topbox {
-  height: 72px;
-  width: 100%;
   display: flex;
-  align-items: center;
-  padding: 10px;
-  overflow: hidden
+  flex-flow: column nowrap;
+  justify-content: space-around;
+  align-content: space-around;
+  align-items: stretch;
 }
 
 #main {
-  height: calc(100vh - 72px - 72px);
+  height: calc(100vh - 72px - 32px);
   width: 100%;
   display: flex;
   overflow-y: hidden;
 }
 
 #footer {
-  height: 72px;
   padding: 10px;
 }
 
 #content {
-  height: calc(100vh - 72px - 72px);
+  height: calc(100vh - 72px - 32px);
   overflow-y: hidden;
   width: 70vw;
   padding: 5px 10px;
@@ -72,14 +67,22 @@ body {
 #sidebar {
   height: 100%;
   width: 30vw;
-  padding: 0px 10px;
+  padding: 0px 2vw;
   overflow-y: scroll;
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-around;
+  align-items: center;
 }
 
 /* FUNCTIONAL DIVS with IDs */
+#menuBtns {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 10px;
+}
+
 #infobox {
   flex: 4 0 100%;
   padding: 10px;
@@ -89,7 +92,8 @@ body {
 }
 
 #contentCard {
-  height: 95%;
+  height: auto;
+  max-height: 92%;
   width: 100%;
   margin: 0px;
   overflow-y: hidden;
@@ -99,14 +103,14 @@ body {
 
 #currentSlideDiv {
   flex: 1 1 auto;
-  width: 70vw;
-  height: 70vh;
+  width: 100%;
+  height: 0px;
+  padding-bottom: 75%;
   /* This maintains 4:3 aspect ratio */
   position: relative;
 }
 
 #allSlidesDiv {
-  height: 100%;
   width: 100%;
   padding: 20px 20px;
   position: relative;
@@ -158,33 +162,35 @@ body {
 #mediaControlsDiv {
   display: flex;
   flex-flow: row nowrap;
-  align-items: flex-start;
-  min-width: 300px;
-  width: 50%;
+  flex: 1 1 300px;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+  width: 300px;
+}
+
+#audiovideoControls {
+  flex: 0 1 auto;
+  width: 75%;
 }
 
 #audioVideoSlider {
-  min-width: 300px;
+  min-width: 150px;
+  max-width: 300px;
 }
 
-.additionalControls {
-  display: flex;
-  flex-flow: column;
-  align-items: center;
-  justify-content: space-around;
-  min-height: 75px;
-  min-width: 215px;
-  height: 20%;
-  overflow-x: hidden;
+.sidebarCard {
+  width: 100%;
 }
 
 /* WEBVIEW settings */
 .nextSlide {
+  width: 100%;
+  height: 0px;
+  padding-bottom: 75%;
   margin: 0px;
   overflow: hidden;
   position: relative;
-  width: 25vw;
-  height: 25vh;
   /* This maintains 4:3 aspect ratio */
 }
 

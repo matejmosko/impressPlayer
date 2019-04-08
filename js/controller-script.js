@@ -35,20 +35,6 @@
 
     // Setup Settings Database
 
-    function setupWebviewSizes() {
-      let webDiv = document.getElementById("currentSlideDiv");
-      let aspectRatio = window.screen.width / window.screen.height;
-      if (webDiv.offsetWidth / webDiv.offsetHeigth < aspectRatio) {
-        webDiv.style.width = webDiv.offsetWidth + "px";
-        webDiv.style.height = webDiv.offsetWidth / aspectRatio + "px";
-      } else {
-        webDiv.style.height = webDiv.offsetHeight + "px";
-        webDiv.style.width = webDiv.offsetHeight * aspectRatio + "px";
-      }
-    }
-
-    setupWebviewSizes();
-
     ipc.on('windowResized', (_event) => { // Resize window according to aspectRatio of a device
       //setupWebviewSizes();
     });
@@ -161,7 +147,7 @@
       selectFile();
     });
 
-    document.getElementById("refreshBtn").addEventListener("click", function() {
+    document.getElementById("refreshImpress").addEventListener("click", function() {
       loadProjectionFile(loadedFile);
     });
 
@@ -292,6 +278,8 @@
       let previewerDOM = removeMultimedia(viewerDOM);
       fs.writeFile(path.resolve(app.getPath('userData'), './previewer.html'), serializer.serializeToString(previewerDOM), (err) => {
         if (err) throw err;
+        //webview1.setZoomFactor(0.4);
+        //webview2.setZoomFactor(0.4);
         webview1.reload();
         webview2.reload();
       });
@@ -312,8 +300,8 @@
         webview0.send('prevSlide');
       });
       if (debugMode) {
-        webview0.openDevTools();
-        webview0.addEventListener('console-message', (e) => {
+        webview1.openDevTools();
+        webview1.addEventListener('console-message', (e) => {
           saveLogs('Guest page logged a message:', e.message);
         })
       }
@@ -492,7 +480,7 @@
       webview0.send('nextSlide');
     }, false);
 
-    document.getElementById("reloadBtn").addEventListener("click", function() {
+    document.getElementById("reloadApp").addEventListener("click", function() {
       ipc.send('reloadWindows');
     }, false);
 
@@ -505,6 +493,10 @@
     document.getElementById("restartMediaBtn").addEventListener("click", function() {
       webview0.send('audioVideoControls', 'restart');
       ipc.send('audioVideoControls', 'restart');
+    }, false);
+
+    document.getElementById("exitApp").addEventListener("click", function() {
+      exitDialog.showModal();
     }, false);
 
     // Event listener for the seek bar

@@ -70,7 +70,7 @@ let impViewer = (function() {
     return currentSlide;
   }
 
-  ipc.on('setupEventHandlers', (event, webview) => {
+  ipc.on('setupEventHandlers', (_event, webview) => {
     switch (webview) {
       case 'current':
       case 'projector':
@@ -81,18 +81,18 @@ let impViewer = (function() {
     }
   });
 
-  ipc.on('nextSlide', (event) => {
+  ipc.on('nextSlide', (_event) => {
     impress().next();
   });
 
-  ipc.on('prevSlide', (event) => {
+  ipc.on('prevSlide', (_event) => {
     impress().prev();
   });
 
-  ipc.on('gotoSlide', (event, arg) => {
+  ipc.on('gotoSlide', (_event, arg) => {
     impress().goto(arg);
   });
-  ipc.on('audioVideoControls', (event, command, data) => {
+  ipc.on('audioVideoControls', (_event, command, data) => {
     let current = document.getElementsByClassName("present")[0];
     let media;
     if (current.classList.contains("hasVideo")) {
