@@ -6,17 +6,18 @@
 
 @font-face {
   font-family: 'DosisBold';
-  src: url('fonts/Exo/Exo-Medium.ttf')  format('truetype');
+  src: url('fonts/Exo/Exo-Medium.ttf') format('truetype');
   /*URL to font*/
 }
 
 @font-face {
   font-family: 'Nasalization';
-  src: url('fonts/nasalization-rg.ttf')  format('truetype');
+  src: url('fonts/nasalization-rg.ttf') format('truetype');
   /*URL to font*/
 }
+
 *, *:before, *:after {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
@@ -27,6 +28,7 @@ body {
   width: 100%;
   overflow: hidden;
 }
+
 #impressCurrent {
   width: 99vw;
   display: flex;
@@ -36,7 +38,7 @@ body {
   padding: 0px;
 }
 
-.impressCurtain{
+.impressCurtain {
   position: absolute;
   top: 0;
   left: 0;

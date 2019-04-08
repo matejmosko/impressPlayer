@@ -86,7 +86,11 @@ catch (err) {
 /* START Real application */
 function initializeWindows() {
 
-  // setup initial settings for Windows
+
+ impWindows.controller = createControllerWindow();
+ impWindows.projector = createProjectorWindow();
+
+ // setup initial settings for Windows
  mustacheOptions = {
   "dirname": __dirname,
   "usrPath": app.getPath('userData'),
@@ -101,23 +105,26 @@ function initializeWindows() {
   }
  }
 
-/* Render controller template (async) and create a window after that */
+ /* Render controller template (async) and create a window after that */
  fs.readFile(path.resolve(__dirname, './templates/controller.tpl'), 'utf8', (err, tplController) => { // Read controller.tpl (main controller interface) asynchronously
   if (err) throw err;
   let localeController = ms.render(tplController, mustacheOptions);
   fs.writeFile('./controller.html', localeController, (err) => {
-if (err) throw err;
-   createControllerWindow();
+   if (err) throw err;
+   setupControllerWindow();
   });
  });
 
-/* Render projector template (async) and create a window after that */
+
+ /* Render projector template (async) and create a window after that */
  fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
   let localeProjector = ms.render(tplProjector, mustacheOptions);
   if (err) throw err;
+ impWindows.controller = createControllerWindow();
+ impWindows.projector = createProjectorWindow();
   fs.writeFile('./projector.html', localeProjector, (err) => {
    if (err) throw err;
-   createProjectorWindow();
+   setupProjectorWindow();
   });
  });
 
@@ -130,15 +137,10 @@ if (err) throw err;
   });
  });
 
-/* Setup windows' interoperability after all windows are loaded */
-Promise.all([createProjectorWindow(), createControllerWindow()]).then(_values => {
-  setupProjectorButtons();
-});
-
 }
 
 function storeWindowState(window) {
-  /* Get saved dimensions of windows and set them up as current ones */
+ /* Get saved dimensions of windows and set them up as current ones */
  switch (window) {
   case "controller":
    if (typeof(impWindows.controller) === "object") {
@@ -174,35 +176,24 @@ function storeWindowState(window) {
 
 function createControllerWindow() {
  /* Create a promised Controller Window and set it up after it's created */
- return new Promise(function(resolve, reject, err) {
-  let controller = new BrowserWindow({ // Create the browser window.
-   x: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.x || undefined,
-   y: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.y || undefined,
-   width: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.width || 800,
-   height: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.height || 600,
-   icon: path.resolve(__dirname, 'img/icon.png'),
-   title: 'impressPlayer Controller',
-   show: false,
-   backgroundColor: '#13132A'
-  });
-
-   // and load the index.html of the app.
-  controller.loadFile('./controller.html');
-
-  if (err) {
-   reject(err);
-  }
-  else {
-   resolve(controller);
-  }
- }).then(function(result) {
-  impWindows.controller = result;
-  setupControllerWindow();
+ let controller = new BrowserWindow({ // Create the browser window.
+  x: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.x || undefined,
+  y: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.y || undefined,
+  width: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.width || 800,
+  height: windowState.controller && windowState.controller.bounds && windowState.controller.bounds.height || 600,
+  icon: path.resolve(__dirname, 'img/icon.png'),
+  title: 'impressPlayer Controller',
+  show: false,
+  backgroundColor: '#13132A'
  });
+ // and load the index.html of the app.
+ return controller;
 }
 
 function setupControllerWindow() {
-/* Setup all necesary details on already created window */
+ /* Setup all necesary details on already created window */
+ impWindows.controller.loadFile('./controller.html');
+
  if (typeof(windowState.controller) === "object" && windowState.controller.isMaximized) {
   impWindows.controller.maximize();
  }
@@ -247,34 +238,22 @@ function setupControllerWindow() {
 function createProjectorWindow() {
  /* Create a promised Projector Window and set it up after it's created */
 
- return new Promise(function(resolve, reject, err) {
-  let projector = new BrowserWindow({
-   x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
-   y: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.y || undefined,
-   width: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.width || 800,
-   height: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.height || 600,
-   icon: path.resolve(__dirname, 'img/icon.png'),
-   title: 'impressPlayer Controller',
-   backgroundColor: '#13132A',
-   show: false
-  });
-  projector.loadFile('./projector.html');
-
-  if (err) {
-   reject(err);
-  }
-  else {
-   resolve(projector);
-  }
- }).then(function(result) {
-  impWindows.projector = result;
-  setupProjectorWindow();
+ let projector = new BrowserWindow({
+  x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
+  y: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.y || undefined,
+  width: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.width || 800,
+  height: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.height || 600,
+  icon: path.resolve(__dirname, 'img/icon.png'),
+  title: 'impressPlayer Controller',
+  backgroundColor: '#13132A',
+  show: false
  });
+ return projector;
 }
 
 function setupProjectorWindow() {
-  /* Setup all necesary details on already created window */
-
+ /* Setup all necesary details on already created window */
+ impWindows.projector.loadFile('./projector.html');
  // Emitted when the window is closed.
  impWindows.projector.on('closed', function() {
   // Dereference the window object on exit
@@ -283,19 +262,6 @@ function setupProjectorWindow() {
  // Window positioning and size
  impWindows.projector.on('resize', () => {
   storeWindowState("projector");
-  const [width, height] = impWindows.projector.getContentSize();
-  for (let wc of webContents.getAllWebContents()) {
-   // Check if `wc` belongs to a webview in the `win` window.
-   if (wc.hostWebContents &&
-    wc.hostWebContents.id === impWindows.projector.webContents.id) {
-    wc.setSize({  // TODO deprecated function
-     normal: {
-      width: width,
-      height: height
-     }
-    });
-   }
-  }
  });
  impWindows.projector.on('move', function() {
   storeWindowState("projector");
@@ -323,7 +289,6 @@ function setupProjectorWindow() {
 }
 
 function setupProjectorButtons() {
-
  // Button events
  impWindows.projector.on('hide', _event => {
   impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", false);
@@ -360,12 +325,15 @@ function setupProjectorButtons() {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', function() {
- //createcontrollerWindow();
- //createProjectorWindow();
+
+function renderApplication() {
  initializeWindows();
+ setupProjectorButtons();
+}
+
+app.on('ready', function() {
+ renderApplication();
 });
-//app.on('ready', );
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function() {
@@ -380,7 +348,7 @@ app.on('activate', function() {
  // On OS X it's common to re-create a window in the app when the
  // dock icon is clicked and there are no other windows open.
  if (impWindows.controller === null) {
-  createcontrollerWindow();
+  createControllerWindow();
  }
 });
 
