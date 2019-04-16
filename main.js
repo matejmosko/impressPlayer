@@ -1,20 +1,14 @@
 /* Initial settings */
 
-const electron = require('electron');
-/* Module to control application life. */
-const app = electron.app;
-app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required'); // Disable new security feature of chrome 66. Not working right now. Necesary for video.play
+const {
+ app,
+ BrowserWindow,
+ webContents,
+ ipcMain,
+ Menu
+} = require('electron')
 
-/* Module to create native browser window. */
-const BrowserWindow = electron.BrowserWindow;
-/* Modules to serve webcontents and modal dialogs */
-const {
- webContents
-} = require('electron');
-/* IPC system to communicate between main and renderer processes */
-const {
- ipcMain
-} = require('electron');
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required'); // Disable new security feature of chrome 66. Not working right now. Necesary for video.play
 
 /* Various necessary modules */
 const path = require('path'); // System paths
@@ -30,6 +24,8 @@ const i18n = new(require('i18n-2'))({ // i18n helps with translations
 
 let debugMode = false,
  userPath = app.getPath('userData');
+console.log(app.getPath('userData'));
+console.log(userPath);
 
 process.argv.forEach(function(argv) {
  if (argv == "debug") {
@@ -109,7 +105,8 @@ function initializeWindows() {
  fs.readFile(path.resolve(__dirname, './templates/controller.tpl'), 'utf8', (err, tplController) => { // Read controller.tpl (main controller interface) asynchronously
   if (err) throw err;
   let localeController = ms.render(tplController, mustacheOptions);
-  fs.writeFile(userPath+'/controller.html', localeController, (err) => {
+  console.log(path.resolve(userPath, './controller.html'));
+  fs.writeFile(path.resolve(userPath, './controller.html'), localeController, (err) => {
    if (err) throw err;
    setupControllerWindow();
   });
@@ -120,9 +117,9 @@ function initializeWindows() {
  fs.readFile(path.resolve(__dirname, './templates/projector.tpl'), 'utf8', (err, tplProjector) => {
   let localeProjector = ms.render(tplProjector, mustacheOptions);
   if (err) throw err;
- impWindows.controller = createControllerWindow();
- impWindows.projector = createProjectorWindow();
-  fs.writeFile(userPath+'/projector.html', localeProjector, (err) => {
+  impWindows.controller = createControllerWindow();
+  impWindows.projector = createProjectorWindow();
+  fs.writeFile(path.resolve(userPath, './projector.html'), localeProjector, (err) => {
    if (err) throw err;
    setupProjectorWindow();
   });
@@ -132,10 +129,10 @@ function initializeWindows() {
  fs.readFile(path.resolve(__dirname, './templates/viewer-fake.tpl'), 'utf8', (err, tplViewerFake) => {
   localeViewerFake = ms.render(tplViewerFake, mustacheOptions);
   if (err) throw err;
-  fs.writeFile(path.resolve(app.getPath('userData'), userPath+'/viewer.html'), localeViewerFake, (err) => {
+  fs.writeFile(path.resolve(app.getPath('userData'), './viewer.html'), localeViewerFake, (err) => {
    if (err) throw err;
   });
-  fs.writeFile(path.resolve(app.getPath('userData'), userPath+'/previewer.html'), localeViewerFake, (err) => {
+  fs.writeFile(path.resolve(app.getPath('userData'), './previewer.html'), localeViewerFake, (err) => {
    if (err) throw err;
   });
  });
@@ -189,13 +186,67 @@ function createControllerWindow() {
   show: false,
   backgroundColor: '#13132A'
  });
- // and load the index.html of the app.
+
+ let menu = Menu.buildFromTemplate([
+  {
+   label: 'Presentation',
+   submenu: [
+    {
+     label: 'Load Presentation',
+     click() {
+      impWindows.controller.webContents.send('selectFile');
+     }
+    },
+    {
+     label: 'Refresh Presentation',
+     click() {
+      impWindows.controller.webContents.send('refreshFile');
+     }
+    },
+    {type:'separator'},
+    {
+     label: 'Quit',
+     click() {
+       app.quit();
+     }
+    }
+           ]
+         },
+  {
+   label: 'System',
+   submenu: [
+    {
+     label: 'Restart Application',
+     click() {
+      reloadApp();
+     }
+    },
+    {
+     label: 'Toggle DevTools',
+     accelerator: 'F12',
+     click() {
+      impWindows.controller.toggleDevTools();
+     }
+    },
+    {type:'separator'},
+    {
+     label: 'Help',
+     click() {
+     showHelp();
+   }
+    }
+           ]
+       }
+   ])
+
+ controller.setMenu(menu);
+
  return controller;
 }
 
 function setupControllerWindow() {
  /* Setup all necesary details on already created window */
- impWindows.controller.loadFile(userPath+'/controller.html');
+ impWindows.controller.loadFile(path.resolve(userPath, './controller.html'));
 
  if (typeof(windowState.controller) === "object" && windowState.controller.isMaximized) {
   impWindows.controller.maximize();
@@ -256,14 +307,14 @@ function createProjectorWindow() {
 
 function setupProjectorWindow() {
  /* Setup all necesary details on already created window */
- impWindows.projector.loadFile(userPath+'/projector.html');
+ impWindows.projector.loadFile(path.resolve(userPath, './projector.html'));
  // Window positioning and size
 
 
-  impWindows.projector.on('close', event => {
-   event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
-   impWindows.projector.hide();
-  });
+ impWindows.projector.on('close', event => {
+  event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
+  impWindows.projector.hide();
+ });
  impWindows.projector.on('resize', () => {
   storeWindowState("projector");
  });
@@ -352,6 +403,14 @@ app.on('activate', function() {
  }
 });
 
+function reloadApp(){
+  fs.writeFile('viewer.html', localeViewerFake, (err) => {
+   if (err) throw err;
+   impWindows.projector.webContents.reload();
+   impWindows.controller.webContents.reload();
+  });
+}
+
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
 
@@ -387,6 +446,10 @@ function createLog(text) {
  });
 }
 
+function showHelp(){
+  console.log("There is no help for you");
+}
+
 /* Event listeners and IPC listeners */
 
 ipcMain.on('saveLogs', (_event, text) => {
@@ -414,9 +477,5 @@ ipcMain.on('audioVideoControls', (_event, command, data) => {
 });
 
 ipcMain.on('reloadWindows', (_event) => {
- fs.writeFile('viewer.html', localeViewerFake, (err) => {
-  if (err) throw err;
-  impWindows.projector.webContents.reload();
-  impWindows.controller.webContents.reload();
- });
+ reloadApp();
 });
