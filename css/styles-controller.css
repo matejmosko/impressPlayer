@@ -1,6 +1,14 @@
+@font-face {
+  font-family: 'Exo';
+  src: url('./fonts/Exo/Exo-Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /* RESET DEFAULT css settings */
 html {
   box-sizing: border-box;
+  font-family: "Exo";
 }
 
 *, *:before, *:after {
@@ -20,16 +28,24 @@ input, button, textarea, :focus {
 
 /* Setting up global properties */
 :root {
+  --backgroundColor: #2d2d2d;
+  --borderColor: #464646;
+  --cardColor: #32393d;
+  --activeColor: #32393d;
   --dangerColor: #d33a2c;
-  --currentColor: #ffff99;
-  --textOnDark: #222;
-  --textOnLight: #222;
+  --btnTextColor: #bdbdbd;
+  --textColor: #bdbdbd;
+  --btnColor: #2d2d2d;
+  --dialogColor: #EEE;
 }
 
 body {
   width: auto;
   margin: 0px;
   padding: 0px;
+  max-height: 100vh;
+  max-width: 100vw;
+  color: var(--textColor);
 }
 
 /* LAYOUT divs */
@@ -38,23 +54,36 @@ body {
   padding: 0px;
   width: 100%;
   height: 100%;
+  max-width: 100vw;
+  max-height: 100vh;
   overflow-y: hidden;
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-around;
   align-content: space-around;
   align-items: stretch;
+  background-color: var(--backgroundColor);
 }
 
 #main {
-  height: calc(100vh - 72px - 32px);
   width: 100%;
+  flex: 1 0 auto;
   display: flex;
   overflow-y: hidden;
 }
 
+#header {
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  flex-flow: row nowrap;
+}
+
 #footer {
-  padding: 10px;
+  padding: 4px 10px;
+  display: flex;
+  align-items: center;
+  flex-flow: row nowrap;
 }
 
 #content {
@@ -65,24 +94,23 @@ body {
 }
 
 #sidebar {
-  height: 100%;
+  max-height: 100%;
   width: 30vw;
   padding: 0px 2vw;
-  overflow-y: scroll;
   display: flex;
   flex-flow: column nowrap;
   justify-content: space-around;
   align-items: center;
 }
 
-/* FUNCTIONAL DIVS with IDs */
-#menuBtns {
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  padding: 0px 10px;
+.card {
+  background-color: var(--cardColor);
+  padding: 2px;
+  border-radius: 2px;
+  border: 1px solid var(--borderColor);
 }
 
+/* FUNCTIONAL DIVS with IDs */
 #infobox {
   flex: 4 0 100%;
   padding: 10px;
@@ -138,11 +166,7 @@ body {
   bottom: 0;
 }
 
-.tabs {
-  height: 52px;
-}
-
-#footer .presentationInfo {
+.presentationInfo {
   margin: 0px;
   font-weight: bold;
   display: flex;
@@ -177,6 +201,28 @@ body {
 #audioVideoSlider {
   min-width: 150px;
   max-width: 300px;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 25px;
+  background: var(--backgroundColor);
+  outline: none;
+  opacity: 0.7;
+  -webkit-transition: .2s;
+  transition: opacity .2s;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: var(--textColor);
+  cursor: pointer;
 }
 
 .sidebarCard {
@@ -217,18 +263,72 @@ body {
 }
 
 /* BUTTTONS etc. */
+.btn {
+  font-family: "Exo";
+  background-color: var(--btnColor);
+  border: 1px solid var(--borderColor);
+  color: var(--btnTextColor);
+  padding: 12px 16px;
+  font-size: 16px;
+  height: 40px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  align-content: center;
+  justify-content: center;
+}
+
+.btn:hover {
+  background-color: var(--activeColor);
+}
+
+.btnLabel {
+  padding: 0px 3px;
+}
+
 .danger {
-  color: var(--textonDark);
+  color: var(--textColor);
   background-color: var(--dangerColor);
 }
 
 .impressControlBtns {
   display: none;
-  color: var(--textOnDark);
 }
 
 .running .impressControlBtns {
   display: flex;
+}
+
+.tabs {
+  overflow: hidden;
+  border-top: 1px solid var(--borderColor);
+  border-left: 1px solid var(--borderColor);
+  border-right: 1px solid var(--borderColor);
+  color: var(--textColor);
+  background-color: var(--cardColor);
+}
+
+/* Style the buttons that are used to open the tab content */
+.tab {
+  font-family: "Exo";
+  background-color: var(--cardColor);
+  color: inherit;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  padding: 14px 16px;
+  transition: 0.3s;
+}
+
+/* Change background color of buttons on hover */
+.tab:hover {
+  background-color: var(--backgroundColor);
+}
+
+/* Create an active/current tablink class */
+.tab.active {
+  background-color: var(--backgroundColor);
 }
 
 .imp-ui-text, .label {
@@ -237,6 +337,11 @@ body {
 
 .topButtons {
   flex: 0 1 auto;
+}
+
+.btnRow {
+  display: flex;
+  flex-flow: row nowrap;
 }
 
 .btn:hover *, .btn:hover, .tab:hover, #projectionTimer {
@@ -268,8 +373,8 @@ body {
 
 .grid-item.current {
   font-weight: bold;
-  background-color: var(--currentColor);
-  color: var(--textonDark);
+  background-color: var(--textColor);
+  color: var(--activeColor);
 }
 
 .grid-item.future {
@@ -278,7 +383,7 @@ body {
 
 .grid-item.future:hover {
   background-color: hsl(var(--accent-color-h), var(--accent-color-s), var(--accent-color-l));
-  color: var(--textonDark);
+  color: var(--textColor);
 }
 
 /* DIALOGs (exit...) */
@@ -288,8 +393,11 @@ body {
 
 #exitDialog .exitBtns {
   margin: 0 auto;
+  justify-content: center;
 }
 
 #exitDialog {
+  background-color: var(--dialogColor);
+  color: var(--backgroundColor);
   padding: 20px;
 }
