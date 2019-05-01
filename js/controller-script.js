@@ -13,7 +13,8 @@
     const {
       dialog
     } = require('electron').remote;
-    const settings = remote.require('electron-settings');
+    const settings = remote.require('electron-settings'),
+    userPath = app.getPath('userData');
 
     const i18n = remote.getGlobal('globalObject').i18n;
     const debugMode = remote.getGlobal('globalObject').debugMode;
@@ -34,10 +35,6 @@
       viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
 
     // Setup Settings Database
-
-    ipc.on('windowResized', (_event) => { // Resize window according to aspectRatio of a device
-      //setupWebviewSizes();
-    });
 
     function setupSettings() {
       if (!settings.has("name")) {

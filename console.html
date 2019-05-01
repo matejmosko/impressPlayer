@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>impressPlayer Console</title>
+  <base href="/home/gnaag/Programy/impressplayer" />
+  <!--<link rel="stylesheet" href="./node_modules/xel/stylesheets/material.theme.css">-->
+  <link rel="stylesheet" href="/home/gnaag/Programy/impressplayer/node_modules/xel/themes/material.css">
+  <link rel="stylesheet" href="/home/gnaag/Programy/impressplayer/css/styles-console.css">
+  <script src="/home/gnaag/Programy/impressplayer/node_modules/xel/xel.min.js"></script>
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="topbox">
+      <x-card id="infobox">
+        <x-buttons tracking="2" id="projectorControls" class="topButtons">
+          <x-button id="reloadBtn" class="danger btn" title="Click to reload the application">
+            <x-icon name="power-settings-new" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          </x-button>
+          <x-button id="disclamerBtn" class="hidden btn">
+            <x-icon name="assignment" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          </x-button>
+          <x-button id="projectorBtn" title="Click to open projection window" class="btn">
+            <x-icon name="airplay" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          </x-button>
+          <x-button id="fullscreenBtn" title="Click to make projection window fullscreen" class="btn">
+            <x-icon name="fullscreen" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          </x-button>
+
+
+
+        </x-buttons>
+        <div id="mediaControlsDiv" class="hidden">
+        <x-buttons tracking="-1" id="audiovideoControls" class="topButtons audiovideoControls">
+          <x-button id="playPauseMediaBtn" class="btn">
+            <x-icon name="play-arrow" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          </x-button>
+          <x-slider id="audioVideoSlider" value="1"></x-slider>
+          <x-button id="restartMediaBtn" class="btn">
+            <x-icon name="replay" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          </x-button>
+        </x-buttons>
+      </div>
+        <x-buttons tracking="-1" id="gameControls" class="topButtons">
+          <x-buttons>
+            <x-buttons tracking="-1" id="gameControls" class="topButtons">
+              <x-button id="nextSlideBtn" class="impressControlBtns btn">
+                <x-box>
+                  <x-icon name="skip-next" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+                  <x-label id="nextSlideLabel" class="label">Ďalší snímok</x-label>
+                </x-box>
+              </x-button>
+              <x-button id="prevSlideBtn" class="danger impressControlBtns btn">
+                <x-icon name="backspace" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+              </x-button>
+            </x-buttons>
+      </x-card>
+
+
+    </div>
+
+    <div id="main">
+      <div id="content">
+        <x-tabs class="tabs" centered>
+          <x-tab selected id="currentSlideTab" class="tab">
+            <x-box>
+              <x-icon name="list" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+              <x-label id="tabLabelCurrentSlide" class="label">Projekcia</x-label>
+            </x-box>
+          </x-tab>
+
+
+          <x-tab id="remoteSourcesTab" class="hidden" class="tab">
+            <x-box>
+              <x-icon name="settings" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+              <x-label id="tabLabelRemoteSources" class="label">Iné zdroje</x-label>
+            </x-box>
+          </x-tab>
+
+          <x-tab id="optionsTab" class="hidden" class="tab">
+            <x-box>
+              <x-icon name="settings" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+              <x-label id="tabLabelSettings" class="label">Nastavenia</x-label>
+            </x-box>
+          </x-tab>
+          <x-tab id="allSlidesTab" class="tab">
+            <x-box>
+              <x-icon name="sort" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+              <x-label id="tabLabelAllSlides" class="label">Zoznam snímkov</x-label>
+            </x-box>
+          </x-tab>
+        </x-tabs>
+        <x-card id="contentCard">
+
+          <div id="currentSlideDiv" class="content-table slidesPreview">
+            <webview id="impressCurrent" autosize src="/home/gnaag/.config/impressPlayer/viewer.html" style="display:flex;" nodeintegration></webview>
+            <div class="impressCurtain">
+              <!-- The curtain preventing focusing webview element -->
+            </div>
+          </div>
+          <div id="allSlidesDiv" class="content-table hidden">
+            <div id="impressOverview"></div>
+          </div>
+          <div id="remoteSourcesDiv" class="content-table hidden">
+            Placeholder for remote sources
+          </div>
+          <div id="optionsDiv" class="content-table hidden">
+            Placeholder for options
+          </div>
+        </x-card>
+      </div>
+
+      <div id="sidebar">
+          <x-card class="nextSlide nextSlide-1">
+            <webview id="nextImpress-1" class="slidesPreview" src="/home/gnaag/.config/impressPlayer/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
+            <div class="impressCurtain">
+              <!-- The curtain preventing focusing webview element -->
+            </div>
+          </x-card>
+          <x-card class="nextSlide nextSlide-2">
+            <webview id="nextImpress-2" class="slidesPreview" src="/home/gnaag/.config/impressPlayer/previewer.html" autosize="on" minwidth="320px" minheight="180px" style="display:flex;" nodeintegration></webview>
+            <div class="impressCurtain">
+              <!-- The curtain preventing focusing webview element -->
+            </div>
+          </x-card>
+          <x-card class="additionalControls">
+            <x-button id="refreshBtn" class="additionalBtns btn">
+              <x-box>
+                <x-icon name="refresh" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+                <x-label id="refreshLabel" class="label">Refresh presentation</x-label>
+              </x-box>
+            </x-button>
+            <x-button id="openFile" class="additionalBtns btn">
+              <x-box>
+                <x-icon name="folder-open" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+                <x-label id="refreshLabel" class="label">Načítaj prezentáciu</x-label>
+              </x-box>
+            </x-button>
+          </x-card>
+      </div>
+    </div>
+    <div id="footer">
+      <x-card class="presentationInfo">
+        <div id="smallTimer"><span id="currentTime">00:00:00</span></div>
+        <div id="bigTimer"><span id="projectionTimer" title="Click to reset timer">00:00:00</span></div>
+        <div id="currentSlideName">---</div>
+        <div id="slidesCount">-/-</div>
+      </x-card>
+    </div>
+  </div>
+  <dialog id="exitDialog">
+    <h4 id="exitTitle">Si si istý, že chceš ukončiť impressPlayer?</h4>
+    <p id="exitText">Nič zlého sa vlastne nemôže stať, ale aj tak sa ťa pre istotu opýtam znova. 
+Naozaj to chceš urobiť?</p>
+    <x-buttons tracking="-1" id="windowControls" class="exitBtns">
+      <x-button id="reallyQuit" class="danger btn">
+        <x-box>
+          <x-icon name="exit-to-app" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          <x-label id="exitAgree" class="label">Áno, dostaň ma odtiaľto!</x-label>
+        </x-box>
+      </x-button>
+      <x-button id="doNotQuit" class="btn">
+        <x-box>
+          <x-icon name="replay" iconset="/home/gnaag/Programy/impressplayer/node_modules/xel/images/icons.svg"></x-icon>
+          <x-label id="exitDisagree" class="label">Nie, ešte som neskončil</x-label>
+        </x-box>
+      </x-button>
+    </x-buttons>
+  </dialog>
+</body>
+
+<script id="require">
+  <!--// You can also require other files to run in this process
+  require("/home/gnaag/Programy/impressplayer/js/console-script.js");
+  //require("consolePathPlaceHolder");
+</script>
+
+</html>
