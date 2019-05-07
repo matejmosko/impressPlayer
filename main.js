@@ -3,10 +3,9 @@
 const {
   app,
   BrowserWindow,
-  webContents,
   ipcMain,
   Menu
-} = require('electron')
+} = require('electron');
 
 app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required'); // Disable new security feature of chrome 66. Not working right now. Necesary for video.play
 
@@ -14,7 +13,6 @@ app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required'); // 
 const path = require('path'); // System paths
 const fs = require('fs'); // Access to filesystem
 const settings = require('electron-settings'); // Electron-settings stores application settings between sessions
-const ms = require('mustache'); // We use Mustache to work with templates
 const i18n = new(require('i18n-2'))({ // i18n helps with translations
   locales: ['en', 'sk'], // TODO This has to be enhanced after other translations are available.
   directory: path.resolve(__dirname, './locales'),
@@ -88,14 +86,13 @@ function createInvWindow() {
     webPreferences: {
       nodeIntegration: true
     }
-  })
+  });
   win.loadFile(invisPath);
   win.webContents.on('did-finish-load', function() {
-    win.show();
-    win.openDevTools();
+    //win.show();
   });
   win.webContents.on('dom-ready', function() {
-    initializeWindows()
+    initializeWindows();
   });
   return win;
 }
@@ -151,7 +148,7 @@ function storeWindowState(window) {
 
   settings.set('windowstate', windowState);
   /* Save windows' dimmensions to electron settings */
-};
+}
 
 function createControllerWindow() {
   /* Create a promised Controller Window and set it up after it's created */
@@ -221,7 +218,7 @@ function createControllerWindow() {
         }
       ]
     }
-  ])
+  ]);
 
   controller.setMenu(menu);
 
@@ -269,7 +266,7 @@ function setupControllerWindow() {
   });
 
   if (debugMode) {
-    impWindows.controller.webContents.openDevTools()
+    impWindows.controller.webContents.openDevTools();
   }
 }
 
@@ -327,7 +324,7 @@ function setupProjectorWindow() {
     impWindows.projector.hide();
   });
   if (debugMode) {
-    impWindows.projector.webContents.openDevTools()
+    impWindows.projector.webContents.openDevTools();
   }
 }
 

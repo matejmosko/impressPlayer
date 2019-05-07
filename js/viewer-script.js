@@ -3,6 +3,7 @@ let impViewer = (function() {
   const ipc = require('electron').ipcRenderer;
 
   controllerControls();
+  getStepList();
 
   function controllerControls() {
     let impressRoot = document.getElementById("impress");
@@ -15,6 +16,9 @@ let impViewer = (function() {
     impressRoot.addEventListener('impress:stepenter', function() {
       ipc.sendToHost('controlsEnabled', true);
     });
+  }
+
+  function getStepList(){
     let stepList = document.getElementsByClassName("step");
     let ids = [].map.call(stepList, function(elem) {
       return {
@@ -22,7 +26,7 @@ let impViewer = (function() {
         "stepName": elem.getElementsByTagName("h1")[0] && elem.getElementsByTagName("h1")[0].innerHTML || ""
       };
     });
-    ipc.sendToHost('slideList', ids, getCurrentSlide());
+    ipc.sendToHost('stepList', ids);
   }
 
   function mediaEventListeners() {
@@ -142,4 +146,3 @@ let impViewer = (function() {
   });
 
 })();
-//});

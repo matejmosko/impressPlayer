@@ -1,26 +1,23 @@
   let impController = (function() {
     const remote = require('electron').remote;
     const app = remote.app;
-    const path = require('path');
-    const fs = require('fs');
+    const {dialog} = require('electron').remote;
+    const ipc = require('electron').ipcRenderer;
+    const path = remote.require('path');
+    const fs = remote.require('fs');
     const ms = require('mustache');
-  //  const markpress = require('markpress');
-  //  const mousetrap = require('mousetrap');
-  //  const DecompressZip = require('decompress-zip');
     const fontawesome = require('@fortawesome/fontawesome');
     const faFreeSolid = require('@fortawesome/fontawesome-free-solid');
     const webview1 = document.querySelector('#nextImpress-1'),
       webview2 = document.querySelector('#nextImpress-2'),
       webview0 = document.querySelector('#impressCurrent');
-    const {
-      dialog
-    } = require('electron').remote;
+
     const settings = remote.require('electron-settings');
 
     const i18n = remote.getGlobal('globalObject').i18n;
     const debugMode = remote.getGlobal('globalObject').debugMode;
 
-    const ipc = require('electron').ipcRenderer;
+    
     let exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
       loadedFile,
@@ -138,7 +135,7 @@
           }
         ]
       }, function(fileNames) {
-        settings.set("defaultPath", path.dirname(fileNames[0]))
+        settings.set("defaultPath", path.dirname(fileNames[0]));
         if (fileNames === undefined) {
           saveLogs(i18n.__("No file selected"));
           return;
@@ -152,7 +149,7 @@
     document.getElementById("openFile").addEventListener("click", function() {
       selectFile();
     });
-    ipc.on('loadProjection', (_event) => { // Resize window according to aspectRatio of a device
+    ipc.on('loadProjection', (_event, arg1) => { // Resize window according to aspectRatio of a device
       webview0.reload();
       loadProjection();
     });
@@ -171,17 +168,12 @@
         totalSeconds = 0;
       });
       document.body.classList.add('running');
-      mousetrap.bind(['space'], function() {
-        webview0.send('nextSlide');
-      });
-      mousetrap.bind(['ctrl+backspace'], function() {
-        webview0.send('prevSlide');
-      });
+            
       if (debugMode) {
         webview1.openDevTools();
         webview1.addEventListener('console-message', (e) => {
           saveLogs('Guest page logged a message:', e.message);
-        })
+        });
       }
     }
 
@@ -296,9 +288,8 @@
         case 'gotoSlide':
           renderNextSlide(event.args[0]);
           break;
-        case 'slideList':
+        case 'stepList':
           slideList = event.args[0];
-          displaySlideList(event.args[1]);
           break;
         case 'multimedia':
           let mediaControls = document.getElementById("mediaControlsDiv");

@@ -32,7 +32,7 @@ input, button, textarea, :focus {
   --borderColor: #464646;
   --cardColor: #32393d;
   --activeColor: #32393d;
-  --dangerColor: #d33a2c;
+  --dangerColor: darkred;
   --btnTextColor: #bdbdbd;
   --textColor: #bdbdbd;
   --btnColor: #2d2d2d;
@@ -398,8 +398,8 @@ body {
 }
 
 #exitDialog {
-  background-color: var(--dialogColor);
-  border: none;
-  color: var(--backgroundColor);
+  background-color: var(--backgroundColor);
+  border: 1px solid var(--textColor);
+  color: var(--textColor);
   padding: 20px;
 }

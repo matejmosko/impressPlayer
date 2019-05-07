@@ -5,6 +5,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "debug": "electron . --inspect=5858",
     "pack": "build --dir",
     "dist": "build",
     "win": "build --win",
@@ -25,7 +26,6 @@
     "electron": "5.0.1",
     "electron-builder": "^20.39.0",
     "electron-rebuild": "^1.8.4",
-    "node": "^12.1.0",
     "npm": "^6.6.0"
   },
   "dependencies": {
@@ -33,14 +33,12 @@
     "@fortawesome/fontawesome-free-brands": "^5.0.13",
     "@fortawesome/fontawesome-free-solid": "^5.0.13",
     "decompress-zip": "^0.2.2",
-    "electron-link": "^0.4.0",
     "electron-settings": "^3.1.1",
     "fs-plus": "^3.1.1",
     "highlights": "^3.1.1",
     "i18n-2": "^0.7.1",
     "markpress": "^4.0.0",
     "marky-markdown": "^12.0.0",
-    "mousetrap": "^1.6.1",
     "mustache": "^2.3.0"
   },
   "build": {

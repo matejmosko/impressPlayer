@@ -1,7 +1,7 @@
+const remote = require('electron').remote;
 const ipc = require('electron').ipcRenderer;
-const BrowserWindow = require('electron').remote.BrowserWindow;
-const path = require('path');
-const fs = require('fs');
+const path = remote.require('path');
+const fs = remote.require('fs');
 const DecompressZip = require('decompress-zip');
 const ms = require('mustache');
 const markpress = require('markpress');
@@ -25,7 +25,7 @@ ipc.on('loadUI', (_event) => {
         return render(i18n.__(text));
       };
     }
-  }
+  };
   fs.readFile(path.resolve(__dirname, '../templates/controller.tpl'), 'utf8', (err, tplController) => { // Read controller.tpl (main controller interface) asynchronously
     if (err) throw err;
     let localeController = ms.render(tplController, mustacheOptions);
@@ -151,7 +151,8 @@ function parseProjection(el, file) {
     return;
   }
   let dataPath = path.dirname(file) + "/"; // Baseurl for the presentation (for relative links to work inside presentation)
-  let impressPath = path.resolve(__dirname, "impress.js"); // We load impress.js separately (with absolute path)
+  let impressMarkdownPath = path.resolve(__dirname, "impressjs/markdown.js"); // We load impress.js separately (with absolute path)
+  let impressPath = path.resolve(__dirname, "impressjs/impress.js"); // We load impress.js separately (with absolute path)
   let viewerPath = path.resolve(__dirname, "viewer-script.js"); // This is the script for impressPlayer Controller to work.
 
   viewerDOM.getElementById("baseTag").setAttribute("href", dataPath);
@@ -160,6 +161,7 @@ function parseProjection(el, file) {
   viewerDOM.getElementById("printStyleBox").innerHTML = printcss;
   viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
   viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
+  viewerDOM.getElementById("impressMarkdownScript").setAttribute('src', impressMarkdownPath);
   viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); require(" + JSON.stringify(viewerPath) + ");";
 
   saveViewer(); // Finally put it all into the template and loadProjection. I am considering migration of this function to mustache. It is probably much faster.
@@ -188,4 +190,5 @@ function saveViewer() {
     if (err) throw err;
     ipc.send('loadPreviews');
   });
+  
 }
