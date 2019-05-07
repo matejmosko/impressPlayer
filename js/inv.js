@@ -1,15 +1,9 @@
-const remote = require('electron').remote;
-const app = remote.app;
 const ipc = require('electron').ipcRenderer;
 const BrowserWindow = require('electron').remote.BrowserWindow;
 const fs = require('fs'); // Access to filesystem
-const path = require('path');
+
 const ms = require('mustache'); // We use Mustache to work with templates
-const i18n = new(require('i18n-2'))({ // i18n helps with translations
-  locales: ['en', 'sk'], // TODO This has to be enhanced after other translations are available.
-  directory: path.resolve(__dirname, './locales'),
-  extension: ".json"
-});
+const i18n = remote.getGlobal('globalObject').i18n;
 
 let userPath = app.getPath('userData');
 

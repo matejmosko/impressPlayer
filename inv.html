@@ -1,8 +1,11 @@
 <html>
 <head>
   <script type="text/javascript">
-    console.log("problem");
-      require("./js/inv.js");
+  const remote = require('electron').remote;
+  const app = remote.app;
+  const path = require('path');
+  require(path.resolve(app.getAppPath(), "./js/inv.js"));
+      //require("./js/inv.js");
   </script>
   </head>
   <body>Gotcha!</body>

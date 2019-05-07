@@ -83,12 +83,12 @@ function createInvWindow() {
   let win = new BrowserWindow({
     width: 400,
     height: 400,
-    title: "inv Window",
+    title: "invWindow",
     show: false
   })
   win.loadFile(invisPath);
   win.webContents.on('did-finish-load', function() {
-    win.show();
+//    win.show();
   });
   win.webContents.on('dom-ready', function() {
     initializeWindows()
@@ -99,8 +99,6 @@ function createInvWindow() {
 function initializeWindows() {
   impWindows.inv.webContents.send('loadUI');
 
-  console.log("wow");
-
   ipcMain.on('uiReady', (_event, window) => {
     switch (window) {
       case "controller":
@@ -110,14 +108,10 @@ function initializeWindows() {
       case "projector":
         impWindows.projector = createProjectorWindow();
         setupProjectorWindow();
+        setupProjectorButtons();
         break;
     }
-
   });
-
-
-
-
 }
 
 function storeWindowState(window) {
@@ -235,213 +229,228 @@ function setupControllerWindow() {
   }
 
   impWindows.controller.on('ready-to-show', function() {
-      impWindows.controller.show();
-      impWindows.controller.focus();
-      impWindows.controller.on('resize', function() {
-        impWindows.controller.webContents.send('windowResized');
-        storeWindowState("controller");
-      });
-    // Emitted when the window is closed.
-    impWindows.controller.on('closed', function() {
-      // Dereference the window object, usually you would store windows
-      // in an array if your app supports multi windows, this is the time
-      // when you should delete the corresponding element.
-      impWindows.controller = null;
+    impWindows.controller.show();
+    impWindows.controller.focus();
+    impWindows.controller.on('resize', function() {
+      impWindows.controller.webContents.send('windowResized');
+      storeWindowState("controller");
+    });
+    impWindows.controller.on('move', function() {
+      storeWindowState("controller");
     });
   });
 
-    if (debugMode) {
-      impWindows.controller.webContents.openDevTools()
+  impWindows.controller.webContents.on('did-frame-finish-load', function() {
+    //impWindows.controller.webContents.executeJavaScript(require(path.resolve(app.getAppPath(), "./js/controller-script.js")));
+  });
+
+  impWindows.controller.on('close', event => {
+    event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
+    impWindows.controller.webContents.send('quitModal');
+  });
+  ipcMain.on('reallyQuit', (_event) => {
+    storeWindowState("controller");
+    app.exit();
+  });
+  // Emitted when the window is closed.
+  impWindows.controller.on('closed', function() {
+    // Dereference the window object, usually you would store windows
+    // in an array if your app supports multi windows, this is the time
+    // when you should delete the corresponding element.
+    impWindows.controller = null;
+  });
+
+  if (debugMode) {
+    impWindows.controller.webContents.openDevTools()
+  }
+}
+
+
+
+function createProjectorWindow() {
+  /* Create a promised Projector Window and set it up after it's created */
+
+  let projector = new BrowserWindow({
+    x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
+    y: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.y || undefined,
+    width: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.width || 800,
+    height: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.height || 600,
+    icon: path.resolve(__dirname, 'img/icon.png'),
+    title: 'impressPlayer Controller',
+    backgroundColor: '#13132A',
+    show: false
+  });
+  return projector;
+}
+
+function setupProjectorWindow() {
+  /* Setup all necesary details on already created window */
+  impWindows.projector.loadFile(path.resolve(userPath, './projector.html'));
+  // Window positioning and size
+
+
+  impWindows.projector.on('close', event => {
+    event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
+    impWindows.projector.hide();
+  });
+  impWindows.projector.on('resize', () => {
+    storeWindowState("projector");
+  });
+  impWindows.projector.on('move', function() {
+    storeWindowState("projector");
+  });
+
+  if (typeof(windowState.projector) === "object" && windowState.projector.isMaximized) {
+    impWindows.projector.maximize();
+  }
+
+  ipcMain.on('toggleFullscreen', (_event) => {
+    if (impWindows.projector.isFullScreen()) {
+      impWindows.projector.setFullScreen(false);
+    } else {
+      impWindows.projector.setFullScreen(true);
     }
+  });
 
+  impWindows.projector.webContents.on('did-finish-load', () => {
+    impWindows.projector.hide();
+  });
+  if (debugMode) {
+    impWindows.projector.webContents.openDevTools()
   }
+}
 
+function setupProjectorButtons() {
+  // Button events
+  impWindows.projector.on('hide', _event => {
+    impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", false);
+    impWindows.controller.webContents.send('buttonSwitch', "fullscreenBtn", false);
+  });
 
-  function createProjectorWindow() {
-    /* Create a promised Projector Window and set it up after it's created */
+  impWindows.projector.on('show', _event => {
+    impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", true);
+  });
 
-    let projector = new BrowserWindow({
-      x: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.x || undefined,
-      y: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.y || undefined,
-      width: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.width || 800,
-      height: windowState.projector && windowState.projector.bounds && windowState.projector.bounds.height || 600,
-      icon: path.resolve(__dirname, 'img/icon.png'),
-      title: 'impressPlayer Controller',
-      backgroundColor: '#13132A',
-      show: false
-    });
-    return projector;
-  }
+  impWindows.projector.on('leave-full-screen', () => {
+    impWindows.controller.webContents.send('buttonSwitch', "fullscreenBtn", false);
+  });
+  impWindows.projector.on('enter-full-screen', () => {
+    impWindows.controller.webContents.send('buttonSwitch', "fullscreenBtn", true);
+    impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", true);
+  });
 
-  function setupProjectorWindow() {
-    /* Setup all necesary details on already created window */
-    impWindows.projector.loadFile(path.resolve(userPath, './projector.html'));
-    // Window positioning and size
-
-
-    impWindows.projector.on('close', event => {
-      event.preventDefault(); //this prevents it from closing. The `closed` event will not fire now
+  ipcMain.on('toggleProjector', (_event) => {
+    if (impWindows.projector.isVisible()) {
       impWindows.projector.hide();
-    });
-    impWindows.projector.on('resize', () => {
-      storeWindowState("projector");
-    });
-    impWindows.projector.on('move', function() {
-      storeWindowState("projector");
-    });
+    } else {
+      impWindows.projector.show();
 
-    if (typeof(windowState.projector) === "object" && windowState.projector.isMaximized) {
-      impWindows.projector.maximize();
     }
+  });
+}
 
-          ipcMain.on('toggleFullscreen', (_event) => {
-            if (impWindows.projector.isFullScreen()) {
-              impWindows.projector.setFullScreen(false);
-            } else {
-              impWindows.projector.setFullScreen(true);
-            }
-          });
+// This method will be called when Electron has finished
+// initialization and is ready to create browser windows.
+// Some APIs can only be used after this event occurs.
 
-          impWindows.projector.webContents.on('did-finish-load', () => {
-            impWindows.projector.hide();
-          });
-          if (debugMode) {
-            impWindows.projector.webContents.openDevTools()
-          }
-        }
+function renderApplication() {
+  impWindows.inv = createInvWindow();
+}
 
-        function setupProjectorButtons() {
-          // Button events
-          impWindows.projector.on('hide', _event => {
-            impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", false);
-            impWindows.controller.webContents.send('buttonSwitch', "fullscreenBtn", false);
-          });
+app.on('ready', function() {
+  renderApplication();
+});
 
-          impWindows.projector.on('show', _event => {
-            impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", true);
-          });
+// Quit when all windows are closed.
+app.on('window-all-closed', function() {
+  // On OS X it is common for applications and their menu bar
+  // to stay active until the user quits explicitly with Cmd + Q
+  if (process.platform !== 'darwin') {
+    app.quit();
+  }
+});
 
-          impWindows.projector.on('leave-full-screen', () => {
-            impWindows.controller.webContents.send('buttonSwitch', "fullscreenBtn", false);
-          });
-          impWindows.projector.on('enter-full-screen', () => {
-            impWindows.controller.webContents.send('buttonSwitch', "fullscreenBtn", true);
-            impWindows.controller.webContents.send('buttonSwitch', "projectorBtn", true);
-          });
+app.on('activate', function() {
+  // On OS X it's common to re-create a window in the app when the
+  // dock icon is clicked and there are no other windows open.
+  if (impWindows.controller === null) {
+    createControllerWindow();
+  }
+});
 
-          ipcMain.on('toggleProjector', (_event) => {
-            if (impWindows.projector.isVisible()) {
-              impWindows.projector.hide();
-            } else {
-              impWindows.projector.show();
+function reloadApp() {
+  fs.writeFile('viewer.html', localeViewerFake, (err) => {
+    if (err) throw err;
+    impWindows.projector.webContents.reload();
+    impWindows.controller.webContents.reload();
+  });
+}
 
-            }
-          });
-        }
+// In this file you can include the rest of your app's specific main process
+// code. You can also put them in separate files and require them here.
 
-        // This method will be called when Electron has finished
-        // initialization and is ready to create browser windows.
-        // Some APIs can only be used after this event occurs.
+/* Impress Player scripts */
 
-        function renderApplication() {
-          impWindows.inv = createInvWindow();
-          setupProjectorButtons();
-        }
+// Logs generating
 
-        app.on('ready', function() {
-          renderApplication();
-        });
+function currentDate() {
+  var today = new Date();
+  var dd = today.getDate();
+  var mm = today.getMonth() + 1; //January is 0!
+  var yyyy = today.getFullYear();
 
-        // Quit when all windows are closed.
-        app.on('window-all-closed', function() {
-          // On OS X it is common for applications and their menu bar
-          // to stay active until the user quits explicitly with Cmd + Q
-          if (process.platform !== 'darwin') {
-            app.quit();
-          }
-        });
+  if (dd < 10) {
+    dd = '0' + dd;
+  }
 
-        app.on('activate', function() {
-          // On OS X it's common to re-create a window in the app when the
-          // dock icon is clicked and there are no other windows open.
-          if (impWindows.controller === null) {
-            createControllerWindow();
-          }
-        });
+  if (mm < 10) {
+    mm = '0' + mm;
+  }
 
-        function reloadApp() {
-          fs.writeFile('viewer.html', localeViewerFake, (err) => {
-            if (err) throw err;
-            impWindows.projector.webContents.reload();
-            impWindows.controller.webContents.reload();
-          });
-        }
+  today = yyyy + '-' + mm + '-' + dd;
+  return today;
+}
 
-        // In this file you can include the rest of your app's specific main process
-        // code. You can also put them in separate files and require them here.
+function createLog(text) {
+  var file = fs.openSync(app.getPath('userData') + "log-" + currentDate() + ".log", 'a');
+  fs.writeFile(file, text, function(err) {
+    if (err) {
+      return console.log(err);
+    }
+    console.log("The log was saved!");
+  });
+}
 
-        /* Impress Player scripts */
+function showHelp() {
+  console.log("There is no help for you");
+}
 
-        // Logs generating
+/* Event listeners and IPC listeners */
 
-        function currentDate() {
-          var today = new Date();
-          var dd = today.getDate();
-          var mm = today.getMonth() + 1; //January is 0!
-          var yyyy = today.getFullYear();
+ipcMain.on('saveLogs', (_event, text) => {
+  createLog(text);
+});
 
-          if (dd < 10) {
-            dd = '0' + dd;
-          }
+ipcMain.on('toggleRules', (_event) => {
+  impWindows.projector.webContents.send('transferRules');
+});
 
-          if (mm < 10) {
-            mm = '0' + mm;
-          }
+ipcMain.on('projectionGoToSlide', (_event, arg) => {
+  impWindows.projector.webContents.send('gotoSlide', arg);
+});
 
-          today = yyyy + '-' + mm + '-' + dd;
-          return today;
-        }
+ipcMain.on('controllerGoToSlide', (_event, arg) => {
+  impWindows.controller.webContents.send('gotoSlide', arg);
+});
 
-        function createLog(text) {
-          var file = fs.openSync(app.getPath('userData') + "log-" + currentDate() + ".log", 'a');
-          fs.writeFile(file, text, function(err) {
-            if (err) {
-              return console.log(err);
-            }
-            console.log("The log was saved!");
-          });
-        }
+ipcMain.on('loadProjection', (_event) => {
+  impWindows.projector.webContents.send('loadProjection');
+});
 
-        function showHelp() {
-          console.log("There is no help for you");
-        }
+ipcMain.on('audioVideoControls', (_event, command, data) => {
+  impWindows.projector.webContents.send('audioVideoControls', command, data);
+});
 
-        /* Event listeners and IPC listeners */
-
-        ipcMain.on('saveLogs', (_event, text) => {
-          createLog(text);
-        });
-
-        ipcMain.on('toggleRules', (_event) => {
-          impWindows.projector.webContents.send('transferRules');
-        });
-
-        ipcMain.on('projectionGoToSlide', (_event, arg) => {
-          impWindows.projector.webContents.send('gotoSlide', arg);
-        });
-
-        ipcMain.on('controllerGoToSlide', (_event, arg) => {
-          impWindows.controller.webContents.send('gotoSlide', arg);
-        });
-
-        ipcMain.on('loadProjection', (_event) => {
-          impWindows.projector.webContents.send('loadProjection');
-        });
-
-        ipcMain.on('audioVideoControls', (_event, command, data) => {
-          impWindows.projector.webContents.send('audioVideoControls', command, data);
-        });
-
-        ipcMain.on('reloadWindows', (_event) => {
-          reloadApp();
-        });
+ipcMain.on('reloadWindows', (_event) => {
+  reloadApp();
+});

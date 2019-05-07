@@ -27,7 +27,8 @@
       </div>
       <div id="mediaControlsDiv" class="hidden">
           <button id="playPauseMediaBtn" class="btn" skin="flat">
-            <i class="fa fa-play"></i>
+            <i class="playButton fa fa-play"></i>
+            <i class="pauseButton fa fa-pause" style="display:none;"></i>
           </button>
           <input type="range" min="1" max="100" value="1" class="slider" id="audioVideoSlider">
           <button id="restartMediaBtn" class="btn" skin="flat">

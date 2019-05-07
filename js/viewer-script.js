@@ -2,9 +2,9 @@
 let impViewer = (function() {
   const ipc = require('electron').ipcRenderer;
 
-  consoleControls();
+  controllerControls();
 
-  function consoleControls() {
+  function controllerControls() {
     let impressRoot = document.getElementById("impress");
     impressRoot.addEventListener('impress:stepleave', function() {
       let current = getCurrentSlide();
@@ -49,6 +49,12 @@ let impViewer = (function() {
           media.play();
         }
         ipc.sendToHost('multimedia', 'on');
+
+        media.addEventListener("timeupdate", function() {   // Calculate the slider value
+          let value = (100 / media.duration) * media.currentTime; // Update the slider value
+          ipc.sendToHost('mediaTime', value);
+        });
+
       }, false);
       mediaStep.addEventListener("impress:stepleave", function autoplay() {
         media.pause();
