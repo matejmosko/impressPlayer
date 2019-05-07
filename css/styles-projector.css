@@ -1,21 +1,3 @@
-@font-face {
-  font-family: 'DosisNormal';
-  src: url('fonts/Exo/Exo-Light.ttf') format('truetype');
-  /*URL to font*/
-}
-
-@font-face {
-  font-family: 'DosisBold';
-  src: url('fonts/Exo/Exo-Medium.ttf') format('truetype');
-  /*URL to font*/
-}
-
-@font-face {
-  font-family: 'Nasalization';
-  src: url('fonts/nasalization-rg.ttf') format('truetype');
-  /*URL to font*/
-}
-
 *, *:before, *:after {
   box-sizing: border-box;
 }

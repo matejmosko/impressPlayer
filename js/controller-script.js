@@ -4,9 +4,9 @@
     const path = require('path');
     const fs = require('fs');
     const ms = require('mustache');
-    const markpress = require('markpress');
-    const mousetrap = require('mousetrap');
-    const DecompressZip = require('decompress-zip');
+  //  const markpress = require('markpress');
+  //  const mousetrap = require('mousetrap');
+  //  const DecompressZip = require('decompress-zip');
     const fontawesome = require('@fortawesome/fontawesome');
     const faFreeSolid = require('@fortawesome/fontawesome-free-solid');
     const webview1 = document.querySelector('#nextImpress-1'),

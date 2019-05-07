@@ -2,6 +2,7 @@ const ipc = require('electron').ipcRenderer;
 const BrowserWindow = require('electron').remote.BrowserWindow;
 const path = require('path');
 const fs = require('fs');
+const DecompressZip = require('decompress-zip');
 const ms = require('mustache');
 const markpress = require('markpress');
 const i18n = remote.getGlobal('globalObject').i18n;
