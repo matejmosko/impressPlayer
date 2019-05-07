@@ -10,7 +10,7 @@
     "win": "build --win",
     "electron-builder": "electron-builder"
   },
-  "repository": "https://github.com/matejmosko/gow",
+  "repository": "https://github.com/matejmosko/impressPlayer",
   "keywords": [
     "impressPlayer",
     "impress.js",
@@ -22,7 +22,7 @@
   "postinstall": "electron-builder install-app-deps",
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.8.1",
-    "electron": "^3.1.1",
+    "electron": "^5.0.1",
     "electron-builder": "^20.38.5",
     "electron-rebuild": "^1.8.4"
   },
@@ -39,8 +39,7 @@
     "marky-markdown": "^12.0.0",
     "mousetrap": "^1.6.1",
     "mustache": "^2.3.0",
-    "npm": "^6.6.0",
-    "oniguruma": "^7.0.2"
+    "npm": "^6.6.0"
   },
   "build": {
     "productName": "impressPlayer",

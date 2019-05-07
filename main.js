@@ -81,14 +81,18 @@ function createInvWindow() {
   const invisPath = path.resolve(app.getAppPath(), "./inv.html");
 
   let win = new BrowserWindow({
-    width: 400,
-    height: 400,
+    width: 800,
+    height: 800,
     title: "invWindow",
-    show: false
+    show: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   })
   win.loadFile(invisPath);
   win.webContents.on('did-finish-load', function() {
-//    win.show();
+    win.show();
+    win.openDevTools();
   });
   win.webContents.on('dom-ready', function() {
     initializeWindows()
@@ -159,7 +163,11 @@ function createControllerWindow() {
     icon: path.resolve(__dirname, 'img/icon.png'),
     title: 'impressPlayer Controller',
     show: false,
-    backgroundColor: '#13132A'
+    backgroundColor: '#13132A',
+    webPreferences: {
+      nodeIntegration: true,
+      webviewTag: true
+    }
   });
 
   let menu = Menu.buildFromTemplate([{
@@ -278,7 +286,10 @@ function createProjectorWindow() {
     icon: path.resolve(__dirname, 'img/icon.png'),
     title: 'impressPlayer Controller',
     backgroundColor: '#13132A',
-    show: false
+    show: false,
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
   return projector;
 }
@@ -445,6 +456,11 @@ ipcMain.on('controllerGoToSlide', (_event, arg) => {
 
 ipcMain.on('loadProjection', (_event) => {
   impWindows.projector.webContents.send('loadProjection');
+  impWindows.controller.webContents.send('loadProjection');
+});
+
+ipcMain.on('loadPreviews', (_event) => {
+  impWindows.controller.webContents.send('loadPreviews');
 });
 
 ipcMain.on('audioVideoControls', (_event, command, data) => {
@@ -453,4 +469,8 @@ ipcMain.on('audioVideoControls', (_event, command, data) => {
 
 ipcMain.on('reloadWindows', (_event) => {
   reloadApp();
+});
+
+ipcMain.on('loadFile', (_event, file) => {
+  impWindows.inv.webContents.send('loadFile', file);
 });
