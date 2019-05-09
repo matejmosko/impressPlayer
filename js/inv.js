@@ -63,7 +63,7 @@ ipc.on('loadFile', (_event, file) => {
 });
 
 function parseMarkdown(file) {
-  const options = {
+  /*const options = {
     theme: 'light',
     verbose: false,
     embed: false
@@ -75,7 +75,16 @@ function parseMarkdown(file) {
     let parser = new DOMParser();
     let el = parser.parseFromString(html, "text/html");
     parseProjection(el, file);
-  });
+  });*/
+}
+
+function encapsulateMarkdown(data) {
+  let div = "<div id='impress'><div id='markdown' class='step slide markdown' data-rel-x='0' data-rel-y='1080'></div></div>", //
+  parser = new DOMParser(),
+  dom = parser.parseFromString(div, "text/html");
+  dom.getElementById("markdown").innerHTML = data;
+
+  return dom;
 }
 
 function loadProjectionFile(file) {
@@ -89,13 +98,14 @@ function loadProjectionFile(file) {
       case ".md":
       case ".mkd":
       case ".markdown":
-        parseMarkdown(file);
+        //parseMarkdown(file);
+        parseProjection(encapsulateMarkdown(data), file);
         break;
       case ".html":
       case ".htm":
         let parser = new DOMParser();
         el = parser.parseFromString(data, "text/html");
-        parseProjection(el, file);
+        stripHTML(el, file);
         break;
       case ".zip":
         let destinationPath = app.getPath('userData');
@@ -103,7 +113,7 @@ function loadProjectionFile(file) {
 
         // Add the error event listener
         unzipper.on('error', function(err) {
-          saveLogs(i18n.__('Unzip with decompress-zip failed'), err);
+          ipc.send('saveLogs', i18n.__('Unzip with decompress-zip failed'), err);
         });
 
         // Notify when everything is extracted
@@ -118,10 +128,16 @@ function loadProjectionFile(file) {
         });
         break;
       default:
-        saveLogs(i18n.__("Something went wrong. Wrong file is loaded."));
+        ipc.send('saveLogs', i18n.__("Something went wrong. Wrong file is loaded."));
     }
   });
 
+}
+
+function stripHTML(el, file){
+
+
+parseProjection(el, file);
 }
 
 function parseProjection(el, file) {
@@ -144,10 +160,15 @@ function parseProjection(el, file) {
   if (fs.existsSync(path.dirname(file) + "/style.css")) { // This is the external stylesheet. We look for style.css placed in the same folder as the presentation file is.
     extcss = path.dirname(file) + "/style.css";
   }
+
+  if (fs.existsSync(path.resolve(app.getAppPath(), './css/impress-normalize.css'))) { // This is the external stylesheet. We look for style.css placed in the same folder as the presentation file is.
+    normcss = path.resolve(app.getAppPath(), './css/impress-normalize.css');
+  }
+
   try {
     html = el.getElementById("impress").outerHTML; // Grab <div id="impress">...</div> and place it inside our template.
   } catch (err) {
-    saveLogs("There is a problem with a file you selected");
+    ipc.send('saveLogs', "There is a problem with a file you selected");
     return;
   }
   let dataPath = path.dirname(file) + "/"; // Baseurl for the presentation (for relative links to work inside presentation)
@@ -160,6 +181,7 @@ function parseProjection(el, file) {
   viewerDOM.getElementById("defaultStyleBox").innerHTML = css;
   viewerDOM.getElementById("printStyleBox").innerHTML = printcss;
   viewerDOM.getElementById("projectionStyleLink").setAttribute('href', extcss);
+  viewerDOM.getElementById("normalizeStyleLink").setAttribute('href', normcss);
   viewerDOM.getElementById("impressScript").setAttribute('src', impressPath);
   viewerDOM.getElementById("impressMarkdownScript").setAttribute('src', impressMarkdownPath);
   viewerDOM.getElementById("bottomScript").innerHTML = "impress().init(); require(" + JSON.stringify(viewerPath) + ");";
@@ -190,5 +212,5 @@ function saveViewer() {
     if (err) throw err;
     ipc.send('loadPreviews');
   });
-  
+
 }

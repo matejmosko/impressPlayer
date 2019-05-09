@@ -17,7 +17,7 @@
     const i18n = remote.getGlobal('globalObject').i18n;
     const debugMode = remote.getGlobal('globalObject').debugMode;
 
-    
+
     let exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
       loadedFile,
@@ -27,11 +27,11 @@
     // Load impress-viewer template
     // TODO Move this to async function inside the part, where we generate viewer.html
     // TODO Move all tmp files (viewer.html, controller.html) to userData.
-
+/*
     tplViewerHTML = fs.readFileSync(path.resolve(app.getAppPath(), './templates/viewer.tpl'), 'utf8');
     let parser = new DOMParser(),
       viewerDOM = parser.parseFromString(tplViewerHTML, "text/html");
-
+*/
     // Setup Settings Database
 
     ipc.on('windowResized', (_event) => { // Resize window according to aspectRatio of a device
@@ -168,10 +168,10 @@
         totalSeconds = 0;
       });
       document.body.classList.add('running');
-            
+
       if (debugMode) {
-        webview1.openDevTools();
-        webview1.addEventListener('console-message', (e) => {
+        webview0.openDevTools();
+        webview0.addEventListener('console-message', (e) => {
           saveLogs('Guest page logged a message:', e.message);
         });
       }
@@ -290,6 +290,7 @@
           break;
         case 'stepList':
           slideList = event.args[0];
+          displaySlideList(event.args[1]);
           break;
         case 'multimedia':
           let mediaControls = document.getElementById("mediaControlsDiv");

@@ -2,13 +2,15 @@
 let impViewer = (function() {
   const ipc = require('electron').ipcRenderer;
 
+  let current;
+
   controllerControls();
   getStepList();
 
   function controllerControls() {
     let impressRoot = document.getElementById("impress");
     impressRoot.addEventListener('impress:stepleave', function() {
-      let current = getCurrentSlide();
+      current = getCurrentSlide();
       ipc.sendToHost('gotoSlide', current);
       ipc.sendToHost('controlsEnabled', false);
     });
@@ -26,7 +28,7 @@ let impViewer = (function() {
         "stepName": elem.getElementsByTagName("h1")[0] && elem.getElementsByTagName("h1")[0].innerHTML || ""
       };
     });
-    ipc.sendToHost('stepList', ids);
+    ipc.sendToHost('stepList', ids, current);
   }
 
   function mediaEventListeners() {

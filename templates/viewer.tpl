@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <base id="baseTag" href="./">
     <title>impressPlayer Viewer</title>
+    <link id="normalizeStyleLink" rel="stylesheet" type="text/css" href="/">
     <style id="defaultStyleBox"></style>
     <link id="projectionStyleLink" rel="stylesheet" type="text/css" href="style.css">
     <style id="printStyleBox" media="print"></style>

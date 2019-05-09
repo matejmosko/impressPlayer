@@ -89,7 +89,10 @@ function createInvWindow() {
   });
   win.loadFile(invisPath);
   win.webContents.on('did-finish-load', function() {
-    //win.show();
+  if (debugMode){
+     win.show();
+     win.openDevTools();
+  }
   });
   win.webContents.on('dom-ready', function() {
     initializeWindows();
@@ -285,7 +288,8 @@ function createProjectorWindow() {
     backgroundColor: '#13132A',
     show: false,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      webviewTag: true
     }
   });
   return projector;
