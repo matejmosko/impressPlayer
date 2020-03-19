@@ -21,6 +21,7 @@
     let exitDialog = document.getElementById("exitDialog"),
       totalSeconds = 0,
       loadedFile,
+      slideList,
       seekBar = document.getElementById("audioVideoSlider");
     setupSettings();
 

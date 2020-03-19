@@ -19,7 +19,7 @@ const i18n = new(require('i18n-2'))({ // i18n helps with translations
   extension: ".json"
 });
 
-let debugMode = false,
+let debugMode = true,
   userPath = app.getPath('userData');
 
 process.argv.forEach(function(argv) {
