@@ -2,14 +2,11 @@
   "name": "impressPlayer",
   "version": "0.9.1",
   "description": "Standalone impress.js presentations viewer and controller. Accepts html, markdown and specifically structured zip.",
-  "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "debug": "electron . --inspect=5858",
-    "pack": "build --dir",
-    "dist": "build",
-    "win": "build --win",
-    "electron-builder": "electron-builder"
+    "dev": "electron-webpack dev",
+    "compile": "electron-webpack",
+    "dist": "yarn compile && electron-builder",
+    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
   },
   "repository": "https://github.com/matejmosko/impressPlayer",
   "keywords": [
@@ -25,8 +22,8 @@
     "@fortawesome/fontawesome-free": "^5.8.1",
     "electron": "5.0.1",
     "electron-builder": "^20.39.0",
-    "electron-rebuild": "^1.8.4",
-    "npm": "^6.6.0"
+    "electron-webpack": "^2.7.4",
+    "webpack": "~4.35.3"
   },
   "dependencies": {
     "@fortawesome/fontawesome": "^1.1.8",
@@ -37,21 +34,7 @@
     "fs-plus": "^3.1.1",
     "i18n-2": "^0.7.1",
     "markdown-it": "^10.0.0",
-    "mustache": "^2.3.0"
-  },
-  "build": {
-    "productName": "impressPlayer",
-    "appId": "sk.panakrala.impressPlayer",
-    "asar": true,
-    "compression": "maximum",
-    "npmRebuild": true,
-    "linux": {
-      "target": "AppImage",
-      "category": "Office"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": "build/icon.ico"
-    }
+    "mustache": "^2.3.0",
+    "source-map-support": "^0.5.12"
   }
 }
