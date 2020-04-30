@@ -1,0 +1,40 @@
+{
+  "name": "impressPlayer",
+  "version": "0.9.1",
+  "description": "Standalone impress.js presentations viewer and controller. Accepts html, markdown and specifically structured zip.",
+  "scripts": {
+    "dev": "electron-webpack dev",
+    "compile": "electron-webpack",
+    "dist": "yarn compile && electron-builder",
+    "dist:dir": "yarn dist --dir -c.compression=store -c.mac.identity=null"
+  },
+  "repository": "https://github.com/matejmosko/impressPlayer",
+  "keywords": [
+    "impressPlayer",
+    "impress.js",
+    "markpress",
+    "presentations"
+  ],
+  "author": "Matej Moško",
+  "license": "CC0-1.0",
+  "postinstall": "./node_modules/.bin/electron-rebuild",
+  "devDependencies": {
+    "@fortawesome/fontawesome-free": "^5.8.1",
+    "electron": "5.0.6",
+    "electron-builder": "^21.0.11",
+    "electron-webpack": "^2.7.4",
+    "webpack": "~4.35.3"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome": "^1.1.8",
+    "@fortawesome/fontawesome-free-brands": "^5.0.13",
+    "@fortawesome/fontawesome-free-solid": "^5.0.13",
+    "decompress-zip": "^0.2.2",
+    "electron-settings": "^3.1.1",
+    "fs-plus": "^3.1.1",
+    "i18n-2": "^0.7.1",
+    "markdown-it": "^10.0.0",
+    "mustache": "^2.3.0",
+    "source-map-support": "^0.5.12"
+  }
+}
