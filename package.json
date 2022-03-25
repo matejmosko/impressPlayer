@@ -23,7 +23,7 @@
   "postinstall": "./node_modules/.bin/electron-rebuild",
   "devDependencies": {
     "@fortawesome/fontawesome-free": "^5.8.1",
-    "electron": "5.0.1",
+    "electron": "13.6.6",
     "electron-builder": "^20.39.0",
     "electron-rebuild": "^1.8.4",
     "npm": "^6.6.0"
