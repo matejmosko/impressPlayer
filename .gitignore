@@ -7,7 +7,7 @@ savegame
 Thumbs.db
 dist
 audiovideo
-examples/*/*.jpg
+examples
 *.zip
 viewer.html
 controller.html
