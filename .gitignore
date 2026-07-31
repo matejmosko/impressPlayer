@@ -1,3 +1,4 @@
+# Common files
 node_modules
 npm-debug.log
 package-lock.json
@@ -8,10 +9,15 @@ Thumbs.db
 dist
 audiovideo
 examples
+dist-frontend
 *.zip
 viewer.html
 controller.html
 projector.html
+
+# Tauri files
+src-tauri/target
+src-tauri/dist-frontend
 
 # OS generated files #
 ######################
