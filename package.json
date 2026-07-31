@@ -26,12 +26,12 @@
   "license": "CC0-1.0",
   "postinstall": "./node_modules/.bin/electron-rebuild",
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^5.8.1",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/cli": "^2.11.4",
-    "electron-builder": "^20.39.0",
-    "electron-rebuild": "^1.8.4",
-    "npm": "^6.6.0",
+    "electron-builder": "^26.15.3",
+    "electron-rebuild": "^3.2.9",
+    "npm": "^12.0.2",
     "vite": "^8.1.5"
   },
   "dependencies": {
@@ -41,14 +41,14 @@
     "@tauri-apps/plugin-dialog": "^2.7.2",
     "@tauri-apps/plugin-fs": "^2.5.1",
     "@tauri-apps/plugin-store": "^2.4.4",
-    "decompress-zip": "^0.2.2",
-    "electron": "^25.1.0",
-    "electron-settings": "^3.1.1",
+    "decompress-zip": "^0.3.3",
+    "electron": "^43.2.0",
+    "electron-settings": "^4.0.4",
     "fs-plus": "^3.1.1",
     "i18n-2": "^0.7.1",
-    "markdown-it": "^10.0.0",
-    "mustache": "^2.3.0",
-    "update-electron-app": "^2.0.1"
+    "markdown-it": "^15.0.0",
+    "mustache": "^4.2.0",
+    "update-electron-app": "^3.3.0"
   },
   "build": {
     "productName": "impressPlayer",

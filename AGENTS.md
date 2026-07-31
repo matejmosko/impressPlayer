@@ -50,7 +50,7 @@ Impress.js presentation viewer. Supports `.md`, `.html`, and `.zip` (markpress) 
 npx tauri dev             # Run in dev mode with hot-reload (Vite + Cargo)
 cargo tauri build         # Build release binary
 cargo check               # Type-check Rust code (fast)
-npx vite build --config vite.config.js  # Build frontend only
+npx vite build --config vite.config.mjs  # Build frontend only
 ```
 
 ### Electron (legacy)
