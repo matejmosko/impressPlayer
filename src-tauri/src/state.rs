@@ -1,4 +1,5 @@
 use crate::commands::media_server::MediaServerHandle;
+use crate::commands::projector_server::ProjectorServerHandle;
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
 
@@ -27,6 +28,7 @@ pub struct AppState {
     pub default_path: Mutex<Option<String>>,
     pub impress_version: Mutex<String>,
     pub media_server: Mutex<Option<MediaServerHandle>>,
+    pub projector_server: Mutex<Option<ProjectorServerHandle>>,
     pub debug_mode: bool,
 }
 
@@ -62,6 +64,7 @@ impl Default for AppState {
             default_path: Mutex::new(None),
             impress_version: Mutex::new("2.0.0".to_string()),
             media_server: Mutex::new(None),
+            projector_server: Mutex::new(None),
             debug_mode: false,
         }
     }

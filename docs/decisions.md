@@ -154,7 +154,6 @@ Record of decisions, workarounds, and findings during the Electron → Tauri v2 
 - Appending `#thumbnail` to the blob URL lets the viewer script detect thumbnail mode.
 - In thumbnail mode: skip event reporting (no `stepList`/`gotoSlide` back to parent), skip media listeners, respond only to `gotoSlide` commands.
 - Non-interactive overlay via `.impressCurtain` CSS + `pointer-events: none` on iframes.
-- `sendToThumbnail(iframeId, slideId)` manages the load lifecycle: sets src, waits for `load` event, sends `gotoSlide` via postMessage.
 - `data-slide` attribute tracks which slide each iframe is showing to avoid redundant commands.
 - Overview thumbnails loaded sequentially via `loadOverviewThumb()` chain to avoid thrashing.
 
@@ -167,6 +166,45 @@ Record of decisions, workarounds, and findings during the Electron → Tauri v2 
 - `src/controller.html` — sidebar iframe containers, overview grid container
 - `src/controller-script.js` — `sendToThumbnail()`, `updateSidebarThumbnails()`, `updateOverviewThumbnails()`, `loadOverviewThumb()` chain
 - `src/css/styles-controller.css` — `.nextSlideInner`, `.thumbnailFrame`, `.slideLabel`, `.overview-thumb-wrapper`, `.overview-thumb-frame`, `.overview-thumb-label`
+
+---
+
+## 2025-07-31 — Thumbnail ids must match impress.js runtime assignment
+
+**Decision:** `generateSlideThumbnails()` assigns `step-{index+1}` to steps that lack an `id`, mirroring impress.js exactly.
+
+**Reasoning:**
+- Markdown wrapping only gives the first slide an explicit `id` (`step-slide-1`); slides 2+ have no id in the raw content.
+- impress.js assigns `el.id = "step-" + (idx + 1)` to id-less steps at `init()` time (same scheme in all 3 bundled versions).
+- The controller keys thumbnails by the viewer's `stepList` ids (post-impress), so thumbnails generated from pre-impress content must produce the identical ids — otherwise `slideThumbnails[id]` is missing and the sidebar shows "Loading...".
+- Index is over **all** `.step` elements in DOM order (not only the id-less ones) in both impress.js and the generator.
+
+**Files affected:** `src/shared/viewer-html-builder.js`, `tests/test-frontend.js` (regression test)
+
+---
+
+## 2025-07-31 — Browser-accessible projector via a LAN HTTP server
+
+**Decision:** Serve the projector to browsers (e.g. a projector machine on the LAN) from a dedicated HTTP server (`projector_server.rs`) that binds `0.0.0.0` and serves the presentation page with sound enabled.
+
+**Reasoning:**
+- True pixel/window streaming is not available in Tauri v2/wry (no screenshot/capture API), so the browser must render its own HTML.
+- The controller already builds the full self-contained viewer HTML (`getViewerHtml`) and knows the master media state — both are pushed to the server.
+- The server reuses the media server's Range-enabled file serving (`serve_file_request`) for `/media/*`, so remote video/audio playback works while the media server stays `127.0.0.1`-only.
+- State sync is one-way (controller → server → browser) via a `/state` JSON endpoint polled every 250 ms; the browser page is display-only.
+- Port is reused across presentation loads; `set_projector_page` swaps the page + serve dir and bumps `rev`; the rev is injected into the served page (`/*__PROJECTOR_REV__*/`), so browsers auto-reload when the presentation changes.
+- LAN IP is derived from the default route via a UDP `connect()` (no packets sent), with a `127.0.0.1` fallback.
+
+**Security trade-off:** No auth — anyone on the LAN can view the presentation and its files. URL is shown in the controller footer (`#projectorUrlLabel`). The server stops on app exit (handle `Drop`).
+
+**Files affected:**
+- `src-tauri/src/commands/projector_server.rs` — new server + commands
+- `src-tauri/src/commands/media_server.rs` — extracted `serve_file_request` / `mime_for` / `url_decode`
+- `src-tauri/src/state.rs`, `lib.rs`, `commands/mod.rs` — registration
+- `src/shared/viewer-html-builder.js` — `rewriteAssetsToServer()`, `isBrowser` viewer mode
+- `src/controller-script.js` — server start/page push/state push, footer URL label
+- `src/controller.html`, `src/css/styles-controller.css` — `#projectorUrlLabel`
+- `tests/run_tests.sh`, `tests/test-frontend.js`, `src-tauri` tests — coverage
 
 ---
 

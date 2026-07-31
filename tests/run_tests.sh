@@ -30,18 +30,18 @@ echo "╚═══════════════════════�
 
 # ── 1. Vite frontend build ───────────────────────────────────────
 run_test "Vite frontend build" \
-  npx vite build --config vite.config.js 2>&1
+  npx vite build --config vite.config.mjs 2>&1
 
 # ── 2. Rust cargo build ──────────────────────────────────────────
 run_test "Rust cargo build" \
   cargo build --manifest-path src-tauri/Cargo.toml 2>&1
 
 # ── 3. Rust integration tests ────────────────────────────────────
-run_test "Rust integration tests (18 tests)" \
+run_test "Rust integration tests (21 tests)" \
   cargo test --manifest-path src-tauri/Cargo.toml 2>&1
 
 # ── 4. Node.js frontend tests ───────────────────────────────────
-run_test "Node.js frontend tests (23 tests)" \
+run_test "Node.js frontend tests (40 tests)" \
   node tests/test-frontend.js 2>&1
 
 # ── 5. Example file validation ───────────────────────────────────
@@ -148,13 +148,13 @@ else
   BUILD_OK=false
 fi
 
-# Check that viewer-html-builder is built
-VHB_JS=$(ls dist-frontend/assets/viewer-html-builder-*.js 2>/dev/null | head -1)
-if [ -n "$VHB_JS" ]; then
-  SIZE=$(wc -c < "$VHB_JS")
-  echo "    ✓ viewer-html-builder JS — ${SIZE}B"
+# Check that shared modules (markdown-it, viewer-html-builder) are built
+SHARED_JS=$(ls dist-frontend/assets/presentation-utils-*.js 2>/dev/null | head -1)
+if [ -n "$SHARED_JS" ]; then
+  SIZE=$(wc -c < "$SHARED_JS")
+  echo "    ✓ shared modules JS — ${SIZE}B"
 else
-  echo "    ✗ MISSING: viewer-html-builder JS bundle"
+  echo "    ✗ MISSING: shared modules JS bundle"
   BUILD_OK=false
 fi
 

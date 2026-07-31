@@ -2,7 +2,7 @@ const { invoke } = window.__TAURI__.core;
 const { emit, listen } = window.__TAURI__.event;
 const { getCurrentWindow } = window.__TAURI__.window;
 const { open } = window.__TAURI__.dialog;
-import { getViewerHtml, rewriteMediaToHttp, generateSlideThumbnails } from './shared/viewer-html-builder.js';
+import { getViewerHtml, rewriteMediaToHttp, rewriteAssetsToServer, generateSlideThumbnails } from './shared/viewer-html-builder.js';
 import { detectLocale, applyTranslations, __ } from './shared/i18n.js';
 import { wrapMarkdownForImpress, extractImpressContent } from './shared/presentation-utils.js';
 
@@ -20,6 +20,11 @@ let keyboardEnabled = true;
 let overviewBuilt = false;
 let sidebarBuilt = false;
 let slideThumbnails = {};
+let thumbnailBlobUrls = {};
+let placeholderThumbUrl = null;
+let projectorServerUrl = null;
+let seekDragging = false;
+let mediaPlaying = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
   detectLocale();
@@ -129,16 +134,40 @@ function setupEventListeners() {
   document.getElementById('restartMediaBtn').addEventListener('click', function() {
     sendToViewer('audioVideoControls', { command: 'restart' });
   });
+  var projectorUrlLink = document.getElementById('projectorUrlLabel');
+  projectorUrlLink.addEventListener('click', function(e) {
+    if (!projectorServerUrl) return;
+    e.preventDefault();
+    openProjectorUrl(projectorServerUrl);
+  });
+  var copyUrlBtn = document.getElementById('copyProjectorUrlBtn');
+  copyUrlBtn.addEventListener('click', function() {
+    if (!projectorServerUrl) return;
+    var icon = copyUrlBtn.querySelector('i');
+    copyToClipboard(projectorServerUrl).then(function() {
+      if (icon) {
+        var old = icon.className;
+        icon.className = 'fa fa-check';
+        setTimeout(function() { icon.className = old; }, 1200);
+      }
+    });
+  });
   var seekBar = document.getElementById('audioVideoSlider');
-  seekBar.addEventListener('change', function() {
+  function endSeek() {
+    if (!seekDragging) return;
+    seekDragging = false;
+    sendToViewer('audioVideoControls', { command: 'seek', data: seekBar.value });
+    if (mediaPlaying) sendToViewer('audioVideoControls', { command: 'play' });
+  }
+  seekBar.addEventListener('input', function() {
     sendToViewer('audioVideoControls', { command: 'seek', data: seekBar.value });
   });
-  seekBar.addEventListener('mousedown', function() {
+  seekBar.addEventListener('pointerdown', function() {
+    seekDragging = true;
     sendToViewer('audioVideoControls', { command: 'pause' });
   });
-  seekBar.addEventListener('mouseup', function() {
-    sendToViewer('audioVideoControls', { command: 'play' });
-  });
+  seekBar.addEventListener('pointerup', endSeek);
+  seekBar.addEventListener('pointercancel', endSeek);
 
   document.getElementById('currentSlideTab').addEventListener('click', function() {
     document.getElementById('currentSlideDiv').classList.remove('hidden');
@@ -166,7 +195,9 @@ function setupEventListeners() {
     await invoke('save_settings');
     if (loadedFile) {
       await loadPresentation(loadedFile);
-      emit('loadFile', { path: loadedFile });
+      if (projectorWindow) {
+        await emit('loadProjection', { file: loadedFile, slide: currentSlideId });
+      }
     }
   });
 
@@ -190,12 +221,6 @@ function setupEventListeners() {
       case 'menu-devtools':
         getCurrentWindow().toggleDevtools();
         break;
-    }
-  });
-
-  listen('loadFile', async function(event) {
-    if (event.payload && event.payload.path) {
-      await loadPresentation(event.payload.path);
     }
   });
 
@@ -256,7 +281,6 @@ async function selectFile() {
       var dir = selected.replace(/[/\\][^/\\]+$/, '');
       await invoke('save_default_path', { path: dir });
       await loadPresentation(selected);
-      emit('loadFile', { path: selected });
       if (projectorWindow) {
         await emit('loadProjection', { file: selected });
       }
@@ -270,7 +294,6 @@ async function refreshPresentation() {
   if (!loadedFile) return;
   try {
     await loadPresentation(loadedFile);
-    emit('loadFile', { path: loadedFile });
     if (projectorWindow) {
       await emit('loadProjection', { file: loadedFile });
     }
@@ -312,9 +335,26 @@ async function loadPresentation(filePath) {
       var impressVersion = await invoke('get_impress_version');
       var mediaServerUrl = await invoke('start_media_server', { dir: dir });
       console.log('[impressPlayer] Media server started at ' + mediaServerUrl);
-      impressContent = rewriteMediaToHttp(impressContent, mediaServerUrl);
+      var rawImpressContent = impressContent;
+      impressContent = rewriteMediaToHttp(rawImpressContent, mediaServerUrl);
       var viewerHtml = getViewerHtml(impressContent, styleContent, impressVersion, dir);
+
+      try {
+        projectorServerUrl = await invoke('start_projector_server', { dir: dir });
+        console.log('[impressPlayer] Projector server at ' + projectorServerUrl);
+        var projContent = rewriteAssetsToServer(rawImpressContent, projectorServerUrl);
+        var projStyle = rewriteAssetsToServer(styleContent, projectorServerUrl);
+        var projHtml = getViewerHtml(projContent, projStyle, impressVersion, null);
+        await invoke('set_projector_page', { html: projHtml, dir: dir });
+      } catch (e) {
+        projectorServerUrl = null;
+        console.error('[impressPlayer] Projector server error:', e);
+      }
+      updateProjectorUrlDisplay();
+      pushProjectorState(currentSlideId);
+
       slideThumbnails = generateSlideThumbnails(impressContent, styleContent, dir);
+      clearThumbnailUrls();
       var viewerFrame = document.getElementById('impressCurrent');
       var blob = new Blob([viewerHtml], { type: 'text/html' });
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
@@ -347,17 +387,98 @@ function sendToViewer(command, payload) {
   }
 }
 
+function pushProjectorState(slide, media) {
+  if (!projectorServerUrl) return;
+  invoke('update_projection_state', {
+    slide: slide || '',
+    time: media && typeof media.time === 'number' ? media.time : null,
+    playing: media ? !!media.playing : null
+  }).catch(function(err) {
+    console.error('[impressPlayer] update_projection_state failed:', err);
+  });
+}
+
+function updateProjectorUrlDisplay() {
+  var el = document.getElementById('projectorUrlLabel');
+  var wrap = document.getElementById('projectorUrlWrap');
+  if (!el || !wrap) return;
+  if (projectorServerUrl) {
+    el.textContent = 'Projector: ' + projectorServerUrl;
+    el.href = projectorServerUrl;
+    wrap.classList.remove('hidden');
+  } else {
+    el.textContent = '';
+    el.href = '#';
+    wrap.classList.add('hidden');
+  }
+}
+
+function openProjectorUrl(url) {
+  var opener = window.__TAURI__ && window.__TAURI__.opener;
+  if (opener && opener.openUrl) {
+    opener.openUrl(url).catch(function(err) {
+      console.error('[impressPlayer] Failed to open URL:', err);
+    });
+  } else if (window.open) {
+    window.open(url, '_blank');
+  }
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    return navigator.clipboard.writeText(text).catch(function() {
+      legacyCopyToClipboard(text);
+    });
+  }
+  legacyCopyToClipboard(text);
+  return Promise.resolve();
+}
+
+function legacyCopyToClipboard(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+function getThumbnailUrl(slideId) {
+  var html = slideThumbnails[slideId];
+  if (!html) return null;
+  if (!thumbnailBlobUrls[slideId]) {
+    thumbnailBlobUrls[slideId] = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+  }
+  return thumbnailBlobUrls[slideId];
+}
+
+function getPlaceholderThumbUrl() {
+  if (!placeholderThumbUrl) {
+    placeholderThumbUrl = URL.createObjectURL(new Blob(
+      ['<html><body style="background:#333;display:flex;align-items:center;justify-content:center;color:#666;font-family:sans-serif;font-size:12px;">Loading...</body></html>'],
+      { type: 'text/html' }));
+  }
+  return placeholderThumbUrl;
+}
+
+function clearThumbnailUrls() {
+  Object.keys(thumbnailBlobUrls).forEach(function(key) { URL.revokeObjectURL(thumbnailBlobUrls[key]); });
+  thumbnailBlobUrls = {};
+}
+
 function sendToThumbnail(iframeId, slideId) {
   var iframe = document.getElementById(iframeId);
   if (!iframe) return;
   if (iframe.getAttribute('data-slide') === slideId) return;
 
-  var html = slideThumbnails[slideId];
-  if (!html) {
-    iframe.srcdoc = '<html><body style="background:#333;display:flex;align-items:center;justify-content:center;color:#666;font-family:sans-serif;font-size:12px;">Loading...</body></html>';
+  var url = getThumbnailUrl(slideId);
+  if (!url) {
+    iframe.src = getPlaceholderThumbUrl();
     return;
   }
-  iframe.srcdoc = html;
+  iframe.src = url;
   iframe.setAttribute('data-slide', slideId);
 }
 
@@ -411,7 +532,7 @@ function updateSidebarThumbnails() {
   var idx = slideList.findIndex(function(s) { return s.step === currentSlideId; });
   if (idx < 0) idx = 0;
 
-  var startIdx = overviewVisible ? idx : idx + 1;
+  var startIdx = idx + 1;
   var count = 2;
 
   var items = document.querySelectorAll('#sidebarThumbs .sidebarCard');
@@ -502,26 +623,13 @@ function updateLabels() {
 
 function loadOverviewThumb(index) {
   if (index >= slideList.length) return;
-  if (index > 10) {
-    var observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        if (entry.isIntersecting) {
-          observer.disconnect();
-          loadOverviewThumb(index);
-        }
-      });
-    }, { root: document.getElementById('allSlidesDiv'), threshold: 0.1 });
-    var anchor = document.getElementById('overview-thumb-' + index);
-    if (anchor) observer.observe(anchor);
-    return;
-  }
   var frameId = 'overview-thumb-' + index;
   var iframe = document.getElementById(frameId);
   if (!iframe) return;
 
-  var html = slideThumbnails[slideList[index].step];
-  if (html) {
-    iframe.srcdoc = html;
+  var url = getThumbnailUrl(slideList[index].step);
+  if (url) {
+    iframe.src = url;
     iframe.setAttribute('data-slide', slideList[index].step);
   }
   loadOverviewThumb(index + 1);
@@ -675,6 +783,7 @@ window.addEventListener('message', function(event) {
       slideList = event.data.payload.slides;
       displaySlideList(event.data.payload.current);
       updateSidebarThumbnails();
+      sendToViewer('setupEventHandlers');
       break;
     case 'multimedia':
       var mediaControls = document.getElementById('mediaControlsDiv');
@@ -685,6 +794,7 @@ window.addEventListener('message', function(event) {
       }
       break;
     case 'audioVideoPlaying':
+      mediaPlaying = event.data.payload === 'on';
       var playButton = document.querySelector('.playButton');
       var pauseButton = document.querySelector('.pauseButton');
       if (event.data.payload === 'on') {
@@ -696,7 +806,13 @@ window.addEventListener('message', function(event) {
       }
       break;
     case 'mediaTime':
-      document.getElementById('audioVideoSlider').value = event.data.payload;
+      var mediaPct = parseFloat(event.data.payload);
+      if (isNaN(mediaPct) || seekDragging) break;
+      document.getElementById('audioVideoSlider').value = mediaPct;
+      break;
+    case 'mediaSync':
+      emit('mediaSync', event.data.payload);
+      pushProjectorState(currentSlideId, event.data.payload);
       break;
     case 'controlsEnabled':
       var nextBtn = document.getElementById('nextSlideBtn');
@@ -717,6 +833,7 @@ function renderNextSlide(current) {
   if (current === currentSlideId) return;
   currentSlideId = current;
   sendToViewer('gotoSlide', current);
+  pushProjectorState(current);
   updateSidebarThumbnails();
   updateSlideInfo(current);
   if (overviewVisible) {

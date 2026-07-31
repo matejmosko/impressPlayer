@@ -58,6 +58,7 @@
     "dialog:allow-message",
     "dialog:allow-ask",
     "dialog:allow-confirm",
-    "store:default"
+    "store:default",
+    "opener:default"
   ]
 }

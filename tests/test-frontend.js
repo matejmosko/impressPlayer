@@ -282,6 +282,19 @@ test('viewer HTML supports different impress versions', function() {
   assert(v2.includes('// v2.0.0'));
 });
 
+test('viewer HTML has browser projector mode with /state polling', function() {
+  var html = buildViewerHtml('<div id="impress"></div>', '', '// js');
+  assert(html.includes('var isBrowser = window.parent === window;'), 'Missing isBrowser detection');
+  assert(html.includes("fetch('/state', { cache: 'no-store' })"), 'Missing /state polling');
+  assert(html.includes('pollProjectorState'), 'Missing pollProjectorState');
+  assert(html.includes('/*__PROJECTOR_REV__*/'), 'Missing rev placeholder for server injection');
+});
+
+test('browser mode ignores audioVideoControls (display-only)', function() {
+  var html = buildViewerHtml('<div id="impress"></div>', '', '// js');
+  assert(html.includes('if (!isProjector && !isBrowser) handleMediaCommand'), 'Browser must not handle media commands');
+});
+
 function buildViewerHtml(impressContent, styleContent, impressJs) {
   return `<!DOCTYPE html>
 <html>
@@ -296,16 +309,40 @@ function buildViewerHtml(impressContent, styleContent, impressJs) {
   <script>${impressJs}<\/script>
   <script>
     var isThumbnail = window.location.hash === '#thumbnail';
+    var isProjector = window.location.hash === '#projector';
+    var isBrowser = window.parent === window;
     impress().init();
   <\/script>
   <script>
     if (!isThumbnail) {
       var stepList = [];
       function getStepList() { stepList = []; }
-      function sendEvent(name, payload) { window.parent.postMessage({ event: name, payload: payload }, '*'); }
+      function sendEvent(name, payload) {
+        if (window.parent === window) return;
+        window.parent.postMessage({ event: name, payload: payload }, '*');
+      }
       var impressEl = document.getElementById('impress');
       impressEl.addEventListener('impress:stepenter', function() { sendEvent('controlsEnabled', true); });
       impressEl.addEventListener('impress:stepleave', function() { sendEvent('stepList', { slides: stepList }); });
+      if (isBrowser) {
+        var projectorRev = 0; /*__PROJECTOR_REV__*/
+        function pollProjectorState() {
+          fetch('/state', { cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(state) {
+              if (!state) return;
+              if (typeof state.rev === 'number' && state.rev !== projectorRev) {
+                projectorRev = state.rev;
+                location.reload();
+                return;
+              }
+              if (state.slide && state.slide !== getCurrentSlide()) { impress().goto(state.slide); }
+              applyMediaSync(state.media);
+            })
+            .then(function() { setTimeout(pollProjectorState, 250); });
+        }
+        pollProjectorState();
+      }
       window.addEventListener('message', function(event) {
         if (!event.data || !event.data.command) return;
         switch (event.data.command) {
@@ -313,7 +350,9 @@ function buildViewerHtml(impressContent, styleContent, impressJs) {
           case 'prevSlide': impress().prev(); break;
           case 'gotoSlide': impress().goto(event.data.payload); break;
           case 'setupEventHandlers': break;
-          case 'audioVideoControls': break;
+          case 'audioVideoControls':
+            if (!isProjector && !isBrowser) handleMediaCommand(event.data.payload);
+            break;
         }
       });
     } else {
@@ -326,6 +365,110 @@ function buildViewerHtml(impressContent, styleContent, impressJs) {
 </body>
 </html>`;
 }
+
+// ── Asset rewriting (mirrors rewriteAssetsToServer) ─────────────
+
+console.log('\n=== Asset Rewriting ===');
+
+function rewriteAssetsToServer(html, serverUrl) {
+  if (!serverUrl) return html;
+  var base = serverUrl.replace(/\/+$/, '') + '/media/';
+  return html
+    .replace(/((?:src|poster)=["'])(?!https?:\/\/|mailto:|tel:|data:|blob:|asset:\/\/|file:\/\/|\/)([^"']+)(["'])/g, function(m, pre, url, post) {
+      return pre + base + url + post;
+    })
+    .replace(/((?:href|src)=["'])(?!https?:\/\/|mailto:|tel:|data:|blob:|asset:\/\/|file:\/\/|\/)([^"']+)(["'])/g, function(m, pre, url, post) {
+      return pre + base + url + post;
+    })
+    .replace(/(url\(["']?)(?!https?:\/\/|data:|blob:|asset:\/\/|file:\/\/|\/)([^)"']+)(["']?\))/g, function(m, pre, url, post) {
+      return pre + base + url + post;
+    });
+}
+
+var PROJ_BASE = 'http://192.168.1.5:4321/';
+
+test('rewrites relative media src to /media/ path', function() {
+  var html = '<video src="videos/intro.mp4"></video>';
+  var result = rewriteAssetsToServer(html, PROJ_BASE);
+  assert(result.includes('http://192.168.1.5:4321/media/videos/intro.mp4'));
+});
+
+test('rewrites relative image src, href and css url()', function() {
+  var html = '<img src="img/logo.png"><link href="style.css">.bg { background: url("img/bg.png"); }';
+  var result = rewriteAssetsToServer(html, PROJ_BASE);
+  assert(result.includes('http://192.168.1.5:4321/media/img/logo.png'));
+  assert(result.includes('http://192.168.1.5:4321/media/style.css'));
+  assert(result.includes('http://192.168.1.5:4321/media/img/bg.png'));
+});
+
+test('leaves absolute http(s), data:, blob:, asset:// and root-relative URLs untouched', function() {
+  var html = '<img src="https://cdn.example.com/x.png"><video src="http://127.0.0.1:8123/v.mp4">' +
+             '<img src="data:image/png;base64,AAA"><img src="asset://localhost/foo">' +
+             '<img src="/abs/root.png"><a href="mailto:a@b.c">x</a>';
+  var result = rewriteAssetsToServer(html, PROJ_BASE);
+  assert(result.includes('https://cdn.example.com/x.png'));
+  assert(result.includes('http://127.0.0.1:8123/v.mp4'));
+  assert(result.includes('data:image/png;base64,AAA'));
+  assert(result.includes('asset://localhost/foo'));
+  assert(result.includes('/abs/root.png'));
+  assert(result.includes('mailto:a@b.c'));
+  assert(!result.includes(PROJ_BASE + 'media/https://'));
+});
+
+test('handles missing serverUrl without changes', function() {
+  var html = '<video src="a.mp4"></video>';
+  assert.strictEqual(rewriteAssetsToServer(html, null), html);
+});
+
+// ── Thumbnail generation (mirrors generateSlideThumbnails) ──────
+
+console.log('\n=== Thumbnail Generation ===');
+
+function generateSlideThumbnails(impressContent, styleContent) {
+  var DOM = new (require('jsdom').JSDOM)('');
+  var parser = new DOM.window.DOMParser();
+  var doc = parser.parseFromString(impressContent, 'text/html');
+  var steps = doc.querySelectorAll('.step');
+  var thumbnails = {};
+  var css = 'normalize' + '\n' + 'html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;}' + '\n' + (styleContent || '') + '\n.step{padding:20px;width:100%;height:100%;box-sizing:border-box;}';
+  Array.prototype.forEach.call(steps, function(step, i) {
+    var id = step.id || 'step-' + (i + 1);
+    thumbnails[id] = '<!DOCTYPE html><html><head><style>' + css + '</style></head><body><div class="step">' + step.innerHTML + '</div></body></html>';
+  });
+  return thumbnails;
+}
+
+test('markdown steps without ids get impress.js step-N ids (thumbnail key match)', function() {
+  var md = '# Slide 1\n\n-----\n\n# Slide 2\n\n-----\n\n# Slide 3';
+  var content = wrapMarkdownForImpress(md);
+  var thumbs = generateSlideThumbnails(content);
+  var keys = Object.keys(thumbs).sort();
+  assert.deepStrictEqual(keys, ['step-2', 'step-3', 'step-slide-1'], 'keys must match viewer stepList ids');
+});
+
+test('steps with existing ids are preserved and id-less ones still assigned', function() {
+  var content = '<div id="impress">' +
+    '<div class="step" id="custom">One</div>' +
+    '<div class="step">Two</div>' +
+    '<div class="step">Three</div>' +
+    '</div>';
+  var thumbs = generateSlideThumbnails(content);
+  var keys = Object.keys(thumbs).sort();
+  assert.deepStrictEqual(keys, ['custom', 'step-2', 'step-3'], 'id-less steps get step-{index+1}');
+  assert(thumbs['step-2'].includes('Two'), 'step-2 thumbnail contains second slide content');
+});
+
+test('thumbnail CSS does not override presentation body background image', function() {
+  var content = '<div id="impress"><div class="step">One</div></div>';
+  var styleContent = 'body { background: url("bg.png") repeat black; }';
+  var thumbs = generateSlideThumbnails(content, styleContent);
+  var html = thumbs['step-1'];
+  assert(html.includes('body { background: url("bg.png") repeat black; }'), 'presentation background CSS inlined');
+  assert(!html.includes('background:#fff'), 'no white background override after styleContent');
+  var stylePos = html.indexOf('background: url');
+  var lastBasePos = html.indexOf('html,body{margin:0;padding:0;');
+  assert(stylePos > lastBasePos, 'presentation body background comes after base html/body reset so it wins');
+});
 
 // ── Summary ─────────────────────────────────────────────────────
 

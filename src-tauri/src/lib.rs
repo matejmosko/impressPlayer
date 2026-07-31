@@ -14,6 +14,7 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_store::Builder::default().build())
+        .plugin(tauri_plugin_opener::init())
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
             commands::fs_ops::read_file,
@@ -41,6 +42,10 @@ pub fn run() {
             commands::presentation::check_style_css,
             commands::media_server::start_media_server,
             commands::media_server::stop_media_server,
+            commands::projector_server::start_projector_server,
+            commands::projector_server::stop_projector_server,
+            commands::projector_server::set_projector_page,
+            commands::projector_server::update_projection_state,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

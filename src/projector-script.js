@@ -23,8 +23,8 @@ document.addEventListener('DOMContentLoaded', async function() {
     sendToViewer('gotoSlide', event.payload);
   });
 
-  listen('audioVideoControls', function(event) {
-    sendToViewer('audioVideoControls', event.payload);
+  listen('mediaSync', function(event) {
+    sendToViewer('mediaSync', event.payload);
   });
 
   document.addEventListener('keydown', function(e) {
@@ -86,7 +86,7 @@ async function loadPresentation(filePath) {
       var viewerHtml = getViewerHtml(impressContent, styleContent, impressVersion, dir);
       var viewerFrame = document.getElementById('impressCurrent');
       var blob = new Blob([viewerHtml], { type: 'text/html' });
-      viewerFrame.src = URL.createObjectURL(blob);
+      viewerFrame.src = URL.createObjectURL(blob) + '#projector';
     }
   } catch (e) {
     console.error('Load presentation error:', e);

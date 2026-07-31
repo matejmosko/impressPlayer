@@ -26,6 +26,21 @@ export function rewriteMediaToHttp(html, serverUrl) {
     });
 }
 
+export function rewriteAssetsToServer(html, serverUrl) {
+  if (!serverUrl) return html;
+  var base = serverUrl.replace(/\/+$/, '') + '/media/';
+  return html
+    .replace(/((?:src|poster)=["'])(?!https?:\/\/|mailto:|tel:|data:|blob:|asset:\/\/|file:\/\/|\/)([^"']+)(["'])/g, function(m, pre, url, post) {
+      return pre + base + url + post;
+    })
+    .replace(/((?:href|src)=["'])(?!https?:\/\/|mailto:|tel:|data:|blob:|asset:\/\/|file:\/\/|\/)([^"']+)(["'])/g, function(m, pre, url, post) {
+      return pre + base + url + post;
+    })
+    .replace(/(url\(["']?)(?!https?:\/\/|data:|blob:|asset:\/\/|file:\/\/|\/)([^)"']+)(["']?\))/g, function(m, pre, url, post) {
+      return pre + base + url + post;
+    });
+}
+
 function rewriteRelativePath(url, baseDir) {
   if (!url || isAbsoluteUrl(url)) return url;
   var normalized = url.replace(/\\/g, '/');
@@ -80,8 +95,10 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
   <script>${impressJs}<\/script>
   <script>
     var isThumbnail = window.location.hash === '#thumbnail';
+    var isProjector = window.location.hash === '#projector';
+    var isBrowser = window.parent === window;
     impress().init();
-    if (isThumbnail) {
+    if (isThumbnail || isProjector) {
       document.querySelectorAll('video, audio').forEach(function(el) { el.muted = true; el.pause(); });
     }
   <\/script>
@@ -106,6 +123,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
       }
 
       function sendEvent(name, payload) {
+        if (window.parent === window) return;
         window.parent.postMessage({ event: name, payload: payload }, '*');
       }
 
@@ -151,12 +169,70 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
             setupMediaEventListeners();
             break;
           case 'audioVideoControls':
-            handleMediaCommand(event.data.payload);
+            if (!isProjector && !isBrowser) handleMediaCommand(event.data.payload);
+            break;
+          case 'mediaSync':
+            applyMediaSync(event.data.payload);
             break;
         }
       });
 
+      if (isBrowser) {
+        var projectorRev = 0; /*__PROJECTOR_REV__*/
+        setupMediaEventListeners();
+        function pollProjectorState() {
+          fetch('/state', { cache: 'no-store' })
+            .then(function(r) { return r.json(); })
+            .then(function(state) {
+              if (!state) return;
+              if (typeof state.rev === 'number' && state.rev !== projectorRev) {
+                projectorRev = state.rev;
+                location.reload();
+                return;
+              }
+              if (state.slide && state.slide !== getCurrentSlide()) {
+                impress().goto(state.slide);
+              }
+              applyMediaSync(state.media);
+            })
+            .catch(function(err) {
+              console.log('[impressPlayer] Projector state poll failed: ' + err.message);
+            })
+            .then(function() {
+              setTimeout(pollProjectorState, 250);
+            });
+        }
+        pollProjectorState();
+      }
+
+      var mediaListenersAttached = false;
+
+      function startMediaStep(mediaStep, media) {
+        if (isProjector || isBrowser) return;
+        sendEvent('multimedia', 'on');
+        sendEvent('mediaSync', { time: media.currentTime, playing: !media.paused });
+        safePlay(media);
+        if (mediaStep._syncTimer) clearInterval(mediaStep._syncTimer);
+        mediaStep._syncTimer = setInterval(function() {
+          sendEvent('mediaSync', { time: media.currentTime, playing: !media.paused });
+        }, 1000);
+      }
+
+      function stopMediaStep(mediaStep, media) {
+        media.pause();
+        if (mediaStep._syncTimer) {
+          clearInterval(mediaStep._syncTimer);
+          mediaStep._syncTimer = null;
+        }
+        if (!isProjector) sendEvent('multimedia', 'off');
+      }
+
       function setupMediaEventListeners() {
+        if (mediaListenersAttached) return;
+        mediaListenersAttached = true;
+        if (isProjector) {
+          Array.prototype.forEach.call(document.querySelectorAll('video, audio'), function(media) { media.muted = true; });
+        }
         var videos = document.querySelectorAll('video');
         Array.prototype.forEach.call(videos, function(video) {
           if (!video.getAttribute('preload')) video.setAttribute('preload', 'auto');
@@ -177,6 +253,11 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
             addMediaEvent(step, audio);
           }
         });
+        var present = document.querySelector('.present');
+        if (present) {
+          var media = present.querySelector('video') || present.querySelector('audio');
+          if (media) startMediaStep(present, media);
+        }
       }
 
       function safePlay(media) {
@@ -212,25 +293,58 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
           console.log('[impressPlayer] Media waiting/buffering: ' + (media.currentSrc || media.src));
         });
         mediaStep.addEventListener('impress:stepenter', function() {
-          sendEvent('multimedia', 'on');
-          safePlay(media);
+          startMediaStep(mediaStep, media);
         });
         mediaStep.addEventListener('impress:stepleave', function() {
-          media.pause();
-          sendEvent('multimedia', 'off');
+          stopMediaStep(mediaStep, media);
         });
         media.addEventListener('timeupdate', function() {
-          if (media.duration) sendEvent('mediaTime', (100 / media.duration) * media.currentTime);
+          if (media.duration && isFinite(media.duration)) {
+            sendEvent('mediaTime', (100 / media.duration) * media.currentTime);
+          }
+          sendEvent('mediaSync', { time: media.currentTime, playing: !media.paused });
         });
-        media.addEventListener('playing', function() { sendEvent('audioVideoPlaying', 'on'); });
-        media.addEventListener('pause', function() { sendEvent('audioVideoPlaying', 'off'); });
+        media.addEventListener('playing', function() {
+          sendEvent('audioVideoPlaying', 'on');
+          sendEvent('mediaSync', { time: media.currentTime, playing: true });
+        });
+        media.addEventListener('pause', function() {
+          sendEvent('audioVideoPlaying', 'off');
+          sendEvent('mediaSync', { time: media.currentTime, playing: false });
+        });
+        media.addEventListener('ended', function() {
+          sendEvent('audioVideoPlaying', 'off');
+          sendEvent('mediaSync', { time: media.currentTime, playing: false });
+        });
+        media.addEventListener('seeked', function() {
+          sendEvent('mediaSync', { time: media.currentTime, playing: !media.paused });
+        });
         media.addEventListener('loadedmetadata', function() {
           console.log('[impressPlayer] Media loaded: ' + (media.currentSrc || media.src) + ' duration=' + media.duration);
         });
         console.log('[impressPlayer] Media registered: ' + (media.currentSrc || media.src) + ' autoplay=' + media.autoplay);
       }
 
+      function applyMediaSync(sync) {
+        if (!sync) return;
+        var present = document.querySelector('.present');
+        if (!present) return;
+        var media = present.querySelector('video') || present.querySelector('audio');
+        if (!media) return;
+        if (sync.playing && media.paused) {
+          media.play().catch(function(err) {
+            console.log('[impressPlayer] Sync play failed: ' + err.message);
+          });
+        } else if (sync.playing === false && !media.paused) {
+          media.pause();
+        }
+        if (typeof sync.time === 'number' && Math.abs(media.currentTime - sync.time) > 0.75) {
+          media.currentTime = sync.time;
+        }
+      }
+
       function handleMediaCommand(payload) {
+        if (isProjector) return;
         var present = document.querySelector('.present');
         if (!present) return;
         var media = present.querySelector('video') || present.querySelector('audio');
@@ -245,7 +359,22 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
               media.pause();
             }
             break;
-          case 'restart': media.load(); break;
+          case 'restart':
+            media.pause();
+            media.currentTime = 0;
+            sendEvent('mediaTime', 0);
+            sendEvent('audioVideoPlaying', 'off');
+            sendEvent('mediaSync', { time: 0, playing: false });
+            var onSeeked = function() {
+              media.removeEventListener('seeked', onSeeked);
+              safePlay(media);
+            };
+            media.addEventListener('seeked', onSeeked);
+            setTimeout(function() {
+              media.removeEventListener('seeked', onSeeked);
+              safePlay(media);
+            }, 150);
+            break;
           case 'pause': media.pause(); break;
           case 'play': safePlay(media); break;
           case 'seek': media.currentTime = media.duration * (data / 100); break;
@@ -273,10 +402,9 @@ export function generateSlideThumbnails(impressContent, styleContent, baseDir) {
   var doc = parser.parseFromString(impressContent, 'text/html');
   var steps = doc.querySelectorAll('.step');
   var thumbnails = {};
-  var css = normalizeCssSource + '\n' + (styleContent || '') + '\nhtml,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#fff;display:flex;align-items:center;justify-content:center;}.step{padding:20px;width:100%;height:100%;box-sizing:border-box;}';
-  Array.prototype.forEach.call(steps, function(step) {
-    var id = step.id;
-    if (!id) return;
+  var css = normalizeCssSource + '\n' + 'html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;}' + '\n' + (styleContent || '') + '\n.step{padding:20px;width:100%;height:100%;box-sizing:border-box;}';
+  Array.prototype.forEach.call(steps, function(step, i) {
+    var id = step.id || 'step-' + (i + 1);
     thumbnails[id] = '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<style>\n' + css + '\n</style>\n</head>\n<body>\n<div class="step">' + step.innerHTML + '</div>\n</body>\n</html>';
   });
   return thumbnails;

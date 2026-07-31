@@ -1,19 +1,14 @@
 {
   "name": "impressPlayer",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "Standalone impress.js presentations viewer and controller. Accepts html, markdown and specifically structured zip.",
-  "main": "main.js",
   "scripts": {
     "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "tauri:icon": "tauri icon",
-    "start": "electron . --disable-gpu-sandbox",
-    "debug": "electron . --inspect=5858",
-    "pack": "build --dir",
-    "dist": "build",
-    "win": "build --win",
-    "electron-builder": "electron-builder"
+    "build:frontend": "vite build --config vite.config.mjs",
+    "test": "bash tests/run_tests.sh"
   },
   "repository": "https://github.com/matejmosko/impressPlayer",
   "keywords": [
@@ -24,45 +19,12 @@
   ],
   "author": "Matej Moško",
   "license": "CC0-1.0",
-  "postinstall": "./node_modules/.bin/electron-rebuild",
   "devDependencies": {
-    "@fortawesome/fontawesome-free": "^7.3.1",
-    "@tauri-apps/api": "^2.11.1",
     "@tauri-apps/cli": "^2.11.4",
-    "electron-builder": "^26.15.3",
-    "electron-rebuild": "^3.2.9",
-    "npm": "^12.0.2",
+    "jsdom": "^30.0.1",
     "vite": "^8.1.5"
   },
   "dependencies": {
-    "@fortawesome/fontawesome": "^1.1.8",
-    "@fortawesome/fontawesome-free-brands": "^5.0.13",
-    "@fortawesome/fontawesome-free-solid": "^5.0.13",
-    "@tauri-apps/plugin-dialog": "^2.7.2",
-    "@tauri-apps/plugin-fs": "^2.5.1",
-    "@tauri-apps/plugin-store": "^2.4.4",
-    "decompress-zip": "^0.3.3",
-    "electron": "^43.2.0",
-    "electron-settings": "^4.0.4",
-    "fs-plus": "^3.1.1",
-    "i18n-2": "^0.7.1",
-    "markdown-it": "^15.0.0",
-    "mustache": "^4.2.0",
-    "update-electron-app": "^3.3.0"
-  },
-  "build": {
-    "productName": "impressPlayer",
-    "appId": "sk.panakrala.impressPlayer",
-    "asar": true,
-    "compression": "maximum",
-    "npmRebuild": true,
-    "linux": {
-      "target": "AppImage",
-      "category": "Office"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": "build/icon.ico"
-    }
+    "markdown-it": "^15.0.0"
   }
 }

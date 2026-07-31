@@ -2,7 +2,15 @@
 
 Remaining work for the Electron → Tauri v2 migration and new features.
 
----
+## Bugs
+
+- [ ] Browser viewer starts and stops video in a loop when the video is stopped in controller
+- [ ] Controller starts video for a few miliseconds on video-slide enter. Add a (autoplay) checkbox to quick app settings for defining whether videos and audios should autoplay or not. If autoplay is turned off, the video should enter stopped/paused on the first slide
+- [ ] In slides-list tab change the first preview in sidebar to live controller presentation (reuse the view from single-slide view. The second preview should dispay next slide. There is not supposed to be another preview, just two of them (together with the current slide). Make space for edit slides buttons.
+- [ ] After video/audio position reset the playpause button stops changing its icon
+- [ ] App doesn't stop completely when turned off through UI. Projector window and debugger still lives. Make sure the app is flushed completely on turn off.
+
+--
 
 ## Phase 3 — Multi-window Controller+Projector (complete)
 
@@ -33,17 +41,23 @@ Remaining work for the Electron → Tauri v2 migration and new features.
 - [x] **Window state persistence** — Save/restore controller window bounds + maximized state
 - [x] **Application menu** — Native menu bar: File > Load (Ctrl+O), Refresh (F5), Toggle DevTools (Ctrl+Shift+I)
 - [x] **Web/iFrame slides** — Support `data-url` attribute on step elements for external URL slides (sandboxed iframe)
+- [x] **Browser-accessible projector** — LAN HTTP server (`projector_server.rs`) serving the presentation with sound to any browser; follows controller slide + media state via `/state` polling; display-only
+- [x] **Thumbnail id fix** — `generateSlideThumbnails()` assigns `step-{index+1}` to id-less steps to match impress.js runtime ids (fixes "Loading..." sidebar)
 
 ### Dynamic Slide Editing
 - [ ] Contenteditable overlay or separate editor UI for live slide editing
-- [ ] Save edits back to source file (.md or .html)
+- [ ] Save edits back to source file (.md or .html) or to new file.
+- [ ] Add ability to save the presentation embedded with impress.js for publishing to web.
 - [ ] Re-generate blob URL after edits
 - [ ] Undo/redo support
+- [ ] Add UI for dynamic adding of new slides. Let user choose if he wants to add markdown slide, image slide or webpage (url) slide.
 
 ### Window Mirroring
 - [ ] OS-level screen capture (Tauri screen/plugin)
 - [ ] Mirror a specific window or region into a slide
 - [ ] Live preview in controller, display in projector
+
+> Note: the browser-accessible projector (`projector_server.rs`) covers the main "show the presentation elsewhere" use case (display-only, sound on). True OS-level window mirroring remains unimplemented.
 
 ---
 
@@ -78,7 +92,7 @@ Remaining work for the Electron → Tauri v2 migration and new features.
 ## Code Quality
 
 - [x] **Extract shared code** — presentation-utils.js, viewer-html-builder.js, i18n.js
-- [ ] **Add jsdom to Node.js tests** — HTML extraction tests are currently skipped
+- [x] **Add jsdom to Node.js tests** — HTML extraction tests now run (jsdom is a devDependency)
 - [ ] **i18n coverage** — sk.json has extra keys not in en.json; audit and clean up
 - [ ] **Vite chunk splitting** — `viewer-html-builder.js` is 511 KB (3x impress.js); consider code-splitting per version
 

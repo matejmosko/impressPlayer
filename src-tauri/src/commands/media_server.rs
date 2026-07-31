@@ -7,7 +7,7 @@ use std::sync::Arc;
 use std::thread;
 use tauri::State;
 
-fn mime_for(path: &str) -> &'static str {
+pub fn mime_for(path: &str) -> &'static str {
     let ext = Path::new(path)
         .extension()
         .and_then(|e| e.to_str())
@@ -38,7 +38,7 @@ fn mime_for(path: &str) -> &'static str {
     }
 }
 
-fn url_decode(s: &str) -> String {
+pub fn url_decode(s: &str) -> String {
     let mut result = String::with_capacity(s.len());
     let bytes = s.as_bytes();
     let mut i = 0;
@@ -69,50 +69,18 @@ fn url_decode(s: &str) -> String {
     result
 }
 
-fn handle_connection(mut stream: TcpStream, serve_dir: &Path, running: &Arc<std::sync::atomic::AtomicBool>) {
-    if !running.load(std::sync::atomic::Ordering::Relaxed) {
-        return;
-    }
-
-    let reader = stream.try_clone().ok();
-    if reader.is_none() {
-        return;
-    }
-    let mut buf_reader = BufReader::new(reader.unwrap());
-
-    let mut request_line = String::new();
-    if buf_reader.read_line(&mut request_line).is_err() {
-        return;
-    }
-
-    let parts: Vec<&str> = request_line.trim().split_whitespace().collect();
-    if parts.len() < 2 {
-        return;
-    }
-
-    let method = parts[0];
-    let raw_path = parts[1];
-
-    let decoded_path = url_decode(raw_path);
-    let clean_path = decoded_path.trim_start_matches('/');
-
-    let mut range_header: Option<String> = None;
-    loop {
-        let mut line = String::new();
-        if buf_reader.read_line(&mut line).is_err() || line.trim().is_empty() {
-            break;
-        }
-        let lower = line.to_lowercase();
-        if lower.starts_with("range:") {
-            range_header = Some(line.trim().to_string());
-        }
-    }
-
-    let file_path = serve_dir.join(clean_path);
+pub fn serve_file_request(
+    stream: &mut TcpStream,
+    serve_dir: &Path,
+    method: &str,
+    decoded_path: &str,
+    range_header: Option<&str>,
+) {
+    let file_path = serve_dir.join(decoded_path);
 
     if method == "HEAD" {
         if file_path.exists() && file_path.is_file() {
-            let mime = mime_for(&decoded_path);
+            let mime = mime_for(decoded_path);
             let meta = std::fs::metadata(&file_path).ok();
             let len = meta.map(|m| m.len()).unwrap_or(0);
             let resp = format!(
@@ -133,7 +101,7 @@ fn handle_connection(mut stream: TcpStream, serve_dir: &Path, running: &Arc<std:
         return;
     }
 
-    let mime = mime_for(&decoded_path);
+    let mime = mime_for(decoded_path);
     let file_size = std::fs::metadata(&file_path).map(|m| m.len()).unwrap_or(0);
 
     if let Some(range_str) = range_header {
@@ -208,6 +176,48 @@ fn handle_connection(mut stream: TcpStream, serve_dir: &Path, running: &Arc<std:
             }
         }
     }
+}
+
+fn handle_connection(mut stream: TcpStream, serve_dir: &Path, running: &Arc<std::sync::atomic::AtomicBool>) {
+    if !running.load(std::sync::atomic::Ordering::Relaxed) {
+        return;
+    }
+
+    let reader = stream.try_clone().ok();
+    if reader.is_none() {
+        return;
+    }
+    let mut buf_reader = BufReader::new(reader.unwrap());
+
+    let mut request_line = String::new();
+    if buf_reader.read_line(&mut request_line).is_err() {
+        return;
+    }
+
+    let parts: Vec<&str> = request_line.trim().split_whitespace().collect();
+    if parts.len() < 2 {
+        return;
+    }
+
+    let method = parts[0];
+    let raw_path = parts[1];
+
+    let decoded_path = url_decode(raw_path);
+    let clean_path = decoded_path.trim_start_matches('/');
+
+    let mut range_header: Option<String> = None;
+    loop {
+        let mut line = String::new();
+        if buf_reader.read_line(&mut line).is_err() || line.trim().is_empty() {
+            break;
+        }
+        let lower = line.to_lowercase();
+        if lower.starts_with("range:") {
+            range_header = Some(line.trim().to_string());
+        }
+    }
+
+    serve_file_request(&mut stream, serve_dir, method, clean_path, range_header.as_deref());
 }
 
 pub struct MediaServerHandle {
