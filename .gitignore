@@ -14,9 +14,6 @@ audiovideo
 examples
 dist-frontend
 *.zip
-viewer.html
-controller.html
-projector.html
 
 # Tauri files
 src-tauri/target
