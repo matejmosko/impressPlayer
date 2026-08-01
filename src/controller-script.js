@@ -56,9 +56,17 @@ async function loadInitialSettings() {
     if (settings.impressVersion) {
       document.getElementById('impressVersionSelect').value = settings.impressVersion;
     }
+    if (typeof settings.autoplayMedia === 'boolean') {
+      document.getElementById('autoplayMediaCheck').checked = settings.autoplayMedia;
+    }
   } catch (e) {
     console.warn('Could not load settings:', e);
   }
+}
+
+function isAutoplayMediaEnabled() {
+  var check = document.getElementById('autoplayMediaCheck');
+  return check ? check.checked : true;
 }
 
 async function restoreWindowState() {
@@ -104,9 +112,14 @@ function setupEventListeners() {
   document.getElementById('prevSlideBtn').addEventListener('click', function() {
     sendToViewer('prevSlide');
   });
-  document.getElementById('reallyQuit').addEventListener('click', function() {
+  document.getElementById('reallyQuit').addEventListener('click', async function() {
     document.getElementById('exitDialog').close();
-    getCurrentWindow().destroy();
+    try {
+      await invoke('quit_app');
+    } catch (e) {
+      console.error('Quit failed:', e);
+      getCurrentWindow().destroy();
+    }
   });
   document.getElementById('doNotQuit').addEventListener('click', function() {
     document.getElementById('exitDialog').close();
@@ -176,6 +189,7 @@ function setupEventListeners() {
     document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
     this.classList.add('active');
     overviewVisible = false;
+    updateSidebarThumbnails();
   });
   document.getElementById('allSlidesTab').addEventListener('click', function() {
     document.getElementById('currentSlideDiv').classList.add('hidden');
@@ -185,6 +199,7 @@ function setupEventListeners() {
     this.classList.add('active');
     overviewVisible = true;
     updateOverviewThumbnails();
+    updateSidebarThumbnails();
     updateCurrentSlidePreview();
   });
 
@@ -200,6 +215,20 @@ function setupEventListeners() {
       }
     }
   });
+
+  var autoplayCheck = document.getElementById('autoplayMediaCheck');
+  if (autoplayCheck) {
+    autoplayCheck.addEventListener('change', async function() {
+      await invoke('set_autoplay_media', { autoplay: this.checked });
+      await invoke('save_settings');
+      if (loadedFile) {
+        await loadPresentation(loadedFile);
+        if (projectorWindow) {
+          await emit('loadProjection', { file: loadedFile, slide: currentSlideId });
+        }
+      }
+    });
+  }
 
   getCurrentWindow().onCloseRequested(async function(event) {
     event.preventDefault();
@@ -335,16 +364,17 @@ async function loadPresentation(filePath) {
       var impressVersion = await invoke('get_impress_version');
       var mediaServerUrl = await invoke('start_media_server', { dir: dir });
       console.log('[impressPlayer] Media server started at ' + mediaServerUrl);
+      var autoplayMedia = isAutoplayMediaEnabled();
       var rawImpressContent = impressContent;
       impressContent = rewriteMediaToHttp(rawImpressContent, mediaServerUrl);
-      var viewerHtml = getViewerHtml(impressContent, styleContent, impressVersion, dir);
+      var viewerHtml = getViewerHtml(impressContent, styleContent, impressVersion, dir, autoplayMedia);
 
       try {
         projectorServerUrl = await invoke('start_projector_server', { dir: dir });
         console.log('[impressPlayer] Projector server at ' + projectorServerUrl);
         var projContent = rewriteAssetsToServer(rawImpressContent, projectorServerUrl);
         var projStyle = rewriteAssetsToServer(styleContent, projectorServerUrl);
-        var projHtml = getViewerHtml(projContent, projStyle, impressVersion, null);
+        var projHtml = getViewerHtml(projContent, projStyle, impressVersion, null, autoplayMedia);
         await invoke('set_projector_page', { html: projHtml, dir: dir });
       } catch (e) {
         projectorServerUrl = null;
@@ -360,6 +390,8 @@ async function loadPresentation(filePath) {
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
       currentBlobUrl = URL.createObjectURL(blob);
       viewerFrame.src = currentBlobUrl;
+      var sidebarLiveFrame = document.getElementById('impressSidebarLive');
+      if (sidebarLiveFrame) sidebarLiveFrame.src = currentBlobUrl + '#sidebar-live';
       document.body.classList.add('running');
       overviewBuilt = false;
       sidebarBuilt = false;
@@ -384,6 +416,13 @@ function sendToViewer(command, payload) {
   var viewerFrame = document.getElementById('impressCurrent');
   if (viewerFrame && viewerFrame.contentWindow) {
     viewerFrame.contentWindow.postMessage({ command: command, payload: payload }, '*');
+  }
+}
+
+function sendToSidebarLive(command, payload) {
+  var frame = document.getElementById('impressSidebarLive');
+  if (frame && frame.contentWindow) {
+    frame.contentWindow.postMessage({ command: command, payload: payload }, '*');
   }
 }
 
@@ -533,7 +572,7 @@ function updateSidebarThumbnails() {
   if (idx < 0) idx = 0;
 
   var startIdx = idx + 1;
-  var count = 2;
+  var count = overviewVisible ? 1 : 2;
 
   var items = document.querySelectorAll('#sidebarThumbs .sidebarCard');
   Array.prototype.forEach.call(items, function(card, i) {
@@ -551,7 +590,7 @@ function updateSidebarThumbnails() {
 
 function updateCurrentSlidePreview() {
   if (!currentSlideId) return;
-  sendToThumbnail('thumb-current', currentSlideId);
+  sendToSidebarLive('gotoSlide', currentSlideId);
   var idx = slideList.findIndex(function(s) { return s.step === currentSlideId; });
   var label = document.getElementById('thumb-label-current');
   if (label && idx >= 0) {
@@ -781,9 +820,16 @@ window.addEventListener('message', function(event) {
       break;
     case 'stepList':
       slideList = event.data.payload.slides;
+      if (!currentSlideId && event.data.payload.current) {
+        currentSlideId = event.data.payload.current;
+      }
       displaySlideList(event.data.payload.current);
       updateSidebarThumbnails();
       sendToViewer('setupEventHandlers');
+      if (currentSlideId) {
+        sendToSidebarLive('gotoSlide', currentSlideId);
+        pushProjectorState(currentSlideId);
+      }
       break;
     case 'multimedia':
       var mediaControls = document.getElementById('mediaControlsDiv');
@@ -833,6 +879,7 @@ function renderNextSlide(current) {
   if (current === currentSlideId) return;
   currentSlideId = current;
   sendToViewer('gotoSlide', current);
+  sendToSidebarLive('gotoSlide', current);
   pushProjectorState(current);
   updateSidebarThumbnails();
   updateSlideInfo(current);

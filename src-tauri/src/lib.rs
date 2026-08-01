@@ -17,6 +17,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .manage(app_state)
         .invoke_handler(tauri::generate_handler![
+            commands::app_ops::quit_app,
             commands::fs_ops::read_file,
             commands::fs_ops::read_file_base64,
             commands::fs_ops::write_file,
@@ -36,6 +37,8 @@ pub fn run() {
             commands::settings_ops::get_window_state,
             commands::settings_ops::get_impress_version,
             commands::settings_ops::set_impress_version,
+            commands::settings_ops::get_autoplay_media,
+            commands::settings_ops::set_autoplay_media,
             commands::presentation::get_app_path,
             commands::presentation::get_user_data_path,
             commands::presentation::get_presentation_dir,
@@ -113,6 +116,10 @@ fn load_initial_settings(app_handle: &tauri::AppHandle) -> Result<(), String> {
         if let Some(v) = settings.get("impressVersion").and_then(|v| v.as_str()) {
             let app_state = app_handle.state::<AppState>();
             *app_state.impress_version.lock().unwrap() = v.to_string();
+        }
+        if let Some(v) = settings.get("autoplayMedia").and_then(|v| v.as_bool()) {
+            let app_state = app_handle.state::<AppState>();
+            *app_state.autoplay_media.lock().unwrap() = v;
         }
     }
 

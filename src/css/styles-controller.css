@@ -153,6 +153,19 @@ body {
   border: 2px solid var(--textColor);
 }
 
+.quickSetting {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.quickSetting input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
 .card {
   background-color: var(--cardColor);
   padding: 2px;

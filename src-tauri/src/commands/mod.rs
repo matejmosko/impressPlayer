@@ -1,3 +1,4 @@
+pub mod app_ops;
 pub mod dialog_ops;
 pub mod fs_ops;
 pub mod media_server;

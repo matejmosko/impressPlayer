@@ -47,11 +47,13 @@ fn save_settings_inner(state: &State<'_, AppState>) -> Result<(), String> {
     let window_states = state.window_states.lock().unwrap().clone();
     let default_path = state.default_path.lock().unwrap().clone();
     let impress_version = state.impress_version.lock().unwrap().clone();
+    let autoplay_media = *state.autoplay_media.lock().unwrap();
 
     let settings = json!({
         "windowstate": window_states,
         "defaultPath": default_path,
-        "impressVersion": impress_version
+        "impressVersion": impress_version,
+        "autoplayMedia": autoplay_media
     });
 
     let config_dir = dirs::config_dir()
@@ -98,6 +100,9 @@ pub fn load_settings(state: State<'_, AppState>) -> Result<Value, String> {
         if let Some(v) = settings.get("impressVersion").and_then(|v| v.as_str()) {
             *state.impress_version.lock().unwrap() = v.to_string();
         }
+        if let Some(v) = settings.get("autoplayMedia").and_then(|v| v.as_bool()) {
+            *state.autoplay_media.lock().unwrap() = v;
+        }
 
         Ok(settings)
     } else {
@@ -113,5 +118,16 @@ pub fn get_impress_version(state: State<'_, AppState>) -> Result<String, String>
 #[tauri::command]
 pub fn set_impress_version(state: State<'_, AppState>, version: String) -> Result<(), String> {
     *state.impress_version.lock().unwrap() = version;
+    Ok(())
+}
+
+#[tauri::command]
+pub fn get_autoplay_media(state: State<'_, AppState>) -> Result<bool, String> {
+    Ok(*state.autoplay_media.lock().unwrap())
+}
+
+#[tauri::command]
+pub fn set_autoplay_media(state: State<'_, AppState>, autoplay: bool) -> Result<(), String> {
+    *state.autoplay_media.lock().unwrap() = autoplay;
     Ok(())
 }

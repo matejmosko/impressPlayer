@@ -64,12 +64,13 @@ export function rewriteRelativePaths(html, baseDir) {
     });
 }
 
-export function getViewerHtml(impressContent, styleContent, impressVersion, baseDir) {
+export function getViewerHtml(impressContent, styleContent, impressVersion, baseDir, autoplayMedia) {
   var impressJs = getImpressJsForVersion(impressVersion || '2.0.0');
   if (baseDir) {
     impressContent = rewriteRelativePaths(impressContent, baseDir);
     if (styleContent) styleContent = rewriteRelativePaths(styleContent, baseDir);
   }
+  autoplayMedia = autoplayMedia !== false;
 
   return `<!DOCTYPE html>
 <html>
@@ -97,8 +98,10 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
     var isThumbnail = window.location.hash === '#thumbnail';
     var isProjector = window.location.hash === '#projector';
     var isBrowser = window.parent === window;
+    var isSidebarLive = window.location.hash === '#sidebar-live';
+    var autoplayMedia = ${autoplayMedia};
     impress().init();
-    if (isThumbnail || isProjector) {
+    if (isThumbnail || isProjector || isSidebarLive) {
       document.querySelectorAll('video, audio').forEach(function(el) { el.muted = true; el.pause(); });
     }
   <\/script>
@@ -124,6 +127,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
 
       function sendEvent(name, payload) {
         if (window.parent === window) return;
+        if (isSidebarLive) return;
         window.parent.postMessage({ event: name, payload: payload }, '*');
       }
 
@@ -169,7 +173,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
             setupMediaEventListeners();
             break;
           case 'audioVideoControls':
-            if (!isProjector && !isBrowser) handleMediaCommand(event.data.payload);
+            if (!isProjector && !isBrowser && !isSidebarLive) handleMediaCommand(event.data.payload);
             break;
           case 'mediaSync':
             applyMediaSync(event.data.payload);
@@ -179,6 +183,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
 
       if (isBrowser) {
         var projectorRev = 0; /*__PROJECTOR_REV__*/
+        var lastGotoSlide = null;
         setupMediaEventListeners();
         function pollProjectorState() {
           fetch('/state', { cache: 'no-store' })
@@ -190,8 +195,14 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
                 location.reload();
                 return;
               }
-              if (state.slide && state.slide !== getCurrentSlide()) {
-                impress().goto(state.slide);
+              var current = getCurrentSlide();
+              if (state.slide && state.slide !== current) {
+                if (state.slide !== lastGotoSlide) {
+                  lastGotoSlide = state.slide;
+                  impress().goto(state.slide);
+                }
+              } else {
+                lastGotoSlide = null;
               }
               applyMediaSync(state.media);
             })
@@ -208,10 +219,14 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
       var mediaListenersAttached = false;
 
       function startMediaStep(mediaStep, media) {
-        if (isProjector || isBrowser) return;
+        if (isProjector || isBrowser || isSidebarLive) return;
         sendEvent('multimedia', 'on');
         sendEvent('mediaSync', { time: media.currentTime, playing: !media.paused });
-        safePlay(media);
+        if (autoplayMedia) {
+          safePlay(media);
+        } else {
+          media.pause();
+        }
         if (mediaStep._syncTimer) clearInterval(mediaStep._syncTimer);
         mediaStep._syncTimer = setInterval(function() {
           sendEvent('mediaSync', { time: media.currentTime, playing: !media.paused });
@@ -230,7 +245,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
       function setupMediaEventListeners() {
         if (mediaListenersAttached) return;
         mediaListenersAttached = true;
-        if (isProjector) {
+        if (isProjector || isSidebarLive) {
           Array.prototype.forEach.call(document.querySelectorAll('video, audio'), function(media) { media.muted = true; });
         }
         var videos = document.querySelectorAll('video');
