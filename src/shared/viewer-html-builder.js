@@ -185,6 +185,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
         var projectorRev = 0; /*__PROJECTOR_REV__*/
         var lastGotoSlide = null;
         setupMediaEventListeners();
+        Array.prototype.forEach.call(document.querySelectorAll('video, audio'), function(el) { el.pause(); });
         function pollProjectorState() {
           fetch('/state', { cache: 'no-store' })
             .then(function(r) { return r.json(); })

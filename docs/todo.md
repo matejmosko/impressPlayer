@@ -4,11 +4,14 @@ Remaining work for the Electron → Tauri v2 migration and new features.
 
 ## Bugs
 
-- [ ] Browser viewer starts and stops video in a loop when the video is stopped in controller
-- [ ] Controller starts video for a few miliseconds on video-slide enter. Add a (autoplay) checkbox to quick app settings for defining whether videos and audios should autoplay or not. If autoplay is turned off, the video should enter stopped/paused on the first slide
-- [ ] In slides-list tab change the first preview in sidebar to live controller presentation (reuse the view from single-slide view. The second preview should dispay next slide. There is not supposed to be another preview, just two of them (together with the current slide). Make space for edit slides buttons.
-- [ ] After video/audio position reset the playpause button stops changing its icon
-- [ ] App doesn't stop completely when turned off through UI. Projector window and debugger still lives. Make sure the app is flushed completely on turn off.
+- [x] Browser viewer starts and stops video in a loop when the video is stopped in controller
+- [x] Controller starts video for a few miliseconds on video-slide enter. Add a (autoplay) checkbox to quick app settings for defining whether videos and audios should autoplay or not. If autoplay is turned off, the video should enter stopped/paused on the first slide
+- [x] In slides-list tab change the first preview in sidebar to live controller presentation (reuse the view from single-slide view. The second preview should dispay next slide. There is not supposed to be another preview, just two of them (together with the current slide). Make space for edit slides buttons.
+- [x] After video/audio position reset the playpause button stops changing its icon
+- [x] App doesn't stop completely when turned off through UI. Projector window and debugger still lives. Make sure the app is flushed completely on turn off.
+
+- [ ] Browser projector video is tearing. Let it play for itself. Do not sync the progress, just sync the play/pause/replay buttons' actions and sync the position only on pause/start/replay
+- [ ] Make sure autoplay checkbox works for controller, projector and browser projector similarly.
 
 --
 
