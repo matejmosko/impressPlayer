@@ -222,6 +222,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
       function startMediaStep(mediaStep, media) {
         if (isProjector || isBrowser || isSidebarLive) return;
         sendEvent('multimedia', 'on');
+        sendEvent('audioVideoPlaying', media.paused ? 'off' : 'on');
         sendEvent('mediaSync', { time: media.currentTime, playing: !media.paused });
         if (autoplayMedia) {
           safePlay(media);

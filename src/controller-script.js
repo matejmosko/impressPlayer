@@ -24,6 +24,7 @@ let thumbnailBlobUrls = {};
 let placeholderThumbUrl = null;
 let projectorServerUrl = null;
 let seekDragging = false;
+let wasPlaying = false;
 let mediaPlaying = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -170,13 +171,15 @@ function setupEventListeners() {
     if (!seekDragging) return;
     seekDragging = false;
     sendToViewer('audioVideoControls', { command: 'seek', data: seekBar.value });
-    if (mediaPlaying) sendToViewer('audioVideoControls', { command: 'play' });
+    if (wasPlaying) sendToViewer('audioVideoControls', { command: 'play' });
+    wasPlaying = false;
   }
   seekBar.addEventListener('input', function() {
     sendToViewer('audioVideoControls', { command: 'seek', data: seekBar.value });
   });
   seekBar.addEventListener('pointerdown', function() {
     seekDragging = true;
+    wasPlaying = mediaPlaying;
     sendToViewer('audioVideoControls', { command: 'pause' });
   });
   seekBar.addEventListener('pointerup', endSeek);
@@ -353,6 +356,7 @@ async function loadPresentation(filePath) {
     }
 
     if (impressContent) {
+      currentSlideId = null;
       var dir = filePath.replace(/[/\\][^/\\]+$/, '/');
       var styleContent = '';
       var hasStyle = await invoke('check_style_css', { filePath: dir });

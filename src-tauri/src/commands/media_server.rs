@@ -236,6 +236,11 @@ impl Drop for MediaServerHandle {
 #[tauri::command]
 pub fn start_media_server(dir: String, state: State<'_, AppState>) -> Result<String, String> {
     let mut server_lock = state.media_server.lock().map_err(|e| e.to_string())?;
+    if let Some(handle) = server_lock.as_ref() {
+        if handle.serve_dir == PathBuf::from(&dir) {
+            return Ok(format!("http://127.0.0.1:{}", handle.port));
+        }
+    }
     *server_lock = None;
     let handle = start_media_server_inner(dir)?;
     let url = format!("http://127.0.0.1:{}", handle.port);
@@ -266,14 +271,15 @@ fn start_media_server_inner(dir: String) -> Result<MediaServerHandle, String> {
         serve_dir: serve_dir.clone(),
         running: running.clone(),
     };
-
     let server_running = running.clone();
     thread::spawn(move || {
         listener.set_nonblocking(true).ok();
         while server_running.load(std::sync::atomic::Ordering::Relaxed) {
             match listener.accept() {
                 Ok((stream, _)) => {
-                    handle_connection(stream, &serve_dir, &server_running);
+                    let serve_dir = serve_dir.clone();
+                    let running = server_running.clone();
+                    thread::spawn(move || handle_connection(stream, &serve_dir, &running));
                 }
                 Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
                     std::thread::sleep(std::time::Duration::from_millis(10));
@@ -286,4 +292,90 @@ fn start_media_server_inner(dir: String) -> Result<MediaServerHandle, String> {
     });
 
     Ok(handle)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::io::{Read, Write};
+    use std::net::TcpStream;
+    use std::time::Duration;
+
+    #[test]
+    fn server_serves_full_and_ranged_requests() {
+        let dir = std::env::temp_dir().join("impressmedia_test");
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(dir.join("v.mp4"), b"hello-media").unwrap();
+
+        let handle = start_media_server_inner(dir.to_str().unwrap().to_string()).unwrap();
+        let addr = format!("127.0.0.1:{}", handle.port);
+
+        let mut s = TcpStream::connect(&addr).unwrap();
+        s.write_all(b"GET /v.mp4 HTTP/1.1\r\nHost: x\r\nConnection: close\r\n\r\n")
+            .unwrap();
+        let mut buf = Vec::new();
+        s.read_to_end(&mut buf).unwrap();
+        let text = String::from_utf8_lossy(&buf);
+        assert!(text.starts_with("HTTP/1.1 200"));
+        assert!(text.contains("Content-Type: video/mp4"));
+        assert!(buf.ends_with(b"hello-media"));
+
+        let mut s = TcpStream::connect(&addr).unwrap();
+        s.write_all(b"GET /v.mp4 HTTP/1.1\r\nHost: x\r\nRange: bytes=6-10\r\nConnection: close\r\n\r\n")
+            .unwrap();
+        let mut buf = Vec::new();
+        s.read_to_end(&mut buf).unwrap();
+        let text = String::from_utf8_lossy(&buf);
+        assert!(text.starts_with("HTTP/1.1 206"));
+        assert!(text.contains("Content-Range: bytes 6-10/11"));
+        assert!(buf.ends_with(b"media"));
+
+        drop(handle);
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn server_serves_connections_concurrently() {
+        let dir = std::env::temp_dir().join("impressmedia_concurrent");
+        std::fs::create_dir_all(&dir).unwrap();
+        let big = vec![b'x'; 4 * 1024 * 1024];
+        std::fs::write(dir.join("big.mp4"), &big).unwrap();
+
+        let handle = start_media_server_inner(dir.to_str().unwrap().to_string()).unwrap();
+        let addr = format!("127.0.0.1:{}", handle.port);
+
+        // Connection 1: send a request, read a little, then stop reading while
+        // keeping the socket open. The server's write eventually blocks on TCP
+        // backpressure. With a single-threaded accept loop this stalls every
+        // other connection; with thread-per-connection it must not.
+        let blocker_addr = addr.clone();
+        let blocker = std::thread::spawn(move || {
+            let mut s = TcpStream::connect(&blocker_addr).unwrap();
+            s.write_all(b"GET /big.mp4 HTTP/1.1\r\nHost: x\r\nRange: bytes=0-\r\nConnection: close\r\n\r\n")
+                .unwrap();
+            s.set_read_timeout(Some(Duration::from_millis(200))).ok();
+            let mut buf = [0u8; 4096];
+            let _ = s.read(&mut buf);
+            std::thread::sleep(Duration::from_secs(3));
+        });
+
+        std::thread::sleep(Duration::from_millis(200));
+
+        let mut s2 = TcpStream::connect(&addr).unwrap();
+        s2.set_read_timeout(Some(Duration::from_secs(1))).unwrap();
+        s2.write_all(b"GET /big.mp4 HTTP/1.1\r\nHost: x\r\nRange: bytes=0-1023\r\nConnection: close\r\n\r\n")
+            .unwrap();
+        let mut buf = Vec::new();
+        s2.read_to_end(&mut buf).unwrap();
+        let text = String::from_utf8_lossy(&buf);
+        assert!(
+            text.starts_with("HTTP/1.1 206"),
+            "second connection must be served while another is blocked: {}",
+            &text[..text.len().min(200)]
+        );
+
+        blocker.join().unwrap();
+        drop(handle);
+        std::fs::remove_dir_all(&dir).ok();
+    }
 }
