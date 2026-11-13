@@ -52,10 +52,9 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "targets": "all",
+    "targets": ["appimage", "nsis"],
     "linux": {
-      "appimage": {},
-      "deb": {}
+      "appimage": {}
     },
     "windows": {
       "nsis": {}

@@ -8,7 +8,9 @@
     "tauri:build": "tauri build",
     "tauri:icon": "tauri icon",
     "build:frontend": "vite build --config vite.config.mjs",
-    "test": "bash tests/run_tests.sh"
+    "test": "bash tests/run_tests.sh",
+    "dev:clean": "pkill -f 'vite.*1420' 2>/dev/null; pkill -f 'tauri.*dev' 2>/dev/null; sleep 1",
+    "dev": "npm run dev:clean && npx tauri dev"
   },
   "repository": "https://github.com/matejmosko/impressPlayer",
   "keywords": [

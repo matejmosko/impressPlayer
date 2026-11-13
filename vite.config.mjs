@@ -8,7 +8,8 @@ export default defineConfig({
   root: 'src',
   server: {
     port: 1420,
-    strictPort: true,
+    strictPort: false,
+    host: true,
   },
   build: {
     outDir: '../dist-frontend',

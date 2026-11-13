@@ -11,10 +11,11 @@ Impress.js presentation viewer. Supports `.md`, `.html`, and `.zip` (markpress) 
 - **`src-tauri/src/lib.rs`** — App setup: plugins, command registration, settings load, native menu bar.
 - **`src-tauri/src/state.rs`** — `AppState` (window states, default path, media server handle, projector server handle). `WindowStates` is `Serialize/Deserialize` for settings persistence.
 - **`src-tauri/src/commands/`** — Tauri command handlers:
+  - `app_ops.rs` — `quit_app` (stops media/projector servers, destroys windows, exits app)
   - `fs_ops.rs` — `read_file`, `read_file_base64`, `write_file`, `file_exists`, `read_dir`, `create_dir`, `remove_file`, `remove_dir`, `rename_file`, `copy_file`
   - `dialog_ops.rs` — `get_default_path`, `save_default_path`
   - `zip_ops.rs` — `extract_zip` (Rust `zip` crate)
-  - `settings_ops.rs` — `save_settings`, `load_settings`, `update_window_state`, `get_window_state`, `get_impress_version`, `set_impress_version`
+  - `settings_ops.rs` — `save_settings`, `load_settings`, `update_window_state`, `get_window_state`, `get_impress_version`, `set_impress_version`, `get_autoplay_media`, `set_autoplay_media`
   - `presentation.rs` — `get_app_path`, `get_user_data_path`, `get_presentation_dir`, `check_style_css`
   - `media_server.rs` — `start_media_server`, `stop_media_server`. Lightweight HTTP file server with Range request support for video/audio playback (asset:// protocol doesn't support Range on WebKit2GTK). Exports `serve_file_request` (shared by the projector server).
   - `projector_server.rs` — `start_projector_server`, `stop_projector_server`, `set_projector_page`, `update_projection_state`. LAN-accessible HTTP server (binds `0.0.0.0`) that serves the projector page to browsers: `/` page (with rev injected), `/state` JSON (slide + media time/playing), `/media/*` files from the presentation dir (Range support). Reuses the same port across loads; `set_projector_page` swaps page + serve dir and increments `rev` (browser reloads on rev change).
@@ -41,11 +42,11 @@ Impress.js presentation viewer. Supports `.md`, `.html`, and `.zip` (markpress) 
 
 ### Tauri (primary)
 ```
-npx tauri dev             # Run in dev mode with hot-reload (Vite + Cargo)
-cargo tauri build         # Build release binary
+npm run tauri:dev         # Run in dev mode with hot-reload (Vite + Cargo)
+npm run tauri:build       # Build release binary
 cargo check               # Type-check Rust code (fast)
 npm run build:frontend    # Build frontend only (Vite → dist-frontend/)
-npm test                  # Legacy frontend test suite (tests/run_tests.sh)
+npm test                  # Full test suite: Vite build + Rust build/tests + Node.js tests + example validation
 ```
 
 ## Setup Gotchas
@@ -66,9 +67,10 @@ Frontend calls Rust via `invoke('command_name', { args })`. Key channels:
 | `read_file_base64` | FE → Rust | Read binary file as base64 |
 | `write_file` | FE → Rust | Write file contents |
 | `extract_zip` | FE → Rust | Extract .zip to directory |
-| `save_settings` / `load_settings` | FE → Rust | Persist window state, default path |
+| `save_settings` / `load_settings` | FE → Rust | Persist window state, default path, impress version, autoplay media |
 | `update_window_state` / `get_window_state` | FE → Rust | Save/restore window bounds per label |
 | `get_impress_version` / `set_impress_version` | FE → Rust | Get/set impress.js version preference |
+| `get_autoplay_media` / `set_autoplay_media` | FE → Rust | Get/set autoplay media preference |
 | `start_media_server` / `stop_media_server` | FE → Rust | Start/stop local HTTP file server for media |
 | `start_projector_server` / `stop_projector_server` | FE → Rust | Start/stop LAN HTTP server serving the browser projector page |
 | `set_projector_page` | FE → Rust | Set browser projector page HTML + serve dir (bumps `rev`, browsers reload) |
@@ -77,6 +79,7 @@ Frontend calls Rust via `invoke('command_name', { args })`. Key channels:
 | `get_user_data_path` | FE → Rust | Get app data directory path |
 | `get_presentation_dir` | FE → Rust | Get directory of presentation file |
 | `check_style_css` | FE → Rust | Check if style.css exists in dir |
+| `quit_app` | FE → Rust | Stop servers, destroy windows, exit app |
 
 ### Frontend Event Map
 
@@ -130,3 +133,8 @@ The projector can also be shown in a **browser** (e.g. a projector machine on th
 - Overview thumbnails loaded eagerly via `loadOverviewThumb()` chain (sequential, all slides)
 - Thumbnails are non-interactive (`.impressCurtain` overlay + `pointer-events: none`)
 - Slide sync is bidirectional: controller emits `gotoSlide`, projector reports back `controller-slide-changed` (guarded against redundant updates)
+
+## Reference
+
+- `docs/decisions.md` — Architecture decisions, workarounds, and findings (Electron → Tauri v2 migration)
+- `docs/todo.md` — Current task status, bugs, and feature roadmap
