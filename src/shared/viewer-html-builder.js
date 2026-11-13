@@ -80,11 +80,20 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
   <title>impressPlayer Viewer</title>
   <style>
     html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #fff; }
-    .step { padding: 40px; width: 100vw; height: 100vh; }
+    .step { padding: 40px; width: 100vw; height: 100vh; box-sizing: border-box; }
+    .step:has(img), .step:has(video) { display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .step h1 { font-size: 2.5em; margin-bottom: 0.5em; }
     .step h2 { font-size: 2em; margin-bottom: 0.5em; }
     .step h3 { font-size: 1.5em; margin-bottom: 0.5em; }
     .step p { font-size: 1.2em; line-height: 1.6; margin-bottom: 0.5em; }
+    .step > .markdown-content { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .step > .markdown-content > p:has(> img:only-child),
+    .step > .markdown-content > p:has(> video:only-child) { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; margin: 0; }
+    .step img, .step video { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+    .step > img, .step > video,
+    .step > .markdown-content > img, .step > .markdown-content > video,
+    .step > .markdown-content > p:has(> img:only-child) > img,
+    .step > .markdown-content > p:has(> video:only-child) > video { flex: 1 1 auto; min-height: 0; width: 100%; height: 100%; object-fit: contain; }
   </style>
   <style>${normalizeCssSource}</style>
   ${styleContent ? `<style>${styleContent}</style>` : ''}
@@ -419,7 +428,7 @@ export function generateSlideThumbnails(impressContent, styleContent, baseDir) {
   var doc = parser.parseFromString(impressContent, 'text/html');
   var steps = doc.querySelectorAll('.step');
   var thumbnails = {};
-  var css = normalizeCssSource + '\n' + 'html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;}' + '\n' + (styleContent || '') + '\n.step{padding:20px;width:100%;height:100%;box-sizing:border-box;}';
+  var css = normalizeCssSource + '\n' + 'html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;display:flex;align-items:center;justify-content:center;}' + '\n' + (styleContent || '') + '\n.step{padding:20px;width:100%;height:100%;box-sizing:border-box;}' + '\n.step:has(img),.step:has(video){display:flex;flex-direction:column;align-items:center;justify-content:center;}' + '\n.step img,.step video{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;}' + '\n.step>.markdown-content{flex:1 1 auto;min-height:0;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;}' + '\n.step>.markdown-content>p:has(>img:only-child),.step>.markdown-content>p:has(>video:only-child){flex:1 1 auto;min-height:0;width:100%;display:flex;align-items:center;justify-content:center;margin:0;}' + '\n.step>img,.step>video,.step>.markdown-content>img,.step>.markdown-content>video,.step>.markdown-content>p:has(>img:only-child)>img,.step>.markdown-content>p:has(>video:only-child)>video{flex:1 1 auto;min-height:0;width:100%;height:100%;object-fit:contain;}';
   Array.prototype.forEach.call(steps, function(step, i) {
     var id = step.id || 'step-' + (i + 1);
     thumbnails[id] = '<!DOCTYPE html>\n<html>\n<head>\n<meta charset="UTF-8">\n<style>\n' + css + '\n</style>\n</head>\n<body>\n<div class="step">' + step.innerHTML + '</div>\n</body>\n</html>';

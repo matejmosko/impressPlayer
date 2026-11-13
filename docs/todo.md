@@ -46,6 +46,7 @@ Remaining work for the Electron → Tauri v2 migration and new features.
 - [x] **Web/iFrame slides** — Support `data-url` attribute on step elements for external URL slides (sandboxed iframe)
 - [x] **Browser-accessible projector** — LAN HTTP server (`projector_server.rs`) serving the presentation with sound to any browser; follows controller slide + media state via `/state` polling; display-only
 - [x] **Thumbnail id fix** — `generateSlideThumbnails()` assigns `step-{index+1}` to id-less steps to match impress.js runtime ids (fixes "Loading..." sidebar)
+- [x] **Media theming** — Slide images/videos upscale to fill the slide (`object-fit: contain`, aspect ratio preserved, never cropped) in viewer, projector, and thumbnails; inline media in text keeps natural size
 
 ### Dynamic Slide Editing
 - [ ] Contenteditable overlay or separate editor UI for live slide editing

@@ -470,6 +470,26 @@ test('thumbnail CSS does not override presentation body background image', funct
   assert(stylePos > lastBasePos, 'presentation body background comes after base html/body reset so it wins');
 });
 
+// ── Media theming (images/videos fill their slide) ──────────────
+// These assert against the real source because getViewerHtml() can't be
+// imported directly (it uses ?raw asset imports handled by the bundler).
+
+console.log('\n=== Media Theming ===');
+
+var viewerBuilderSrc = fs.readFileSync(path.join(SRC_DIR, 'shared', 'viewer-html-builder.js'), 'utf8');
+
+test('viewer base CSS upsizes slide media with object-fit: contain', function() {
+  assert(viewerBuilderSrc.includes('.step:has(img), .step:has(video)'), 'media steps become centered flex containers');
+  assert(viewerBuilderSrc.includes('.step img, .step video'), 'inline media size guard present');
+  assert(viewerBuilderSrc.includes('object-fit: contain'), 'viewer media uses object-fit: contain');
+});
+
+test('thumbnail CSS upsizes slide media with object-fit: contain', function() {
+  assert(viewerBuilderSrc.includes('.step:has(img),.step:has(video){display:flex'), 'thumbnail media steps become flex');
+  assert(viewerBuilderSrc.includes('.step img,.step video{display:block'), 'thumbnail media size guard present');
+  assert(viewerBuilderSrc.includes('object-fit:contain'), 'thumbnail media uses object-fit: contain');
+});
+
 // ── Summary ─────────────────────────────────────────────────────
 
 console.log('\n' + '='.repeat(50));
