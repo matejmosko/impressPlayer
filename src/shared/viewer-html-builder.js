@@ -13,8 +13,70 @@ export function getImpressJsForVersion(version) {
   return impressVersions[version] || impressVersions['2.0.0'];
 }
 
+const VIEWER_BASE_CSS = `html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #fff; }
+    .step { padding: 40px; width: 100vw; height: 100vh; box-sizing: border-box; }
+    .step:has(img), .step:has(video) { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .step h1 { font-size: 2.5em; margin-bottom: 0.5em; }
+    .step h2 { font-size: 2em; margin-bottom: 0.5em; }
+    .step h3 { font-size: 1.5em; margin-bottom: 0.5em; }
+    .step p { font-size: 1.2em; line-height: 1.6; margin-bottom: 0.5em; }
+    .step > .markdown-content { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .step > .markdown-content > p:has(> img:only-child),
+    .step > .markdown-content > p:has(> video:only-child) { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; margin: 0; }
+    .step img, .step video { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
+    .step > img, .step > video,
+    .step > .markdown-content > img, .step > .markdown-content > video,
+    .step > .markdown-content > p:has(> img:only-child) > img,
+    .step > .markdown-content > p:has(> video:only-child) > video { flex: 1 1 auto; min-height: 0; width: 100%; height: 100%; object-fit: contain; }`;
+
 function isAbsoluteUrl(url) {
   return /^(?:https?:\/\/|file:\/\/|asset:\/\/|data:|blob:)/.test(url);
+}
+
+const mimeTypes = {
+  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
+  svg: 'image/svg+xml', webp: 'image/webp', bmp: 'image/bmp', ico: 'image/x-icon',
+  avif: 'image/avif', apng: 'image/apng',
+  mp4: 'video/mp4', webm: 'video/webm', ogv: 'video/ogg', mov: 'video/quicktime',
+  m4v: 'video/x-m4v', mkv: 'video/x-matroska',
+  mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg', oga: 'audio/ogg',
+  m4a: 'audio/mp4', aac: 'audio/aac', flac: 'audio/flac', opus: 'audio/opus',
+  woff: 'font/woff', woff2: 'font/woff2', ttf: 'font/ttf', otf: 'font/otf'
+};
+
+export function mimeFromPath(path) {
+  var ext = String(path).split('.').pop().toLowerCase();
+  return mimeTypes[ext] || 'application/octet-stream';
+}
+
+function isEmbeddableUrl(url) {
+  if (!url) return false;
+  if (isAbsoluteUrl(url)) return false;
+  if (/^(?:mailto:|tel:|#|\/\/|\/)/.test(url)) return false;
+  return true;
+}
+
+const LOCAL_URL_RE = /(?:src|poster|href)=["']([^"']+)["']|url\(["']?([^)"']+)["']?\)/g;
+
+export function findLocalAssetUrls(html) {
+  var urls = {};
+  var re = new RegExp(LOCAL_URL_RE.source, 'g');
+  var m;
+  while ((m = re.exec(html)) !== null) {
+    var u = m[1] || m[2];
+    if (isEmbeddableUrl(u)) urls[u] = true;
+  }
+  return Object.keys(urls);
+}
+
+export function embedLocalAssets(html, assetMap) {
+  if (!assetMap) return html;
+  var re = new RegExp(LOCAL_URL_RE.source, 'g');
+  return html.replace(re, function(match, attrUrl, cssUrl) {
+    var u = attrUrl || cssUrl;
+    if (u && assetMap[u]) return match.split(u).join(assetMap[u]);
+    return match;
+  });
 }
 
 export function rewriteMediaToHttp(html, serverUrl) {
@@ -79,21 +141,7 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
   <meta name="viewport" content="width=device-width,initial-scale=1.0">
   <title>impressPlayer Viewer</title>
   <style>
-    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #fff; }
-    .step { padding: 40px; width: 100vw; height: 100vh; box-sizing: border-box; }
-    .step:has(img), .step:has(video) { display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .step h1 { font-size: 2.5em; margin-bottom: 0.5em; }
-    .step h2 { font-size: 2em; margin-bottom: 0.5em; }
-    .step h3 { font-size: 1.5em; margin-bottom: 0.5em; }
-    .step p { font-size: 1.2em; line-height: 1.6; margin-bottom: 0.5em; }
-    .step > .markdown-content { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; }
-    .step > .markdown-content > p:has(> img:only-child),
-    .step > .markdown-content > p:has(> video:only-child) { flex: 1 1 auto; min-height: 0; width: 100%; display: flex; align-items: center; justify-content: center; margin: 0; }
-    .step img, .step video { display: block; max-width: 100%; max-height: 100%; width: auto; height: auto; object-fit: contain; }
-    .step > img, .step > video,
-    .step > .markdown-content > img, .step > .markdown-content > video,
-    .step > .markdown-content > p:has(> img:only-child) > img,
-    .step > .markdown-content > p:has(> video:only-child) > video { flex: 1 1 auto; min-height: 0; width: 100%; height: 100%; object-fit: contain; }
+    ${VIEWER_BASE_CSS}
   </style>
   <style>${normalizeCssSource}</style>
   ${styleContent ? `<style>${styleContent}</style>` : ''}
@@ -414,6 +462,37 @@ export function getViewerHtml(impressContent, styleContent, impressVersion, base
         }
       });
     }
+  <\/script>
+</body>
+</html>`;
+}
+
+export function getStandaloneHtml(impressContent, styleContent, impressVersion, title) {
+  var impressJs = getImpressJsForVersion(impressVersion || '2.0.0');
+  var safeTitle = String(title || 'Presentation')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1.0">
+  <title>${safeTitle}</title>
+  <style>
+    ${VIEWER_BASE_CSS}
+  </style>
+  <style>${normalizeCssSource}</style>
+  ${styleContent ? `<style>${styleContent}</style>` : ''}
+</head>
+<body>
+  <div id="container">
+    ${impressContent}
+  </div>
+  <script>${impressJs}<\/script>
+  <script>
+    impress().init();
+    Array.prototype.forEach.call(document.querySelectorAll('video, audio'), function(el) {
+      if (!el.hasAttribute('controls')) el.setAttribute('controls', '');
+    });
   <\/script>
 </body>
 </html>`;

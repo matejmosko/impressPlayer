@@ -490,6 +490,94 @@ test('thumbnail CSS upsizes slide media with object-fit: contain', function() {
   assert(viewerBuilderSrc.includes('object-fit:contain'), 'thumbnail media uses object-fit: contain');
 });
 
+// ── Web export (mirrors findLocalAssetUrls / embedLocalAssets) ──
+
+console.log('\n=== Web Export ===');
+
+var EXPORT_MIME = {
+  png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif',
+  svg: 'image/svg+xml', webp: 'image/webp',
+  mp4: 'video/mp4', webm: 'video/webm',
+  mp3: 'audio/mpeg', wav: 'audio/wav', ogg: 'audio/ogg'
+};
+
+function exportMimeFromPath(p) {
+  var ext = String(p).split('.').pop().toLowerCase();
+  return EXPORT_MIME[ext] || 'application/octet-stream';
+}
+
+function exportIsAbsoluteUrl(url) {
+  return /^(?:https?:\/\/|file:\/\/|asset:\/\/|data:|blob:)/.test(url);
+}
+
+function exportIsEmbeddableUrl(url) {
+  if (!url) return false;
+  if (exportIsAbsoluteUrl(url)) return false;
+  if (/^(?:mailto:|tel:|#|\/\/|\/)/.test(url)) return false;
+  return true;
+}
+
+var EXPORT_URL_RE = /(?:src|poster|href)=["']([^"']+)["']|url\(["']?([^)"']+)["']?\)/g;
+
+function findLocalAssetUrls(html) {
+  var urls = {};
+  var re = new RegExp(EXPORT_URL_RE.source, 'g');
+  var m;
+  while ((m = re.exec(html)) !== null) {
+    var u = m[1] || m[2];
+    if (exportIsEmbeddableUrl(u)) urls[u] = true;
+  }
+  return Object.keys(urls);
+}
+
+function embedLocalAssets(html, assetMap) {
+  if (!assetMap) return html;
+  var re = new RegExp(EXPORT_URL_RE.source, 'g');
+  return html.replace(re, function(match, attrUrl, cssUrl) {
+    var u = attrUrl || cssUrl;
+    if (u && assetMap[u]) return match.split(u).join(assetMap[u]);
+    return match;
+  });
+}
+
+test('mimeFromPath maps common media extensions', function() {
+  assert.strictEqual(exportMimeFromPath('a/b/pic.PNG'), 'image/png');
+  assert.strictEqual(exportMimeFromPath('clip.webm'), 'video/webm');
+  assert.strictEqual(exportMimeFromPath('sound.ogg'), 'audio/ogg');
+  assert.strictEqual(exportMimeFromPath('mystery.xyz'), 'application/octet-stream');
+});
+
+test('findLocalAssetUrls collects relative src/poster/href/url() only', function() {
+  var html = '<img src="img/logo.png"><video poster="thumbs/a.jpg" src="v.mp4"></video>' +
+             '<link href="style.css"><img src="https://cdn.example.com/x.png">' +
+             '<img src="data:image/png;base64,AAA"><img src="/root.png">' +
+             '.bg { background: url("img/bg.png"); }';
+  var urls = findLocalAssetUrls(html).sort();
+  assert.deepStrictEqual(urls, ['img/bg.png', 'img/logo.png', 'style.css', 'thumbs/a.jpg', 'v.mp4']);
+});
+
+test('embedLocalAssets replaces only mapped URLs with data URIs', function() {
+  var html = '<img src="img/logo.png"><img src="https://cdn.example.com/x.png">';
+  var map = { 'img/logo.png': 'data:image/png;base64,QUJD' };
+  var out = embedLocalAssets(html, map);
+  assert(out.includes('src="data:image/png;base64,QUJD"'), 'mapped local asset inlined');
+  assert(out.includes('https://cdn.example.com/x.png'), 'absolute URL untouched');
+  assert(!out.includes('src="img/logo.png"'), 'original local reference replaced');
+});
+
+test('embedLocalAssets leaves unmapped references intact', function() {
+  var html = '<img src="missing.png">';
+  assert.strictEqual(embedLocalAssets(html, {}), html);
+});
+
+test('getStandaloneHtml inlines impress.js and initializes it (source check)', function() {
+  assert(viewerBuilderSrc.includes('export function getStandaloneHtml'), 'getStandaloneHtml exported');
+  var body = viewerBuilderSrc.slice(viewerBuilderSrc.indexOf('export function getStandaloneHtml'));
+  assert(body.includes('impress().init();'), 'standalone initializes impress.js');
+  assert(body.includes('${impressJs}'), 'impress.js inlined');
+  assert(body.includes("setAttribute('controls'"), 'standalone adds media controls');
+});
+
 // ── Summary ─────────────────────────────────────────────────────
 
 console.log('\n' + '='.repeat(50));

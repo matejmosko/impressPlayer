@@ -72,12 +72,16 @@ fn build_app_menu(app: &tauri::AppHandle) -> Result<tauri::menu::Menu<tauri::Wry
         .build(app)?;
     let refresh_item = MenuItemBuilder::with_id("menu-refresh", "Refresh\tF5")
         .build(app)?;
+    let export_item = MenuItemBuilder::with_id("menu-export", "Export for Web\tCtrl+E")
+        .build(app)?;
     let devtools_item = MenuItemBuilder::with_id("menu-devtools", "Toggle DevTools\tCtrl+Shift+I")
         .build(app)?;
 
     let file_menu = SubmenuBuilder::new(app, "File")
         .item(&load_item)
         .item(&refresh_item)
+        .separator()
+        .item(&export_item)
         .separator()
         .item(&devtools_item)
         .build()?;

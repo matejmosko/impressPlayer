@@ -1,12 +1,15 @@
 const { invoke } = window.__TAURI__.core;
 const { emit, listen } = window.__TAURI__.event;
 const { getCurrentWindow } = window.__TAURI__.window;
-const { open } = window.__TAURI__.dialog;
-import { getViewerHtml, rewriteMediaToHttp, rewriteAssetsToServer, generateSlideThumbnails } from './shared/viewer-html-builder.js';
+const { open, save, message } = window.__TAURI__.dialog;
+import { getViewerHtml, rewriteMediaToHttp, rewriteAssetsToServer, generateSlideThumbnails, getStandaloneHtml, findLocalAssetUrls, embedLocalAssets, mimeFromPath } from './shared/viewer-html-builder.js';
 import { detectLocale, applyTranslations, __ } from './shared/i18n.js';
 import { wrapMarkdownForImpress, extractImpressContent } from './shared/presentation-utils.js';
 
 let loadedFile = null;
+let currentImpressContent = null;
+let currentStyleContent = '';
+let currentPresentationDir = null;
 let projectorWindow = null;
 let slideList = [];
 let totalSeconds = 0;
@@ -105,6 +108,7 @@ async function saveWindowState() {
 function setupEventListeners() {
   document.getElementById('openFile').addEventListener('click', selectFile);
   document.getElementById('refreshBtn').addEventListener('click', refreshPresentation);
+  document.getElementById('exportBtn').addEventListener('click', exportPresentation);
   document.getElementById('projectorBtn').addEventListener('click', toggleProjector);
   document.getElementById('fullscreenBtn').addEventListener('click', toggleFullscreen);
   document.getElementById('nextSlideBtn').addEventListener('click', function() {
@@ -250,6 +254,9 @@ function setupEventListeners() {
       case 'menu-refresh':
         refreshPresentation();
         break;
+      case 'menu-export':
+        exportPresentation();
+        break;
       case 'menu-devtools':
         getCurrentWindow().toggleDevtools();
         break;
@@ -334,6 +341,58 @@ async function refreshPresentation() {
   }
 }
 
+async function exportPresentation() {
+  if (!currentImpressContent) {
+    await showMessage(__('No presentation loaded'));
+    return;
+  }
+  try {
+    var version = await invoke('get_impress_version');
+    var baseName = (loadedFile || 'presentation')
+      .replace(/^.*[/\\]/, '')
+      .replace(/\.[^.]+$/, '');
+    var content = currentImpressContent;
+    var style = currentStyleContent || '';
+    var assetUrls = findLocalAssetUrls(content).concat(findLocalAssetUrls(style));
+    var assetMap = {};
+    var seen = {};
+    for (var i = 0; i < assetUrls.length; i++) {
+      var url = assetUrls[i];
+      if (seen[url]) continue;
+      seen[url] = true;
+      try {
+        var b64 = await invoke('read_file_base64', {
+          path: (currentPresentationDir || '') + url.replace(/\\/g, '/')
+        });
+        assetMap[url] = 'data:' + mimeFromPath(url) + ';base64,' + b64;
+      } catch (e) {
+        console.warn('[impressPlayer] Could not embed asset: ' + url, e);
+      }
+    }
+    content = embedLocalAssets(content, assetMap);
+    style = embedLocalAssets(style, assetMap);
+    var html = getStandaloneHtml(content, style, version, baseName);
+    var outPath = await save({
+      defaultPath: (currentPresentationDir || '') + baseName + '.html',
+      filters: [{ name: 'HTML', extensions: ['html', 'htm'] }]
+    });
+    if (!outPath) return;
+    await invoke('write_file', { path: outPath, contents: html });
+    await showMessage(__('Presentation exported to %s', outPath));
+  } catch (e) {
+    console.error('Export error:', e);
+    await showMessage(__('Export failed: %s', (e && e.message) ? e.message : e));
+  }
+}
+
+async function showMessage(text) {
+  try {
+    await message(String(text), { title: 'impressPlayer' });
+  } catch (e) {
+    console.log('[impressPlayer] ' + text);
+  }
+}
+
 async function loadPresentation(filePath) {
   try {
     var ext = filePath.split('.').pop().toLowerCase();
@@ -370,6 +429,9 @@ async function loadPresentation(filePath) {
       console.log('[impressPlayer] Media server started at ' + mediaServerUrl);
       var autoplayMedia = isAutoplayMediaEnabled();
       var rawImpressContent = impressContent;
+      currentImpressContent = rawImpressContent;
+      currentStyleContent = styleContent;
+      currentPresentationDir = dir;
       impressContent = rewriteMediaToHttp(rawImpressContent, mediaServerUrl);
       var viewerHtml = getViewerHtml(impressContent, styleContent, impressVersion, dir, autoplayMedia);
 

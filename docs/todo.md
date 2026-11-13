@@ -51,7 +51,7 @@ Remaining work for the Electron → Tauri v2 migration and new features.
 ### Dynamic Slide Editing
 - [ ] Contenteditable overlay or separate editor UI for live slide editing
 - [ ] Save edits back to source file (.md or .html) or to new file.
-- [ ] Add ability to save the presentation embedded with impress.js for publishing to web.
+- [x] Add ability to save the presentation embedded with impress.js for publishing to web. (Standalone export: button `#exportBtn` / Ctrl+E → single self-contained HTML with inlined impress.js + local media as data URIs.)
 - [ ] Re-generate blob URL after edits
 - [ ] Undo/redo support
 - [ ] Add UI for dynamic adding of new slides. Let user choose if he wants to add markdown slide, image slide or webpage (url) slide.

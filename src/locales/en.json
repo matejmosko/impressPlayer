@@ -14,5 +14,8 @@
 	"Load Presentation": "Load Presentation",
 	"Autoplay": "Autoplay",
 	"The presentation you load will be displayed here.": "The presentation you load will be displayed here.",
-	"Slide %s of %s": "Slide %s of %s"
+	"Slide %s of %s": "Slide %s of %s",
+	"No presentation loaded": "No presentation loaded",
+	"Presentation exported to %s": "Presentation exported to %s",
+	"Export failed: %s": "Export failed: %s"
 }

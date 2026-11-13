@@ -95,7 +95,7 @@ Frontend calls Rust via `invoke('command_name', { args })`. Key channels:
 | `mediaSync` | Controller → Projector | Forward master media state for follower sync |
 | `gotoSlide` | Controller → Projector | Sync slide change to projector |
 | `controller-slide-changed` | Projector → Controller | Sync slide change back to controller |
-| `menu-event` | Rust → Controller | Native menu item clicked (menu-load, menu-refresh, menu-devtools) |
+| `menu-event` | Rust → Controller | Native menu item clicked (menu-load, menu-refresh, menu-export, menu-devtools) |
 
 ## Presentation Loading Flow
 
@@ -109,6 +109,15 @@ Frontend calls Rust via `invoke('command_name', { args })`. Key channels:
 8. Viewer iframe runs `impress().init()` → reports step list via `postMessage`
 9. Controller builds static per-slide thumbnails from `generateSlideThumbnails()` and renders them into blob-URL iframes (sidebar + overview grid)
 10. On slide change, the controller updates sidebar thumbnails to show next-slide context
+
+## Web Export (self-contained HTML)
+
+Export a presentation as a single portable `.html` file for publishing to the web (button `#exportBtn`, menu `menu-export` / Ctrl+E).
+
+- `getStandaloneHtml(impressContent, styleContent, impressVersion, title)` (`viewer-html-builder.js`) builds a standalone document: shared `VIEWER_BASE_CSS`, normalize CSS, presentation `style.css`, content, inlined impress.js, and a minimal script (`impress().init()` + `controls` on media). No postMessage/media-sync machinery.
+- Local media referenced by the content/style (`src`/`poster`/`href`/CSS `url()`) is embedded as `data:` URIs: `findLocalAssetUrls()` collects relative URLs, the controller reads each via `read_file_base64`, `mimeFromPath()` picks the MIME, then `embedLocalAssets(html, map)` substitutes. Unresolvable references are left untouched.
+- The controller keeps the raw (un-rewritten) content/style/dir (`currentImpressContent`, `currentStyleContent`, `currentPresentationDir`) set in `loadPresentation()`, so export uses original relative paths.
+- Output path chosen via the native save dialog (`dialog:allow-save`), written with `invoke('write_file')`.
 
 ## Browser Projector (LAN HTTP)
 
