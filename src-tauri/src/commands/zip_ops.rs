@@ -15,7 +15,21 @@ pub fn extract_zip(zip_path: String, dest_dir: String) -> Result<Vec<String>, St
         let mut file = archive
             .by_index(i)
             .map_err(|e| format!("Failed to read zip entry: {}", e))?;
-        let outpath = dest.join(file.mangled_name());
+
+        if file.is_symlink() {
+            continue;
+        }
+
+        let outpath = match file.enclosed_name() {
+            Some(path) => dest.join(path),
+            None => {
+                return Err(format!(
+                    "Zip entry {} has an unsafe path: {}",
+                    i,
+                    file.name().unwrap_or_default()
+                ))
+            }
+        };
 
         if file.is_dir() {
             std::fs::create_dir_all(&outpath)

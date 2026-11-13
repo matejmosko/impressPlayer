@@ -27,7 +27,6 @@
     "vite": "^8.1.5"
   },
   "dependencies": {
-    "cargo": "^0.8.0",
     "markdown-it": "^15.0.0"
   }
 }
